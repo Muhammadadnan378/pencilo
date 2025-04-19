@@ -1,0 +1,91 @@
+{
+  "project_info": {
+    "project_number": "307798697619",
+    "firebase_url": "https://campauslink-default-rtdb.firebaseio.com",
+    "project_id": "campauslink",
+    "storage_bucket": "campauslink.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:307798697619:android:68c205da92295c92a50f66",
+        "android_client_info": {
+          "package_name": "com.example.campus_link"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "307798697619-rpsubu8h4p5pg4ovrv2emen1142p54dq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.campus_link",
+            "certificate_hash": "fb0b7a1cf72f4e4b5103e82bcd25f5d46dc812ac"
+          }
+        },
+        {
+          "client_id": "307798697619-s650m68v25jvi0jsob416fcbg18u44d4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3Rj26TFryvJOWkgHcUXZxKUpv6U521p4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "307798697619-s650m68v25jvi0jsob416fcbg18u44d4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "307798697619-5kfv9p8p05uhjren0a4t4aa6ketms5sd.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.campusLink"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:307798697619:android:d383396d18040e35a50f66",
+        "android_client_info": {
+          "package_name": "com.example.pencilo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "307798697619-s650m68v25jvi0jsob416fcbg18u44d4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3Rj26TFryvJOWkgHcUXZxKUpv6U521p4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "307798697619-s650m68v25jvi0jsob416fcbg18u44d4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "307798697619-5kfv9p8p05uhjren0a4t4aa6ketms5sd.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.campusLink"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
