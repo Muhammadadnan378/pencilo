@@ -11,6 +11,7 @@ class CurrentUserData {
   static String name = '';
   static String schoolName = '';
   static String phoneNumber = '';
+  static String currentLocation = '';
   static String standard = ''; // Only for students
   static String division = ''; // Only for students
   static String subject = ''; // Only for teachers
@@ -28,6 +29,7 @@ class CurrentUserData {
           name = teacher?.name ?? '';
           schoolName = teacher?.schoolName ?? '';
           phoneNumber = teacher?.phoneNumber ?? '';
+          currentLocation = teacher?.currentLocation ?? '';
           subject = teacher?.subject ?? '';
         }
       } else {
@@ -38,6 +40,7 @@ class CurrentUserData {
           name = student?.name ?? '';
           schoolName = student?.schoolName ?? '';
           phoneNumber = student?.phoneNumber ?? '';
+          currentLocation = student?.currentLocation ?? '';
           standard = student?.standard ?? '';
           division = student?.division ?? '';
         }
@@ -59,6 +62,7 @@ class CurrentUserData {
         CurrentUserData.name = userData['name'];
         CurrentUserData.schoolName = userData['schoolName'];
         CurrentUserData.phoneNumber = userData['phoneNumber'];
+        CurrentUserData.currentLocation = userData['currentLocation'];
 
         if (isTeacher) {
           subject = userData['subject'];
@@ -81,6 +85,7 @@ class CurrentUserData {
         'name': name,
         'schoolName': schoolName,
         'phoneNumber': phoneNumber,
+        'currentLocation': currentLocation,
         'isTeacher': isTeacher,
       };
 

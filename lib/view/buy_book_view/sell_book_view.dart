@@ -136,21 +136,23 @@ class SellBookView extends StatelessWidget {
                 ],
               );
             },),
-            SizedBox(height: 10),
             SellBookClassTextField(
               hintText: "Enter Amount",
               title: 'Amount',
               keyboardType: TextInputType.number,
               controller: controller.amountController, // Pass controller
             ),
-            SizedBox(height: 10),
             SellBookClassTextField(
               hintText: "Enter Address",
               title: 'Address',
               isMultiline: true,
               controller: controller.addressController, // Pass controller
             ),
-            SizedBox(height: 10),
+            SellBookClassTextField(
+              hintText: "Enter Current location",
+              title: 'Current location',
+              controller: controller.currentLocationController, // Pass controller
+            ),
             SellBookClassTextField(
               hintText: "Enter Contact Number",
               title: 'Contact number',

@@ -8,6 +8,7 @@ class SellBookModel {
   final List<String> images;
   final String addedDate;
   final String oldOrNewBook;
+  final String currentLocation;
 
   SellBookModel({
     required this.bookUid,
@@ -19,6 +20,7 @@ class SellBookModel {
     required this.images,
     required this.addedDate,
     required this.oldOrNewBook,
+    required this.currentLocation,
   });
 
   // Convert Firestore data to SellBookModel
@@ -33,6 +35,7 @@ class SellBookModel {
       images: List<String>.from(firestore['images']),
       addedDate: firestore['addedDate'],
       oldOrNewBook: firestore['oldOrNewBook'],
+      currentLocation: firestore['currentLocation'],
     );
   }
 
@@ -48,6 +51,7 @@ class SellBookModel {
       'images': images,
       'addedDate': addedDate,
       'oldOrNewBook': oldOrNewBook,
+      'currentLocation': currentLocation,
     };
   }
 }

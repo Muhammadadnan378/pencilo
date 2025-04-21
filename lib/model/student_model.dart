@@ -22,6 +22,9 @@ class StudentModel {
   @HiveField(5)
   final String phoneNumber;
 
+  @HiveField(6)
+  final String currentLocation;
+
   StudentModel({
     required this.uid,
     required this.name,
@@ -29,5 +32,6 @@ class StudentModel {
     required this.standard,
     required this.division,
     required this.phoneNumber,
+    required this.currentLocation,
   });
 }

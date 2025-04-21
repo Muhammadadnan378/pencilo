@@ -8,6 +8,16 @@ import '../data/consts/const_import.dart';
 import '../model/sell_book_model.dart';
 
 class SellBookController extends GetxController {
+
+  TextEditingController searchController = TextEditingController();
+  var searchQuery = ''.obs;
+
+  var isBookViewSearching = false.obs;
+
+  FocusNode searchFocusNode = FocusNode();
+
+
+  ///Sell book view methods and values
   var selectedOption = 'New'.obs;
   var images = <File>[].obs;  // List to store selected images
   var uploading = false.obs;
@@ -17,6 +27,7 @@ class SellBookController extends GetxController {
   final TextEditingController amountController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController contactNumberController = TextEditingController();
+  final TextEditingController currentLocationController = TextEditingController();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;  // Firebase Storage instance
@@ -81,6 +92,7 @@ class SellBookController extends GetxController {
         'contactNumber': book.contactNumber,
         'images': imageUrls,
         'addedDate': book.addedDate,
+        'currentLocation': book.currentLocation,
         'oldOrNewBook': book.oldOrNewBook,
       }).then((_) {
         uploading.value = false;
@@ -126,6 +138,7 @@ class SellBookController extends GetxController {
       uid: CurrentUserData.uid,
       addedDate: DateTime.now().toString(),
       oldOrNewBook: selectedOption.value,
+      currentLocation: currentLocationController.text,
     );
 
     await storeInFirestore(book);  // Upload book data to Firestore
@@ -140,6 +153,7 @@ class SellBookController extends GetxController {
     titleController.clear();
     amountController.clear();
     addressController.clear();
+    currentLocationController.clear();
     contactNumberController.clear();
     selectedOption.value = 'New';
   }

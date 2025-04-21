@@ -4,6 +4,46 @@ import 'package:get/get.dart';
 import '../data/consts/const_import.dart';
 
 class SubjectsController extends GetxController {
+  TextEditingController searchController = TextEditingController();
+  var searchQuery = ''.obs;
+
+  var isSubjectPartSearching = false.obs;
+  FocusNode searchFocusNode = FocusNode();
+
+  // List of subjects
+  List<String> subjectParts = [
+    "Part 1",
+    "Part 2",
+    "Part 3",
+    "Part 4",
+    "Part 5",
+    "Part 6",
+    "Part 7",
+    "Part 8",
+  ];
+
+  // Filtered list based on search query
+  RxList<String> filteredSubjectsParts = RxList<String>();
+
+  @override
+  void onInit() {
+    super.onInit();
+    filteredSubjectsParts.addAll(subjectParts); // Initialize with all subjects
+    searchController.addListener(_filterSubjects); // Listen for search text changes
+  }
+
+  // Method to filter the subjects list
+  void _filterSubjects() {
+    if (searchController.text.isEmpty) {
+      filteredSubjectsParts.assignAll(subjectParts); // Show all if query is empty
+    } else {
+      filteredSubjectsParts.assignAll(subjectParts.where((subject) {
+        return subject.toLowerCase().contains(searchController.text.toLowerCase()); // Case-insensitive match
+      }).toList());
+    }
+  }
+
+  /// Answer view methods
   String videoUrlUid = '123456';
   TextEditingController urlController = TextEditingController();
 

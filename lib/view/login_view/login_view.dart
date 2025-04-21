@@ -21,7 +21,6 @@ class LoginView extends StatelessWidget {
           padding: const EdgeInsets.only(left: 17.0, right: 17),
           child: ListView(
             children: [
-              SizedBox(height: SizeConfig.screenHeight * 0.07),
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                 child: Image.asset(
@@ -97,6 +96,11 @@ class LoginView extends StatelessWidget {
                     },
                   ),
                 )),
+              SizedBox(height: 12),
+              LoginClassTextField(
+                hintText: "Current location",
+                onChanged: (value) => controller.currentLocation.value = value,
+              ),
               SizedBox(height: 12),
               LoginClassTextField(
                 hintText: "Phone number",

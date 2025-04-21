@@ -19,11 +19,15 @@ class TeacherModel {
   @HiveField(4)
   final String phoneNumber;
 
+  @HiveField(5)
+  final String currentLocation;
+
   TeacherModel({
     required this.uid,
     required this.name,
     required this.schoolName,
     required this.subject,
     required this.phoneNumber,
+    required this.currentLocation,
   });
 }

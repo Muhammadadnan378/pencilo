@@ -15,6 +15,7 @@ class LoginController extends GetxController {
   var selectedStandard = ''.obs;
   var selectedDivision = ''.obs;
   var name = ''.obs;
+  var currentLocation = ''.obs;
   var schoolName = ''.obs;
   var phoneNumber = ''.obs;
   var subject = ''.obs;
@@ -138,6 +139,7 @@ class LoginController extends GetxController {
       CurrentUserData.uid = userDoc['uid'];
       CurrentUserData.name = userDoc['name'];
       CurrentUserData.schoolName = userDoc['schoolName'];
+      CurrentUserData.currentLocation = userDoc['currentLocation'];
       CurrentUserData.phoneNumber = userDoc['phoneNumber'];
       CurrentUserData.isTeacher = isTeacher;
 
@@ -167,6 +169,7 @@ class LoginController extends GetxController {
       schoolName: userDoc['schoolName'],
       subject: userDoc['subject'],
       phoneNumber: userDoc['phoneNumber'],
+      currentLocation: userDoc['currentLocation'],
     );
     await teacherBox.add(newTeacher);
   }
@@ -181,6 +184,7 @@ class LoginController extends GetxController {
       standard: userDoc['standard'],
       division: userDoc['division'],
       phoneNumber: userDoc['phoneNumber'],
+      currentLocation: userDoc['currentLocation'],
     );
     await studentBox.add(newStudent);
   }
@@ -194,6 +198,7 @@ class LoginController extends GetxController {
         schoolName: schoolName.value,
         subject: subject.value,
         phoneNumber: phoneNumber.value,
+        currentLocation: currentLocation.value,
       );
 
       // Store the teacher data in Firestore
@@ -222,6 +227,7 @@ class LoginController extends GetxController {
         standard: selectedStandard.value,
         division: selectedDivision.value,
         phoneNumber: phoneNumber.value,
+        currentLocation: currentLocation.value,
       );
 
       // Store the student data in Firestore
@@ -232,6 +238,7 @@ class LoginController extends GetxController {
         'standard': selectedStandard.value,
         'division': selectedDivision.value,
         'phoneNumber': phoneNumber.value,
+        'currentLocation': currentLocation.value,
       }).then((_) {
         // Store the student data in Hive
         addStudentData(newStudent);
