@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:pencilo/controller/subjects_controller.dart';
+import 'package:pencilo/controller/home_view.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 
@@ -11,7 +11,7 @@ class SubjectPartsView extends StatelessWidget {
 
   SubjectPartsView({super.key, this.subject});
 
-  SubjectsController controller = Get.put(SubjectsController());
+  HomeViewController controller = Get.put(HomeViewController());
 
   @override
   Widget build(BuildContext context) {
@@ -59,31 +59,31 @@ class SubjectPartsView extends StatelessWidget {
                   Spacer(),
                   Obx(() =>
                   controller.isSubjectPartSearching.value == true ? SizedBox(
-                      width: 154,
-                      height: 36,
-                      child: TextField(
-                          controller: controller.searchController,
-                          focusNode: controller.searchFocusNode,
-                          onChanged: (query) {
-                            controller.searchQuery.value = query
-                                .toLowerCase(); // Convert to lower case for case insensitive search
-                            controller.update();
+                    width: 154,
+                    height: 36,
+                    child: TextField(
+                      controller: controller.searchController,
+                      focusNode: controller.searchFocusNode,
+                      onChanged: (query) {
+                        controller.searchQuery.value = query.toLowerCase(); // Convert to lower case for case-insensitive search
+                        controller.filterSubjects(); // Call the filter method
+                        controller.update();  // Update UI after filtering
+                      },
+                      decoration: InputDecoration(
+                        suffixIcon: GestureDetector(
+                          onTap: () {
+                            controller.isSubjectPartSearching(false);
+                            controller.searchController.clear(); // Clear the search text when the cancel icon is clicked
+                            controller.filterSubjects(); // Reset the list
                           },
-                          decoration: InputDecoration(
-                              suffixIcon: GestureDetector(
-                                  onTap: () {
-                                    controller.isSubjectPartSearching(false);
-                                  },
-                                  child: Icon(Icons.cancel_outlined)
-                              ),
-                              contentPadding: EdgeInsets.only(
-                                  left: 15, right: 10),
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                      Radius.circular(20))
-                              )
-                          )
-                      )
+                          child: Icon(Icons.cancel_outlined),
+                        ),
+                        contentPadding: EdgeInsets.only(left: 15, right: 10),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                        ),
+                      ),
+                    ),
                   ) : CustomCard(
                     onTap: () {
                       controller.isSubjectPartSearching(true);
@@ -96,8 +96,7 @@ class SubjectPartsView extends StatelessWidget {
                     child: Row(
                       children: [
                         SizedBox(width: 14),
-                        Icon(CupertinoIcons.search, size: 18,
-                            color: Color(0xff666666)),
+                        Icon(CupertinoIcons.search, size: 18, color: Color(0xff666666)),
                         SizedBox(width: 10),
                         CustomText(
                           text: 'Search',
@@ -109,8 +108,8 @@ class SubjectPartsView extends StatelessWidget {
                       ],
                     ),
                   ),
-                  ),
-                ],
+                  )
+                ]
               ),
               SizedBox(height: 15,),
               // Part 1
@@ -137,63 +136,58 @@ class SubjectPartsView extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 10,),
+            // ListView to display filtered subjects
               SizedBox(
                 height: 160,
                 child: Obx(() {
-                  controller.filteredSubjectsParts;
                   return ListView.builder(
                     itemCount: controller.filteredSubjectsParts.length,
                     scrollDirection: Axis.horizontal,
                     padding: EdgeInsets.zero,
                     itemBuilder: (context, index) {
-                      String subjectParts = controller
-                          .filteredSubjectsParts[index];
+                      String subjectPart = controller.filteredSubjectsParts[index];
+                      int indexInList = controller.subjectParts.indexOf(subjectPart); // Get the index of the subject part
+                      String subjectName = controller.subjectPartName[indexInList]; // Corresponding subject name
+
                       return Padding(
                         padding: const EdgeInsets.only(right: 10, bottom: 10),
-                        // spacing between cards
                         child: CustomCard(
                           onTap: () {
-                            Get.to(AnswerView(subject: subject));
+                            Get.to(AnswerView(subject: subjectPart)); // Navigate to answer view with the subject part
                           },
                           width: 126,
                           height: 200,
                           color: Colors.grey[200],
                           borderRadius: 12,
                           boxShadow: [
-                            BoxShadow(color: grayColor,
-                                blurRadius: 5,
-                                offset: Offset(0, 3))
+                            BoxShadow(color: grayColor, blurRadius: 5, offset: Offset(0, 3)),
                           ],
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Top Image
                               ClipRRect(
-                                borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(12)),
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                                 child: Image.asset(
-                                  mathImage,
+                                  mathImage,  // Placeholder image
                                   height: 100,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              // Title
                               Padding(
                                 padding: const EdgeInsets.only(left: 4.0),
                                 child: CustomText(
-                                  text: subjectParts,
+                                  text: subjectPart,  // Display the subject part (e.g., Part 1)
                                   fontWeight: FontWeight.w600,
                                   size: 12,
                                   color: blackColor,
                                 ),
                               ),
-                              // Subtitle
                               Padding(
                                 padding: const EdgeInsets.only(left: 4.0),
                                 child: CustomText(
-                                  text: 'Addition of two number',
+                                  text: subjectName,  // Display the subject name (e.g., Mathematics)
                                   fontWeight: FontWeight.w300,
                                   size: 8,
                                   color: blackColor,
@@ -241,60 +235,54 @@ class SubjectPartsView extends StatelessWidget {
               SizedBox(
                 height: 160,
                 child: Obx(() {
-                  controller.filteredSubjectsParts;
                   return ListView.builder(
                     itemCount: controller.filteredSubjectsParts.length,
                     scrollDirection: Axis.horizontal,
                     padding: EdgeInsets.zero,
                     itemBuilder: (context, index) {
-                      String subjectParts = controller
-                          .filteredSubjectsParts[index];
+                      String subjectPart = controller.filteredSubjectsParts[index];
+                      int indexInList = controller.subjectParts.indexOf(subjectPart); // Get the index of the subject part
+                      String subjectName = controller.subjectPartName[indexInList]; // Corresponding subject name
+
                       return Padding(
                         padding: const EdgeInsets.only(right: 10, bottom: 10),
-                        // spacing between cards
                         child: CustomCard(
                           onTap: () {
-                            Get.to(AnswerView(subject: subject));
+                            Get.to(AnswerView(subject: subjectPart)); // Navigate to answer view with the subject part
                           },
                           width: 126,
                           height: 200,
                           color: Colors.grey[200],
                           borderRadius: 12,
                           boxShadow: [
-                            BoxShadow(color: grayColor,
-                                blurRadius: 5,
-                                offset: Offset(0, 3))
+                            BoxShadow(color: grayColor, blurRadius: 5, offset: Offset(0, 3)),
                           ],
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Top Image
                               ClipRRect(
-                                borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(12)),
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                                 child: Image.asset(
-                                  mathImage,
+                                  mathImage,  // Placeholder image
                                   height: 100,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              // Title
                               Padding(
                                 padding: const EdgeInsets.only(left: 4.0),
                                 child: CustomText(
-                                  text: subjectParts,
+                                  text: subjectPart,  // Display the subject part (e.g., Part 1)
                                   fontWeight: FontWeight.w600,
                                   size: 12,
                                   color: blackColor,
                                 ),
                               ),
-                              // Subtitle
                               Padding(
                                 padding: const EdgeInsets.only(left: 4.0),
                                 child: CustomText(
-                                  text: 'Addition of two number',
+                                  text: subjectName,  // Display the subject name (e.g., Mathematics)
                                   fontWeight: FontWeight.w300,
                                   size: 8,
                                   color: blackColor,
@@ -342,60 +330,54 @@ class SubjectPartsView extends StatelessWidget {
               SizedBox(
                 height: 160,
                 child: Obx(() {
-                  controller.filteredSubjectsParts;
                   return ListView.builder(
                     itemCount: controller.filteredSubjectsParts.length,
                     scrollDirection: Axis.horizontal,
                     padding: EdgeInsets.zero,
                     itemBuilder: (context, index) {
-                      String subjectParts = controller
-                          .filteredSubjectsParts[index];
+                      String subjectPart = controller.filteredSubjectsParts[index];
+                      int indexInList = controller.subjectParts.indexOf(subjectPart); // Get the index of the subject part
+                      String subjectName = controller.subjectPartName[indexInList]; // Corresponding subject name
+
                       return Padding(
                         padding: const EdgeInsets.only(right: 10, bottom: 10),
-                        // spacing between cards
                         child: CustomCard(
                           onTap: () {
-                            Get.to(AnswerView(subject: subject));
+                            Get.to(AnswerView(subject: subjectPart)); // Navigate to answer view with the subject part
                           },
                           width: 126,
                           height: 200,
                           color: Colors.grey[200],
                           borderRadius: 12,
                           boxShadow: [
-                            BoxShadow(color: grayColor,
-                                blurRadius: 5,
-                                offset: Offset(0, 3))
+                            BoxShadow(color: grayColor, blurRadius: 5, offset: Offset(0, 3)),
                           ],
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Top Image
                               ClipRRect(
-                                borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(12)),
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                                 child: Image.asset(
-                                  mathImage,
+                                  mathImage,  // Placeholder image
                                   height: 100,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              // Title
                               Padding(
                                 padding: const EdgeInsets.only(left: 4.0),
                                 child: CustomText(
-                                  text: subjectParts,
+                                  text: subjectPart,  // Display the subject part (e.g., Part 1)
                                   fontWeight: FontWeight.w600,
                                   size: 12,
                                   color: blackColor,
                                 ),
                               ),
-                              // Subtitle
                               Padding(
                                 padding: const EdgeInsets.only(left: 4.0),
                                 child: CustomText(
-                                  text: 'Addition of two number',
+                                  text: subjectName,  // Display the subject name (e.g., Mathematics)
                                   fontWeight: FontWeight.w300,
                                   size: 8,
                                   color: blackColor,

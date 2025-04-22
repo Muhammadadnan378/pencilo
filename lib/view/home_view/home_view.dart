@@ -1,9 +1,8 @@
-
 import 'package:flutter/cupertino.dart';
-import 'package:pencilo/controller/home_view_controller.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 import 'package:pencilo/view/home_view/subject_parts_view.dart';
+import '../../controller/home_view.dart';
 import '../../data/consts/images.dart';
 
 class HomeView extends StatelessWidget {
