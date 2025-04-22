@@ -73,11 +73,11 @@ class LoginController extends GetxController {
   Future<bool> isPhoneNumberExist() async {
     try {
       final teacherDoc = await FirebaseFirestore.instance
-          .collection('teachers')
+          .collection(teacherModelName)
           .where('phoneNumber', isEqualTo: phoneNumber.value)
           .get();
       final studentDoc = await FirebaseFirestore.instance
-          .collection('students')
+          .collection(studentModelName)
           .where('phoneNumber', isEqualTo: phoneNumber.value)
           .get();
 
@@ -122,12 +122,12 @@ class LoginController extends GetxController {
 
       if (isTeacher) {
         userDoc = (await FirebaseFirestore.instance
-            .collection('teachers')
+            .collection(teacherModelName)
             .where('phoneNumber', isEqualTo: phoneNumber.value)
             .get()).docs.first;
       } else {
         userDoc = (await FirebaseFirestore.instance
-            .collection('students')
+            .collection(studentModelName)
             .where('phoneNumber', isEqualTo: phoneNumber.value)
             .get()).docs.first;
       }
@@ -141,13 +141,14 @@ class LoginController extends GetxController {
       CurrentUserData.schoolName = userDoc['schoolName'];
       CurrentUserData.currentLocation = userDoc['currentLocation'];
       CurrentUserData.phoneNumber = userDoc['phoneNumber'];
-      CurrentUserData.isTeacher = isTeacher;
 
       if (isTeacher) {
         CurrentUserData.subject = userDoc['subject'];
+        CurrentUserData.isTeacher = userDoc['isTeacher'];
         addTeacherDataToHive(userDoc);
       } else {
         CurrentUserData.standard = userDoc['standard'];
+        CurrentUserData.isStudent = userDoc['isStudent'];
         CurrentUserData.division = userDoc['division'];
         addStudentDataToHive(userDoc);
       }
@@ -202,12 +203,13 @@ class LoginController extends GetxController {
       );
 
       // Store the teacher data in Firestore
-      await FirebaseFirestore.instance.collection('teachers').doc(uid).set({
+      await FirebaseFirestore.instance.collection(teacherModelName).doc(uid).set({
         'uid': uid,
         'name': name.value,
         'schoolName': schoolName.value,
         'subject': subject.value,
         'phoneNumber': phoneNumber.value,
+        'isTeacher': true,
       }).then((_) {
         // Store the teacher data in Hive
         addTeacherData(newTeacher);
@@ -231,7 +233,7 @@ class LoginController extends GetxController {
       );
 
       // Store the student data in Firestore
-      await FirebaseFirestore.instance.collection('students').doc(uid).set({
+      await FirebaseFirestore.instance.collection(studentModelName).doc(uid).set({
         'uid': uid,
         'name': name.value,
         'schoolName': schoolName.value,
@@ -239,6 +241,7 @@ class LoginController extends GetxController {
         'division': selectedDivision.value,
         'phoneNumber': phoneNumber.value,
         'currentLocation': currentLocation.value,
+        'isStudent': true,
       }).then((_) {
         // Store the student data in Hive
         addStudentData(newStudent);

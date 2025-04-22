@@ -16,34 +16,36 @@ class CurrentUserData {
   static String division = ''; // Only for students
   static String subject = ''; // Only for teachers
   static bool isTeacher = false; // Flag to distinguish teacher and student
+  static bool isStudent = false; // Flag to distinguish teacher and student
 
   // Method to load user data from Hive (either teacher or student)
   static Future<void> loadUserDataFromHive() async {
     try {
+      var teacherBox = await Hive.openBox<TeacherModel>(teacherModelName);
+      var studentBox = await Hive.openBox<StudentModel>(studentModelName);
+
       // Check for teacher data first
-      if (isTeacher) {
-        var teacherBox = await Hive.openBox<TeacherModel>(teacherModelName);
-        if (teacherBox.isNotEmpty) {
-          final teacher = teacherBox.getAt(0); // Assuming there's only one teacher in the box
-          uid = teacher?.uid ?? '';
-          name = teacher?.name ?? '';
-          schoolName = teacher?.schoolName ?? '';
-          phoneNumber = teacher?.phoneNumber ?? '';
-          currentLocation = teacher?.currentLocation ?? '';
-          subject = teacher?.subject ?? '';
-        }
-      } else {
-        var studentBox = await Hive.openBox<StudentModel>(studentModelName);
-        if (studentBox.isNotEmpty) {
-          final student = studentBox.getAt(0); // Assuming there's only one student in the box
-          uid = student?.uid ?? '';
-          name = student?.name ?? '';
-          schoolName = student?.schoolName ?? '';
-          phoneNumber = student?.phoneNumber ?? '';
-          currentLocation = student?.currentLocation ?? '';
-          standard = student?.standard ?? '';
-          division = student?.division ?? '';
-        }
+      if (teacherBox.isNotEmpty) {
+        final teacher = teacherBox.getAt(0);
+        uid = teacher?.uid ?? '';
+        name = teacher?.name ?? '';
+        schoolName = teacher?.schoolName ?? '';
+        phoneNumber = teacher?.phoneNumber ?? '';
+        currentLocation = teacher?.currentLocation ?? '';
+        subject = teacher?.subject ?? '';
+        isTeacher = true;
+        isStudent = false; // Ensure student flag is false
+      } else if (studentBox.isNotEmpty) {
+        final student = studentBox.getAt(0);
+        uid = student?.uid ?? '';
+        name = student?.name ?? '';
+        schoolName = student?.schoolName ?? '';
+        phoneNumber = student?.phoneNumber ?? '';
+        currentLocation = student?.currentLocation ?? '';
+        standard = student?.standard ?? '';
+        division = student?.division ?? '';
+        isTeacher = false;
+        isStudent = true; // Ensure student flag is true
       }
     } catch (e) {
       print('Error loading user data from Hive: $e');
@@ -53,8 +55,7 @@ class CurrentUserData {
   // Method to load user data from Firestore (either teacher or student)
   static Future<void> loadUserDataFromFirestore(String uid) async {
     try {
-      // Load data from Firestore based on UID
-      var userDoc = await FirebaseFirestore.instance.collection(isTeacher ? 'teachers' : 'students').doc(uid).get();
+      var userDoc = await FirebaseFirestore.instance.collection(isTeacher ? teacherModelName : studentModelName).doc(uid).get();
 
       if (userDoc.exists) {
         Map<String, dynamic> userData = userDoc.data()!;
@@ -66,9 +67,13 @@ class CurrentUserData {
 
         if (isTeacher) {
           subject = userData['subject'];
+          isTeacher = true;
+          isStudent = false; // Ensure student flag is false
         } else {
           standard = userData['standard'];
           division = userData['division'];
+          isTeacher = false;
+          isStudent = true; // Ensure student flag is true
         }
       }
     } catch (e) {
@@ -76,35 +81,6 @@ class CurrentUserData {
     }
   }
 
-  // Method to store user data (either teacher or student) in Firestore
-  static Future<void> storeUserData() async {
-    try {
-      // Store data in Firestore based on user role
-      final userData = {
-        'uid': uid,
-        'name': name,
-        'schoolName': schoolName,
-        'phoneNumber': phoneNumber,
-        'currentLocation': currentLocation,
-        'isTeacher': isTeacher,
-      };
-
-      if (isTeacher) {
-        // Store data for teacher
-        userData['subject'] = subject;
-        await FirebaseFirestore.instance.collection('teachers').doc(uid).set(userData);
-      } else {
-        // Store data for student
-        userData['standard'] = standard;
-        userData['division'] = division;
-        await FirebaseFirestore.instance.collection('students').doc(uid).set(userData);
-      }
-    } catch (e) {
-      print('Error storing user data: $e');
-    }
-  }
-
-  // Logout method: clear data from Hive and navigate to login screen
   static Future<void> logout() async {
     try {
       if (isTeacher) {

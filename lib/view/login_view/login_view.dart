@@ -97,11 +97,11 @@ class LoginView extends StatelessWidget {
                   ),
                 )),
               SizedBox(height: 12),
-              LoginClassTextField(
-                hintText: "Current location",
-                onChanged: (value) => controller.currentLocation.value = value,
-              ),
-              SizedBox(height: 12),
+              // LoginClassTextField(
+              //   hintText: "Current location",
+              //   onChanged: (value) => controller.currentLocation.value = value,
+              // ),
+              // SizedBox(height: 12),
               LoginClassTextField(
                 hintText: "Phone number",
                 keyboardType: TextInputType.number,

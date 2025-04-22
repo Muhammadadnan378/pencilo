@@ -22,6 +22,9 @@ class TeacherModel {
   @HiveField(5)
   final String currentLocation;
 
+  @HiveField(5)
+  bool? isTeacher = true;
+
   TeacherModel({
     required this.uid,
     required this.name,
@@ -29,5 +32,6 @@ class TeacherModel {
     required this.subject,
     required this.phoneNumber,
     required this.currentLocation,
+    this.isTeacher,
   });
 }

@@ -1,9 +1,8 @@
 plugins {
     id("com.android.application")
-    // START: FlutterFire Configuration
+    // FlutterFire Configuration
     id("com.google.gms.google-services")
-    // END: FlutterFire Configuration
-    id("kotlin-android")
+    id("kotlin-android") // Apply Kotlin plugin (no version specified)
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -11,7 +10,9 @@ plugins {
 android {
     namespace = "com.example.pencilo"
     compileSdk = 35
-    ndkVersion = flutter.ndkVersion
+
+    // Set the NDK version to match the required one
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -23,10 +24,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.pencilo"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 24
         targetSdk = 35
         versionCode = flutter.versionCode
@@ -35,8 +33,6 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
@@ -44,4 +40,14 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Kotlin version as defined in dependencies (ensure this is consistent)
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.21")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.21")
+
+    implementation("androidx.core:core-ktx:1.9.0")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    implementation("com.google.android.gms:play-services-location:18.0.0")
 }

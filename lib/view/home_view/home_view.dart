@@ -1,12 +1,13 @@
 
 import 'package:flutter/cupertino.dart';
+import 'package:pencilo/controller/home_view_controller.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 import 'package:pencilo/view/home_view/subject_parts_view.dart';
-
 import '../../data/consts/images.dart';
 
 class HomeView extends StatelessWidget {
+  HomeViewController controller = Get.put(HomeViewController());
   HomeView({super.key});
   final List<String> classBooks = [
     "Hindi",
@@ -18,6 +19,7 @@ class HomeView extends StatelessWidget {
   ];
   @override
   Widget build(BuildContext context) {
+
     return Container(
       color: whiteColor,
       child: Padding(
@@ -27,6 +29,7 @@ class HomeView extends StatelessWidget {
             SizedBox(height: SizeConfig.screenHeight * 0.08,),
             Row(
               children: [
+                // here i need to show user currentLocation
                 Column(
                   children: [
                     CustomText(text: 'Aniket Ganesh',

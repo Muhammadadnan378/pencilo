@@ -25,6 +25,9 @@ class StudentModel {
   @HiveField(6)
   final String currentLocation;
 
+  @HiveField(7)
+  bool? isStudent = true;
+
   StudentModel({
     required this.uid,
     required this.name,
@@ -33,5 +36,6 @@ class StudentModel {
     required this.division,
     required this.phoneNumber,
     required this.currentLocation,
+    this.isStudent,
   });
 }
