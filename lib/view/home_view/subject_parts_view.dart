@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:pencilo/controller/home_view.dart';
+import 'package:pencilo/controller/home_view_controller.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 
@@ -54,6 +54,7 @@ class SubjectPartsView extends StatelessWidget {
                 children: [
                   CustomText(text: '$subject Answer',
                     color: blackColor,
+                    fontWeight: FontWeight.bold,
                     fontFamily: interFontFamily,
                     size: 18,),
                   Spacer(),
@@ -117,6 +118,7 @@ class SubjectPartsView extends StatelessWidget {
                 children: [
                   CustomText(text: 'Part 1',
                     color: blackColor,
+                    fontWeight: FontWeight.bold,
                     fontFamily: interFontFamily,
                     size: 18,),
                   Spacer(),
@@ -127,10 +129,11 @@ class SubjectPartsView extends StatelessWidget {
                         color: Color(0xff57A8B8),
                         fontFamily: interFontFamily,
                         size: 13,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                       ),
                       Icon(Icons.navigate_next, color: Color(0xff57A8B8),
-                        size: 18,)
+                        size: 18,
+                      )
                     ],
                   ),
                 ],
@@ -147,7 +150,7 @@ class SubjectPartsView extends StatelessWidget {
                     itemBuilder: (context, index) {
                       String subjectPart = controller.filteredSubjectsParts[index];
                       int indexInList = controller.subjectParts.indexOf(subjectPart); // Get the index of the subject part
-                      String subjectName = controller.subjectPartName[indexInList]; // Corresponding subject name
+                      String subjectName = controller.chapterNames[indexInList]; // Corresponding subject name
 
                       return Padding(
                         padding: const EdgeInsets.only(right: 10, bottom: 10),
@@ -176,20 +179,20 @@ class SubjectPartsView extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               Padding(
-                                padding: const EdgeInsets.only(left: 4.0),
+                                padding: const EdgeInsets.only(left: 6.0),
                                 child: CustomText(
                                   text: subjectPart,  // Display the subject part (e.g., Part 1)
                                   fontWeight: FontWeight.w600,
-                                  size: 12,
+                                  size: 14,
                                   color: blackColor,
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(left: 4.0),
+                                padding: const EdgeInsets.only(left: 6.0),
                                 child: CustomText(
                                   text: subjectName,  // Display the subject name (e.g., Mathematics)
                                   fontWeight: FontWeight.w300,
-                                  size: 8,
+                                  size: 10,
                                   color: blackColor,
                                 ),
                               ),
@@ -213,6 +216,7 @@ class SubjectPartsView extends StatelessWidget {
                 children: [
                   CustomText(text: 'Part 1',
                     color: blackColor,
+                    fontWeight: FontWeight.bold,
                     fontFamily: interFontFamily,
                     size: 18,),
                   Spacer(),
@@ -223,10 +227,11 @@ class SubjectPartsView extends StatelessWidget {
                         color: Color(0xff57A8B8),
                         fontFamily: interFontFamily,
                         size: 13,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                       ),
                       Icon(Icons.navigate_next, color: Color(0xff57A8B8),
-                        size: 18,)
+                        size: 18,
+                      )
                     ],
                   ),
                 ],
@@ -242,7 +247,7 @@ class SubjectPartsView extends StatelessWidget {
                     itemBuilder: (context, index) {
                       String subjectPart = controller.filteredSubjectsParts[index];
                       int indexInList = controller.subjectParts.indexOf(subjectPart); // Get the index of the subject part
-                      String subjectName = controller.subjectPartName[indexInList]; // Corresponding subject name
+                      String subjectName = controller.chapterNames[indexInList]; // Corresponding subject name
 
                       return Padding(
                         padding: const EdgeInsets.only(right: 10, bottom: 10),
@@ -271,20 +276,20 @@ class SubjectPartsView extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               Padding(
-                                padding: const EdgeInsets.only(left: 4.0),
+                                padding: const EdgeInsets.only(left: 6.0),
                                 child: CustomText(
                                   text: subjectPart,  // Display the subject part (e.g., Part 1)
                                   fontWeight: FontWeight.w600,
-                                  size: 12,
+                                  size: 14,
                                   color: blackColor,
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(left: 4.0),
+                                padding: const EdgeInsets.only(left: 6.0),
                                 child: CustomText(
                                   text: subjectName,  // Display the subject name (e.g., Mathematics)
                                   fontWeight: FontWeight.w300,
-                                  size: 8,
+                                  size: 10,
                                   color: blackColor,
                                 ),
                               ),
@@ -308,6 +313,7 @@ class SubjectPartsView extends StatelessWidget {
                 children: [
                   CustomText(text: 'Part 1',
                     color: blackColor,
+                    fontWeight: FontWeight.bold,
                     fontFamily: interFontFamily,
                     size: 18,),
                   Spacer(),
@@ -318,10 +324,11 @@ class SubjectPartsView extends StatelessWidget {
                         color: Color(0xff57A8B8),
                         fontFamily: interFontFamily,
                         size: 13,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                       ),
                       Icon(Icons.navigate_next, color: Color(0xff57A8B8),
-                        size: 18,)
+                        size: 18,
+                      )
                     ],
                   ),
                 ],
@@ -337,7 +344,7 @@ class SubjectPartsView extends StatelessWidget {
                     itemBuilder: (context, index) {
                       String subjectPart = controller.filteredSubjectsParts[index];
                       int indexInList = controller.subjectParts.indexOf(subjectPart); // Get the index of the subject part
-                      String subjectName = controller.subjectPartName[indexInList]; // Corresponding subject name
+                      String subjectName = controller.chapterNames[indexInList]; // Corresponding subject name
 
                       return Padding(
                         padding: const EdgeInsets.only(right: 10, bottom: 10),
@@ -366,20 +373,20 @@ class SubjectPartsView extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               Padding(
-                                padding: const EdgeInsets.only(left: 4.0),
+                                padding: const EdgeInsets.only(left: 6.0),
                                 child: CustomText(
                                   text: subjectPart,  // Display the subject part (e.g., Part 1)
                                   fontWeight: FontWeight.w600,
-                                  size: 12,
+                                  size: 14,
                                   color: blackColor,
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(left: 4.0),
+                                padding: const EdgeInsets.only(left: 6.0),
                                 child: CustomText(
                                   text: subjectName,  // Display the subject name (e.g., Mathematics)
                                   fontWeight: FontWeight.w300,
-                                  size: 8,
+                                  size: 10,
                                   color: blackColor,
                                 ),
                               ),

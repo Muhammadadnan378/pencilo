@@ -38,6 +38,7 @@ class HomeStartupView extends StatelessWidget {
           buildCustomCard(title: "Upload",subtitle: "Upload educational video like reels and monetized your self ",image: homeUpload),
           buildCustomCard(title: "Assignment",subtitle: "Give a assignments to students to check their understanding",image: homeAssignment),
           buildCustomCard(title: "Results",subtitle: "upload student result so that their parents can see the results.",image: homeResult),
+          buildCustomCard(title: "Notice",subtitle: "Send a notice to specific class ",image: homeResult),
         ],
       ),
     );

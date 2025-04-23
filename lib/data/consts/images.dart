@@ -23,6 +23,13 @@ const homeQuiz = "assets/images/home_quizes_image.png";
 const homeResult = "assets/images/home_result_image.png";
 const homeUpload = "assets/images/home_upload_image.png";
 
+const englishCurvedImage = "assets/images/english_card_curved.png";
+const geographyCurvedImage = "assets/images/geographi_card_curved.png";
+const historyCurvedImage = "assets/images/history_card_curved.png";
+const hindiCurvedImage = "assets/images/hindi_card_curved.png";
+const mathsCurvedImage = "assets/images/marathi_card_curved.png";
+const marathiCurvedImage = "assets/images/maths_card_curved.png";
+
 //Videos Url
 const video1 = "assets/videos/video1.mp4";
 const video2 = "assets/videos/video2.mp4";

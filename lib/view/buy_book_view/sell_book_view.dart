@@ -21,6 +21,7 @@ class SellBookView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    controller.getFullAddress();
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
@@ -143,15 +144,10 @@ class SellBookView extends StatelessWidget {
               controller: controller.amountController, // Pass controller
             ),
             SellBookClassTextField(
-              hintText: "Enter Address",
-              title: 'Address',
-              isMultiline: true,
-              controller: controller.addressController, // Pass controller
-            ),
-            SellBookClassTextField(
               hintText: "Enter Current location",
               title: 'Current location',
-              controller: controller.currentLocationController, // Pass controller
+              controller: controller.currentLocationController,
+              isMultiline: true,
             ),
             SellBookClassTextField(
               hintText: "Enter Contact Number",
@@ -163,9 +159,7 @@ class SellBookView extends StatelessWidget {
               child: GestureDetector(
                 onTap: () {
                   // Call saveBook method to validate and store data
-                  controller.saveBook().then((value) {
-                    Get.back();
-                  },);
+                  controller.saveBook();
                 },
                 child: CustomCard(
                   alignment: Alignment.center,

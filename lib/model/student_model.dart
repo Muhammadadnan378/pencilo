@@ -8,22 +8,22 @@ class StudentModel {
   final String uid;
 
   @HiveField(1)
-  final String name;
+  String name;
 
   @HiveField(2)
-  final String schoolName;
+  String schoolName;
 
   @HiveField(3)
-  final String standard; // E.g., 5th, 6th grade
+  String standard; // E.g., 5th, 6th grade
 
   @HiveField(4)
-  final String division; // E.g., A, B, C division
+  String division; // E.g., A, B, C division
 
   @HiveField(5)
-  final String phoneNumber;
+  String phoneNumber;
 
   @HiveField(6)
-  final String currentLocation;
+  String currentLocation;
 
   @HiveField(7)
   bool? isStudent = true;

@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 import 'package:pencilo/view/home_view/subject_parts_view.dart';
-import '../../controller/home_view.dart';
+import '../../controller/home_view_controller.dart';
 import '../../data/consts/images.dart';
 
 class HomeView extends StatelessWidget {
@@ -87,64 +87,68 @@ class HomeView extends StatelessWidget {
             SizedBox(height: 10,),
             SizedBox(
               height: SizeConfig.screenHeight * 0.7,
-              child: GridView.builder(
-                itemCount: 6,
+              child: ListView.builder(
+                itemCount: classBooks.length, // Adjust itemCount as per your subjectParts list
                 padding: EdgeInsets.zero,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, // 2 items per row
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 0.90, // Adjust for height/width ratio
-                ),
-                shrinkWrap: true, // Important when used inside a column
-                physics: BouncingScrollPhysics(), // Avoid scroll conflict
+                shrinkWrap: true,
+                physics: BouncingScrollPhysics(),
                 itemBuilder: (context, index) {
-                  return CustomCard(
-                    onTap: () {
-                      Get.to(SubjectPartsView(subject: classBooks[index],));
-                    },
-                    width: double.infinity,
-                    height: 250,
-                    color: Colors.grey[200],
-                    borderRadius: 12,
-                    boxShadow: [
-                      BoxShadow(color: grayColor, blurRadius: 5, offset: Offset(0, 3))
-                    ],
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Top Image
-                        Align(
-                          alignment: Alignment.center,
-                          child: ClipRRect(
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                            child: Image.asset(
-                              mathImage,
-                              height: 130,
-                              width: double.infinity,
-                              fit: BoxFit.fill,
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10.0),
+                    child: CustomCard(
+                      onTap: () {
+                        Get.to(SubjectPartsView(subject: classBooks[index])); // Navigate to parts view
+                      },
+                      width: double.infinity,
+                      height: 147, // Reduced height of the CustomCard
+                      borderRadius: 12,
+                      color: controller.curvedCardColors[index],
+                      // bgImage: DecorationImage(image: AssetImage(mathImage),fit: BoxFit.cover),
+                      child: Stack(
+                        children: [
+
+                          Align(
+                            alignment: Alignment.bottomCenter,
+                            child: ClipRRect(
+                              borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(6),bottomRight: Radius.circular(10)),
+                              child: Image.asset(
+                                controller.curvedImages[index],  // Replace with your dynamic image for each subject
+                                width: double.infinity,
+                                height: 80,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Align(
-                          alignment: Alignment.center,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 4.0),
-                            child: CustomText(
-                              text: '${classBooks[index]}',
-                              fontWeight: FontWeight.w600,
-                              size: 12,
-                              color: blackColor,
+                          // Subject Name and Parts
+                          Positioned(
+                            left: 12,
+                            top: 5,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                CustomText(
+                                  text: classBooks[index],  // Subject Name
+                                  fontWeight: FontWeight.w600,
+                                  size: 18, // Reduced size for text to match the smaller card
+                                  color: whiteColor,  // Or any color to contrast the background
+                                ),
+                                CustomText(
+                                  text: 'Parts 1-4',  // You can dynamically change this based on the subject
+                                  fontWeight: FontWeight.w400,
+                                  size: 12, // Reduced font size
+                                  color: whiteColor,  // Or any color to contrast the background
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },
               ),
             )
+
           ],
         ),
       ),

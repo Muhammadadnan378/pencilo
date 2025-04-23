@@ -12,37 +12,29 @@ class HomeViewController extends GetxController {
     super.onInit();
     filteredSubjectsParts.addAll(subjectParts); // Initialize with all subjects
     searchController.addListener(filterSubjects); // Listen for search text changes
-    getFullAddress();
 
   }
 
   ///Home view methods
-  RxString currentLocation = ''.obs; // Observable to store the full address
-  // Method to extract latitude and longitude from the currentLocation string and get the full address
-  Future<void> getFullAddress() async {
-    try {
-      // Extract latitude and longitude from currentLocation string
-      String location = CurrentUserData.currentLocation; // Assuming this is the string you get from Firestore
-      List<String> coordinates = location.split(','); // Split by comma
-      double latitude = double.parse(coordinates[0].trim()); // Parse latitude
-      double longitude = double.parse(coordinates[1].trim()); // Parse longitude
+  List<String> curvedImages = [
+    'assets/images/maths_card_curved.png',
+    'assets/images/hindi_card_curved.png',
+    'assets/images/english_card_curved.png',
+    'assets/images/history_card_curved.png',
+    'assets/images/marathi_card_curved.png',
+    'assets/images/geographi_card_curved.png',
+    'assets/images/maths_card_curved.png',
+  ];
 
-      // Get the list of placemarks (full address) from latitude and longitude
-      List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
+  List<Color> curvedCardColors = [
+    Color(0xff091F07),
+    Color(0xff45757C),
+    Color(0xff1F1F1F),
+    Color(0xff770505),
+    Color(0xff774B05),
+    Color(0xff6F7705),
+  ];
 
-      if (placemarks.isNotEmpty) {
-        // Get the first placemark and format the address
-        Placemark placemark = placemarks.first;
-        String address = '${placemark.street}, ${placemark.locality}, ${placemark.subAdministrativeArea}, ${placemark.administrativeArea}, ${placemark.country}';
-
-        // Set the full address to the observable
-        currentLocation.value = address;
-      }
-    } catch (e) {
-      print('Error getting address: $e');
-      currentLocation.value = 'Unable to fetch address'; // Set an error message
-    }
-  }
 
   ///Subject parts view methods
   // Text controller and query for search
@@ -63,17 +55,18 @@ class HomeViewController extends GetxController {
     "Part 8",
   ];
 
-// List of subject names
-  List<String> subjectPartName = [
-    "Mathematics",  // Subject 1
-    "English",      // Subject 2
-    "Science",      // Subject 3
-    "History",      // Subject 4
-    "Geography",    // Subject 5
-    "Physics",      // Subject 6
-    "Chemistry",    // Subject 7
-    "Computer Science", // Subject 8
+// List of chapter names for each subject
+  List<String> chapterNames = [
+    "Algebra",            // Chapter 1 for Mathematics
+    "Literature",         // Chapter 1 for English
+    "Physics Fundamentals", // Chapter 1 for Science
+    "Ancient History",    // Chapter 1 for History
+    "World Geography",    // Chapter 1 for Geography
+    "Thermodynamics",     // Chapter 1 for Physics
+    "Organic Chemistry",  // Chapter 1 for Chemistry
+    "Computer Programming", // Chapter 1 for Computer Science
   ];
+
 
 // Filtered list based on search query
   RxList<String> filteredSubjectsParts = RxList<String>();
@@ -89,7 +82,7 @@ class HomeViewController extends GetxController {
           List.generate(subjectParts.length, (index) {
             // Check if either the subject part or subject name matches the search query
             if (subjectParts[index].toLowerCase().contains(searchController.text.toLowerCase()) ||
-                subjectPartName[index].toLowerCase().contains(searchController.text.toLowerCase())) {
+                chapterNames[index].toLowerCase().contains(searchController.text.toLowerCase())) {
               return subjectParts[index]; // Return the matching subject part
             }
             return ''; // Empty string for non-matching entries (will be filtered out later)

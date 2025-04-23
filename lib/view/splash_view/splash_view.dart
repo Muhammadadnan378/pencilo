@@ -22,9 +22,9 @@ class _SplashViewState extends State<SplashView> {
     CurrentUserData.loadUserDataFromHive().then((_) {
       if (CurrentUserData.uid.isEmpty) {
         // No user data, navigate to login screen
-        Get.to(LetsStartView());
+        Get.off(LetsStartView());
       } else {
-        Get.to(Home());
+        Get.off(Home());
         // User data exists, proceed with app
         // You can either load user data from Firestore here or proceed further
         // CurrentUserData.loadUserDataFromFirestore(CurrentUserData.uid);

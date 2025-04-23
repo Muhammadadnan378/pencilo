@@ -122,8 +122,7 @@ class LoginView extends StatelessWidget {
                     },); // Call the method to start phone verification
                   } else {
                     // Show a message if form is invalid
-                    Get.snackbar(
-                        'Error', 'Please fill all the required fields.');
+                    Get.snackbar('Error', 'Please fill all the required fields.');
                     controller.isLoginUser(false);
                   }
                 },

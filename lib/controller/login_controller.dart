@@ -45,6 +45,53 @@ class LoginController extends GetxController {
         (isTeacher ? subject.isNotEmpty : true);
   }
 
+  // Fetch user data and store it in Hive if the phone number already exists
+  Future<void> fetchUserDataAndStoreInHive() async {
+    try {
+      // Fetch data from Firestore for either teacher or student
+      DocumentSnapshot userDoc;
+
+      if (isTeacher) {
+        userDoc = (await FirebaseFirestore.instance
+            .collection(teacherModelName)
+            .where('phoneNumber', isEqualTo: phoneNumber.value)
+            .get()).docs.first;
+      } else {
+        userDoc = (await FirebaseFirestore.instance
+            .collection(studentModelName)
+            .where('phoneNumber', isEqualTo: phoneNumber.value)
+            .get()).docs.first;
+      }
+
+      // Assign the uid of the existing user to existId
+      existId = userDoc['uid'];
+
+      // Load data into CurrentUserData and Hive
+      CurrentUserData.uid = userDoc['uid'];
+      CurrentUserData.name = userDoc['name'];
+      CurrentUserData.schoolName = userDoc['schoolName'];
+      CurrentUserData.currentLocation = userDoc['currentLocation'];
+      CurrentUserData.phoneNumber = userDoc['phoneNumber'];
+
+      if (isTeacher) {
+        CurrentUserData.subject = userDoc['subject'];
+        CurrentUserData.isTeacher = userDoc['isTeacher'];
+        addTeacherDataToHive(userDoc);
+      } else {
+        CurrentUserData.standard = userDoc['standard'];
+        CurrentUserData.isStudent = userDoc['isStudent'];
+        CurrentUserData.division = userDoc['division'];
+        addStudentDataToHive(userDoc);
+      }
+
+      // Navigate to Home after storing data
+      Get.off(Home());
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to fetch user data: $e');
+      print("Error : $e");
+    }
+  }
+
   // Validate the phone number for Pakistan and India
   bool validatePhoneNumber(String phoneNumber) {
     // Pakistan phone number regex pattern
@@ -114,53 +161,6 @@ class LoginController extends GetxController {
     }
   }
 
-  // Fetch user data and store it in Hive if the phone number already exists
-  Future<void> fetchUserDataAndStoreInHive() async {
-    try {
-      // Fetch data from Firestore for either teacher or student
-      DocumentSnapshot userDoc;
-
-      if (isTeacher) {
-        userDoc = (await FirebaseFirestore.instance
-            .collection(teacherModelName)
-            .where('phoneNumber', isEqualTo: phoneNumber.value)
-            .get()).docs.first;
-      } else {
-        userDoc = (await FirebaseFirestore.instance
-            .collection(studentModelName)
-            .where('phoneNumber', isEqualTo: phoneNumber.value)
-            .get()).docs.first;
-      }
-
-      // Assign the uid of the existing user to existId
-      existId = userDoc['uid'];
-
-      // Load data into CurrentUserData and Hive
-      CurrentUserData.uid = userDoc['uid'];
-      CurrentUserData.name = userDoc['name'];
-      CurrentUserData.schoolName = userDoc['schoolName'];
-      CurrentUserData.currentLocation = userDoc['currentLocation'];
-      CurrentUserData.phoneNumber = userDoc['phoneNumber'];
-
-      if (isTeacher) {
-        CurrentUserData.subject = userDoc['subject'];
-        CurrentUserData.isTeacher = userDoc['isTeacher'];
-        addTeacherDataToHive(userDoc);
-      } else {
-        CurrentUserData.standard = userDoc['standard'];
-        CurrentUserData.isStudent = userDoc['isStudent'];
-        CurrentUserData.division = userDoc['division'];
-        addStudentDataToHive(userDoc);
-      }
-
-      // Navigate to Home after storing data
-      Get.off(Home());
-    } catch (e) {
-      Get.snackbar('Error', 'Failed to fetch user data: $e');
-      print("Error : $e");
-    }
-  }
-
   // Add Teacher Data to Hive
   void addTeacherDataToHive(DocumentSnapshot userDoc) async {
     final teacherBox = await Hive.openBox<TeacherModel>(teacherModelName);
@@ -171,6 +171,7 @@ class LoginController extends GetxController {
       subject: userDoc['subject'],
       phoneNumber: userDoc['phoneNumber'],
       currentLocation: userDoc['currentLocation'],
+      isTeacher: true
     );
     await teacherBox.add(newTeacher);
   }
@@ -186,6 +187,7 @@ class LoginController extends GetxController {
       division: userDoc['division'],
       phoneNumber: userDoc['phoneNumber'],
       currentLocation: userDoc['currentLocation'],
+      isStudent: true
     );
     await studentBox.add(newStudent);
   }
@@ -213,6 +215,16 @@ class LoginController extends GetxController {
       }).then((_) {
         // Store the teacher data in Hive
         addTeacherData(newTeacher);
+
+        // Update static data in CurrentUserData class
+        CurrentUserData.uid = uid;
+        CurrentUserData.name = name.value;
+        CurrentUserData.schoolName = schoolName.value;
+        CurrentUserData.phoneNumber = phoneNumber.value;
+        CurrentUserData.currentLocation = currentLocation.value;
+        CurrentUserData.subject = subject.value;
+        CurrentUserData.isTeacher = true;
+        CurrentUserData.isStudent = false; // This will make sure the current user is marked as a teacher
       });
     } catch (e) {
       Get.snackbar('Error', 'Failed to store teacher data: $e');
@@ -245,6 +257,17 @@ class LoginController extends GetxController {
       }).then((_) {
         // Store the student data in Hive
         addStudentData(newStudent);
+
+        // Update static data in CurrentUserData class
+        CurrentUserData.uid = uid;
+        CurrentUserData.name = name.value;
+        CurrentUserData.schoolName = schoolName.value;
+        CurrentUserData.phoneNumber = phoneNumber.value;
+        CurrentUserData.currentLocation = currentLocation.value;
+        CurrentUserData.standard = selectedStandard.value;
+        CurrentUserData.division = selectedDivision.value;
+        CurrentUserData.isTeacher = false; // This will make sure the current user is marked as a student
+        CurrentUserData.isStudent = true;
       });
     } catch (e) {
       Get.snackbar('Error', 'Failed to store student data: $e');

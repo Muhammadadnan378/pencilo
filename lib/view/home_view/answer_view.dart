@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:pencilo/view/show_youtube_video.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-import '../../controller/home_view.dart';
+import '../../controller/home_view_controller.dart';
 import '../../data/consts/const_import.dart';
 import '../../data/consts/images.dart';
 import '../../data/custom_widget/custom_card.dart';
