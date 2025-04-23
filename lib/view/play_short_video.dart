@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:pencilo/data/consts/colors.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class PlayShortVideo extends StatefulWidget {
@@ -86,11 +87,17 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
                 }
               });
             },
-            child: Column(
+            child: Stack(
               children: [
-                Expanded(
+                Container(
+                  color: blackColor,
+                  height: double.infinity,
+                  width: double.infinity,
+                ),
+                Center(
                   child: YoutubePlayer(
                     controller: controller,
+                    aspectRatio: 0.5,
                     showVideoProgressIndicator: true,
                     progressIndicatorColor: Colors.redAccent,
                     onEnded: (data) {
@@ -105,6 +112,11 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
                     },
                   ),
                 ),
+                Container(
+                  color: Colors.grey.withOpacity(0.1),
+                  height: double.infinity,
+                  width: double.infinity,
+                )
               ],
             ),
           );
