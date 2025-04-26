@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import '../data/consts/colors.dart';
-import '../data/consts/const_import.dart';
+import '../consts/colors.dart';
+import '../consts/const_import.dart';
 
 class ShowYoutubeVideo extends StatelessWidget {
   final String videoUrl;

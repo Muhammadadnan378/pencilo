@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/model/sell_book_model.dart';
-import 'package:pencilo/view/show_images_view.dart';
+import 'package:pencilo/data/custom_widget/show_images_view.dart';
 
 import '../../data/consts/images.dart';
 import '../../data/custom_widget/custom_media_query.dart';

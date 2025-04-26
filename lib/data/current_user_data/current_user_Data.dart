@@ -21,8 +21,8 @@ class CurrentUserData {
   // Method to load user data from Hive (either teacher or student)
   static Future<void> loadUserDataFromHive() async {
     try {
-      var teacherBox = await Hive.openBox<TeacherModel>(teacherModelName);
-      var studentBox = await Hive.openBox<StudentModel>(studentModelName);
+      var teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
+      var studentBox = await Hive.openBox<StudentModel>(studentTableName);
 
       // Check for teacher data first
       if (teacherBox.isNotEmpty) {
@@ -55,7 +55,7 @@ class CurrentUserData {
   // Method to load user data from Firestore (either teacher or student)
   static Future<void> loadUserDataFromFirestore(String uid) async {
     try {
-      var userDoc = await FirebaseFirestore.instance.collection(isTeacher ? teacherModelName : studentModelName).doc(uid).get();
+      var userDoc = await FirebaseFirestore.instance.collection(isTeacher ? teacherTableName : studentTableName).doc(uid).get();
 
       if (userDoc.exists) {
         Map<String, dynamic> userData = userDoc.data()!;
@@ -84,10 +84,10 @@ class CurrentUserData {
   static Future<void> logout() async {
     try {
       if (isTeacher) {
-        var teacherBox = await Hive.openBox<TeacherModel>(teacherModelName);
+        var teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
         await teacherBox.clear();
       } else {
-        var studentBox = await Hive.openBox<StudentModel>(studentModelName);
+        var studentBox = await Hive.openBox<StudentModel>(studentTableName);
         await studentBox.clear();
       }
 
@@ -102,10 +102,10 @@ class CurrentUserData {
   static Future<bool> hasUserData() async {
     try {
       if (isTeacher) {
-        var teacherBox = await Hive.openBox<TeacherModel>(teacherModelName);
+        var teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
         return teacherBox.isNotEmpty;
       } else {
-        var studentBox = await Hive.openBox<StudentModel>(studentModelName);
+        var studentBox = await Hive.openBox<StudentModel>(studentTableName);
         return studentBox.isNotEmpty;
       }
     } catch (e) {

@@ -23,9 +23,9 @@ void main() async {
   Hive.registerAdapter(StudentModelAdapter()); // Register Student adapter
   Hive.registerAdapter(SellBookModelAdapter()); // Register Student adapter
 
-  await Hive.openBox<TeacherModel>(teacherModelName); // Open a box for teachers
-  await Hive.openBox<StudentModel>(studentModelName); // Open a box for students
-  await Hive.openBox<StudentModel>(sellBookModelName); // Open a box for students
+  await Hive.openBox<TeacherModel>(teacherTableName); // Open a box for teachers
+  await Hive.openBox<StudentModel>(studentTableName); // Open a box for students
+  await Hive.openBox<SellBookModel>(sellBookTableName); // Open a box for students
 
   runApp(const MyApp());
 }

@@ -53,12 +53,12 @@ class LoginController extends GetxController {
 
       if (isTeacher) {
         userDoc = (await FirebaseFirestore.instance
-            .collection(teacherModelName)
+            .collection(teacherTableName)
             .where('phoneNumber', isEqualTo: phoneNumber.value)
             .get()).docs.first;
       } else {
         userDoc = (await FirebaseFirestore.instance
-            .collection(studentModelName)
+            .collection(studentTableName)
             .where('phoneNumber', isEqualTo: phoneNumber.value)
             .get()).docs.first;
       }
@@ -120,11 +120,11 @@ class LoginController extends GetxController {
   Future<bool> isPhoneNumberExist() async {
     try {
       final teacherDoc = await FirebaseFirestore.instance
-          .collection(teacherModelName)
+          .collection(teacherTableName)
           .where('phoneNumber', isEqualTo: phoneNumber.value)
           .get();
       final studentDoc = await FirebaseFirestore.instance
-          .collection(studentModelName)
+          .collection(studentTableName)
           .where('phoneNumber', isEqualTo: phoneNumber.value)
           .get();
 
@@ -163,7 +163,7 @@ class LoginController extends GetxController {
 
   // Add Teacher Data to Hive
   void addTeacherDataToHive(DocumentSnapshot userDoc) async {
-    final teacherBox = await Hive.openBox<TeacherModel>(teacherModelName);
+    final teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
     final newTeacher = TeacherModel(
       uid: userDoc['uid'],
       name: userDoc['name'],
@@ -178,7 +178,7 @@ class LoginController extends GetxController {
 
   // Add Student Data to Hive
   void addStudentDataToHive(DocumentSnapshot userDoc) async {
-    final studentBox = await Hive.openBox<StudentModel>(studentModelName);
+    final studentBox = await Hive.openBox<StudentModel>(studentTableName);
     final newStudent = StudentModel(
       uid: userDoc['uid'],
       name: userDoc['name'],
@@ -205,7 +205,7 @@ class LoginController extends GetxController {
       );
 
       // Store the teacher data in Firestore
-      await FirebaseFirestore.instance.collection(teacherModelName).doc(uid).set({
+      await FirebaseFirestore.instance.collection(teacherTableName).doc(uid).set({
         'uid': uid,
         'name': name.value,
         'schoolName': schoolName.value,
@@ -245,7 +245,7 @@ class LoginController extends GetxController {
       );
 
       // Store the student data in Firestore
-      await FirebaseFirestore.instance.collection(studentModelName).doc(uid).set({
+      await FirebaseFirestore.instance.collection(studentTableName).doc(uid).set({
         'uid': uid,
         'name': name.value,
         'schoolName': schoolName.value,
@@ -276,7 +276,7 @@ class LoginController extends GetxController {
 
   // Add Teacher Data to Hive
   void addTeacherData(TeacherModel teacher) async {
-    final teacherBox = await Hive.openBox<TeacherModel>(teacherModelName);
+    final teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
     await teacherBox.add(teacher).then((value) {
       Get.off(Home());  // Navigate to Home screen
     });
@@ -284,7 +284,7 @@ class LoginController extends GetxController {
 
   // Add Student Data to Hive
   void addStudentData(StudentModel student) async {
-    final studentBox = await Hive.openBox<StudentModel>(studentModelName);
+    final studentBox = await Hive.openBox<StudentModel>(studentTableName);
     await studentBox.add(student).then((value) {
       Get.off(Home());  // Navigate to Home screen
     });

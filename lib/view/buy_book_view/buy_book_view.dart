@@ -124,7 +124,7 @@ class BuyBookView extends StatelessWidget {
                     children: [
                       // GridView for displaying books from Hive
                       ValueListenableBuilder(
-                        valueListenable: Hive.box<SellBookModel>('sellBookBox').listenable(), // Listening to the changes in the Hive box
+                        valueListenable: Hive.box<SellBookModel>(sellBookTableName).listenable(), // Listening to the changes in the Hive box
                         builder: (BuildContext context, Box<SellBookModel> value, Widget? child) {
                           // Fetching the list of books from Hive
                           final books = value.values.toList();
@@ -316,7 +316,7 @@ class BuyBookView extends StatelessWidget {
                       Obx(() {
                         controller.searchQuery.value;
                         return StreamBuilder<QuerySnapshot>(
-                          stream: FirebaseFirestore.instance.collection(sellBookModelName).snapshots(),
+                          stream: FirebaseFirestore.instance.collection(sellBookTableName).snapshots(),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
                               return Center(child: CircularProgressIndicator());

@@ -6,14 +6,14 @@ import 'package:hive/hive.dart';
 import 'package:pencilo/data/consts/colors.dart';
 import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'package:pencilo/db_helper/model_name.dart';
-import 'package:pencilo/view/play_short_video.dart';
-import 'package:pencilo/view/profile_view.dart';
+import 'package:pencilo/data/custom_widget/play_short_video.dart';
+import 'package:pencilo/view/profile_view/profile_view.dart';
 import 'package:pencilo/view/buy_book_view/buy_book_view.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../controller/home_controller.dart';
 import '../model/student_model.dart';
 import '../model/teacher_model.dart';
-import 'friend_view.dart';
+import 'friend_view/friend_view.dart';
 import 'home_view/home_startup_view.dart';
 import 'home_view/home_view.dart';
 
@@ -25,7 +25,7 @@ class Home extends StatelessWidget {
     BuyBookView(),
     HomeView(),
     FriendsView(),
-    StudentProfilePage(),
+    ProfileView(),
   ];
 
   final List<IconData> _icons = const [
@@ -89,11 +89,11 @@ class Home extends StatelessWidget {
 
           // Store the updated location to Firestore for student or teacher
           if (CurrentUserData.isTeacher == true) {
-            await FirebaseFirestore.instance.collection(teacherModelName).doc(CurrentUserData.uid).update({
+            await FirebaseFirestore.instance.collection(teacherTableName).doc(CurrentUserData.uid).update({
               'currentLocation': location, // Update the current location
             });
             // Here implement to update the teacher current location in hive
-            final teacherBox = await Hive.openBox<TeacherModel>(teacherModelName);
+            final teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
             final newTeacher = TeacherModel(
               uid: CurrentUserData.uid,
               name: CurrentUserData.name,
@@ -107,12 +107,12 @@ class Home extends StatelessWidget {
             CurrentUserData.currentLocation = location;
 
           } else if(CurrentUserData.isStudent == true) {
-            await FirebaseFirestore.instance.collection(studentModelName).doc(CurrentUserData.uid).update({
+            await FirebaseFirestore.instance.collection(studentTableName).doc(CurrentUserData.uid).update({
               'currentLocation': location, // Update the current location
             });
             // Here implement to update the student current location in hive
 
-            final studentBox = await Hive.openBox<StudentModel>(studentModelName);
+            final studentBox = await Hive.openBox<StudentModel>(studentTableName);
             final newStudent = StudentModel(
               uid: CurrentUserData.uid,
               name: CurrentUserData.name,

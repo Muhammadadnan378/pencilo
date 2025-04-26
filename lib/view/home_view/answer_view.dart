@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:pencilo/view/show_youtube_video.dart';
+import 'package:pencilo/data/custom_widget/show_youtube_video.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../../controller/home_view_controller.dart';

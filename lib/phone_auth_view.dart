@@ -1,8 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/phone_otp_view.dart';
-import 'package:pencilo/view/home.dart';
-
 import 'data/custom_widget/custom_media_query.dart';
 
 class PhoneAuthView extends StatelessWidget {

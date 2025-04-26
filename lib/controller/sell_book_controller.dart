@@ -15,7 +15,6 @@ class SellBookController extends GetxController {
   @override
   void onInit() {
     getFullAddress();
-    loadBooks();
     super.onInit();
   }
 
@@ -46,11 +45,7 @@ class SellBookController extends GetxController {
     selectedOption.value = value;
   }
 
-  // Load books from Hive
-  void loadBooks() async {
-    var box = await Hive.openBox<SellBookModel>('sellBookBox');
-    books.value = box.values.toList();
-  }
+
 
   // Save data to Hive
   saveBook() async {
@@ -65,8 +60,8 @@ class SellBookController extends GetxController {
     }
 
     var newBook = SellBookModel(
-      bookUid: DateTime.now().toString(), // Unique ID based on the current timestamp
-      uid: "some-user-id",  // You can replace this with actual user ID
+      bookUid: DateTime.now().millisecondsSinceEpoch.toString(), // Unique ID based on the current timestamp
+      uid: CurrentUserData.uid,  // You can replace this with actual user ID
       title: title,
       amount: amount,
       contactNumber: contactNumber,
@@ -78,9 +73,8 @@ class SellBookController extends GetxController {
       uploading: false
     );
 
-    var box = await Hive.openBox<SellBookModel>('sellBookBox');
+    var box = await Hive.openBox<SellBookModel>(sellBookTableName);
     await box.put(newBook.bookUid, newBook);
-    loadBooks();  // Refresh the list of books after saving
     clearDataAfterUpload();
     storeInFirestore(newBook);
     Get.back();  // Close the form or navigate back after saving
@@ -117,7 +111,7 @@ class SellBookController extends GetxController {
 
 // Store book data in Firestore and upload images to Firebase Storage
   Future<void> storeInFirestore(SellBookModel book) async {
-    var box = await Hive.openBox<SellBookModel>('sellBookBox');
+    var box = await Hive.openBox<SellBookModel>(sellBookTableName);
     // Set 'uploaded' to true before starting the upload
     book.uploading = true;
     box.put(book.bookUid, book);
@@ -135,7 +129,7 @@ class SellBookController extends GetxController {
 
       // Upload images to Firebase Storage and get the download URLs
       for (var imageFile in book.images) {
-        String fileName = '$sellBookModelName/${book.bookUid}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+        String fileName = '$sellBookTableName/${book.bookUid}/${DateTime.now().millisecondsSinceEpoch}.jpg';
         TaskSnapshot uploadTaskSnapshot = await _firebaseStorage
             .ref(fileName)
             .putFile(File(imageFile));
@@ -145,7 +139,7 @@ class SellBookController extends GetxController {
       }
 
       // Store the book data along with image URLs in Firestore
-      await _firestore.collection(sellBookModelName).doc(book.bookUid).set({
+      await _firestore.collection(sellBookTableName).doc(book.bookUid).set({
         'bookUid': book.bookUid,
         'uid': book.uid,
         'title': book.title,
@@ -157,9 +151,8 @@ class SellBookController extends GetxController {
         'oldOrNewBook': book.oldOrNewBook,
       }).then((_) {
         // delete the book from hive
-        var box = Hive.box<SellBookModel>('sellBookBox');
+        var box = Hive.box<SellBookModel>(sellBookTableName);
         box.delete(book.bookUid);
-        loadBooks();  // Refresh the list of books after saving
       });
     }on FirebaseException catch (e) {
       book.uploading = false;
@@ -168,47 +161,6 @@ class SellBookController extends GetxController {
     }
   }
 
-// Save book data
-  Future<void> saveBookInFirestore() async {
-    String title = titleController.text;
-    String amount = amountController.text;
-    String contactNumber = contactNumberController.text;
-
-    if (title.isEmpty) {
-      Get.snackbar('Validation Error', 'Please enter the book title');
-      return;
-    }
-    if (amount.isEmpty) {
-      Get.snackbar('Validation Error', 'Please enter the amount');
-      return;
-    }
-    if (currentLocation.isEmpty) {
-      Get.snackbar('Validation Error', 'Please enter the address');
-      return;
-    }
-    if (contactNumber.isEmpty) {
-      Get.snackbar('Validation Error', 'Please enter the contact number');
-      return;
-    }
-
-    // Create SellBook object
-    SellBookModel book = SellBookModel(
-      bookUid: '',
-      title: '',
-      amount: '',
-      contactNumber: '',
-      images: [],  // Store image file paths
-      uid: '',
-      addedDate: '',
-      oldOrNewBook: '',
-      currentLocation: currentLocationController.text, // Set currentLocation value from the controller
-    );
-
-    await storeInFirestore(book);  // Upload book data to Firestore
-
-    // Clear data after upload
-    clearDataAfterUpload();
-  }
 
 // Method to clear data after successful upload
   void clearDataAfterUpload() {

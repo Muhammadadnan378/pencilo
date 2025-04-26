@@ -1,3 +1,4 @@
-String teacherModelName = "teacher";
-String studentModelName = "student";
-String sellBookModelName = "sellBook";
+String teacherTableName = "teacher";
+String studentTableName = "student";
+String sellBookTableName = "sellBook";
+String academicTableName = "academic_detail";
