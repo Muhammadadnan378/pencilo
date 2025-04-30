@@ -1,12 +1,19 @@
-import 'package:get/get.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'package:pencilo/db_helper/model_name.dart';
+import 'package:pencilo/db_helper/network_check.dart';
+import 'package:pencilo/model/student_model.dart';
 import 'package:printing/printing.dart';
 import 'package:intl/intl.dart'; // For date format
-import 'package:cloud_firestore/cloud_firestore.dart'; // For Firebase integration
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
+import 'package:path/path.dart' as path;
+import '../data/consts/images.dart';
+import '../model/teacher_model.dart'; // For Firebase integration
 
 
 class ProfileController extends GetxController {
@@ -334,85 +341,401 @@ class ProfileController extends GetxController {
   }
 
 
+  ///Profile View methods
+  var isProfileLoading = false.obs;
+  var imageUrl = ''.obs; // To store image URL
 
+  // Method to pick image from gallery
+  Future<void> pickImage(BuildContext context) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        File imageFile = File(pickedFile.path);
+        isProfileLoading.value = true;
+
+        // Upload the image to Firebase Storage
+        // Create the file name using the CurrentUser.uid to ensure the image is unique to the user
+        String fileName = '${CurrentUserData.uid}_${path.basename(imageFile.path)}';
+
+        // Reference the Firebase Storage location using CurrentUser.uid as the folder name
+        Reference storageReference =
+        FirebaseStorage.instance.ref().child('profileUrl/${CurrentUserData.uid}');
+        UploadTask uploadTask = storageReference.putFile(imageFile);
+
+        // Get download URL after upload
+        await uploadTask.whenComplete(() async {
+          String downloadUrl = await storageReference.getDownloadURL();
+          imageUrl.value = downloadUrl;
+          await updateProfileImage(downloadUrl,context);
+        });
+      }
+    } catch (e) {
+    } finally {
+      isProfileLoading.value = false;
+    }
+  }
+
+  // Method to update the profile image in Firestore, Hive, and CurrentUserData
+  Future<void> updateProfileImage(String newImageUrl, BuildContext context) async {
+    try {
+      // Update in Firestore
+      if (CurrentUserData.isTeacher) {
+        await FirebaseFirestore.instance.collection(teacherTableName).doc(CurrentUserData.uid).update({
+          'profileUrl': newImageUrl,
+        });
+      } else if (CurrentUserData.isStudent) {
+        await FirebaseFirestore.instance.collection(studentTableName).doc(CurrentUserData.uid).update({
+          'profileUrl': newImageUrl,
+        });
+      }
+
+      // Update in Hive
+      var teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
+      var studentBox = await Hive.openBox<StudentModel>(studentTableName);
+      if (CurrentUserData.isTeacher) {
+        // Update teacher profileUrl in Hive
+        try {
+          TeacherModel teacherModel = teacherBox.getAt(0)!;
+          teacherModel.profileUrl = newImageUrl;
+          await teacherBox.putAt(0, teacherModel);
+        } on Exception catch (e) {
+          print("Failed to update profileUrl in Hive for teacher: $e");
+        }
+      } else if (CurrentUserData.isStudent) {
+        // Update student profileUrl in Hive
+        try {
+          StudentModel studentModel = studentBox.getAt(0)!;
+          studentModel.profileUrl = newImageUrl;
+          await studentBox.putAt(0, studentModel);
+        } on Exception catch (e) {
+          print("Failed to update profileUrl in Hive for student: $e");
+        }
+      }
+
+      // Update CurrentUserData
+      CurrentUserData.profileUrl = newImageUrl;
+
+      // Show success message
+      showSnackbar(context, "Profile image updated successfully.");
+    } catch (e) {
+      showSnackbar(context, "Failed to update profile image: $e");
+      print("Error in updateProfileImage: $e");
+    }
+  }
 
   ///Edit Profile View methods
 // Define controller variables to store text field values
   final fullNameController = TextEditingController();
-  final classSectionController = TextEditingController();
   final rollNumberController = TextEditingController();
   final admissionNumberController = TextEditingController();
   final dobController = TextEditingController();
-  final bloodGroupController = TextEditingController();
   final aadharNumberController = TextEditingController();
   final emailController = TextEditingController();
   final phoneNumberController = TextEditingController();
   final residentialAddressController = TextEditingController();
   final parentNameController = TextEditingController();
   final parentPhoneController = TextEditingController();
-  final selectedClass = 'Select Class'.obs; // For dropdown
+  final subjectController = TextEditingController();
+  // final selectedClass = 'Select Class'.obs; // For dropdown
   var isLoading = false.obs;
+  // Reactive variable to hold the selected blood group
+  var selectedBloodGroup = RxString('');
+  var selectedClass = ''.obs;
+  var selectedSection = ''.obs;
 
-  // Function to save data to Firestore
-  Future<void> saveProfileData() async {
-    // Validation: Check if all fields are filled
+  // List of available blood groups
+  var bloodGroups = [
+    'A+',
+    'A-',
+    'B+',
+    'B-',
+    'AB+',
+    'AB-',
+    'O+',
+    'O-',
+  ];
+
+  bool validateAadharNumber(String aadharNumber, BuildContext context) {
+    // Check if the Aadhar number is empty
+    if (aadharNumber.isEmpty) {
+      showSnackbar(context, "Please enter an Aadhar number.");
+      return false;
+    }
+
+    // Regular expression for 12-digit numeric Aadhar number
+    final aadharRegex = RegExp(r'^\d{12}$');
+    if (!aadharRegex.hasMatch(aadharNumber)) {
+      showSnackbar(context, "Please enter a valid 12-digit Aadhar number.");
+      return false;
+    }
+
+    return true; // Return true if Aadhar number is valid
+  }
+
+  bool emailValidation(BuildContext context) {
+    // Regular expression for validating Gmail email addresses
+    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$');
+
+    if (emailController.text.isEmpty) {
+      showSnackbar(context, "Please enter an email address.");
+      return false;
+    }
+
+    if (!emailRegex.hasMatch(emailController.text)) {
+      showSnackbar(context, "Please enter a valid Gmail address (ending with @gmail.com).");
+      return false;
+    }
+
+    return true; // Return true if email is valid
+  }
+
+
+  bool validatePhoneNumber(BuildContext context) {
+
+    // India phone number validation
+      final myPhoneNumber = RegExp(r'^[789]\d{9}$');
+      if (!myPhoneNumber.hasMatch(phoneNumberController.text)) {
+        showSnackbar(context, "Please enter a valid Indian phone number.");
+        return false;
+      }
+
+    return true; // Return true if phone number is valid
+  }
+
+
+
+  bool validateStudentFields(BuildContext context) {
+    // Check if all the required fields for students are filled
     if (fullNameController.text.isEmpty ||
-        classSectionController.text.isEmpty ||
-        rollNumberController.text.isEmpty ||
-        admissionNumberController.text.isEmpty ||
-        dobController.text.isEmpty ||
-        bloodGroupController.text.isEmpty ||
-        aadharNumberController.text.isEmpty ||
-        emailController.text.isEmpty ||
+        selectedClass.isEmpty ||
+        selectedSection.isEmpty ||
+        phoneNumberController.text.isEmpty
+    ) {
+      showSnackbar(context, "Please fill in all the required student fields.");
+      return false;
+    }
+
+    // Validate phone number for students based on the country
+    if (parentPhoneController.text.isNotEmpty) {
+      // India phone number validation
+      final parentNumber = RegExp(r'^[789]\d{9}$');
+      if (!parentNumber.hasMatch(parentPhoneController.text)) {
+        showSnackbar(context, "Please enter a valid Indian phone number.");
+        return false;
+      }
+    }
+
+    if (phoneNumberController.text.isNotEmpty) {
+      if (!validatePhoneNumber(context)) {
+        return false;
+      }
+    }
+
+
+    if (aadharNumberController.text.isNotEmpty) {
+      if (!validateAadharNumber(aadharNumberController.text,context)) {
+        return false;
+      }
+    }
+    // Validate email for students
+    if (emailController.text.isNotEmpty) {
+      if (!emailValidation(context)) {
+        return false;
+      }
+    }
+
+    return true; // Return true if all fields are valid
+  }
+
+  bool validateTeacherFields(BuildContext context) {
+    // Check if all the required fields for teachers are filled
+    if (fullNameController.text.isEmpty ||
         phoneNumberController.text.isEmpty ||
         residentialAddressController.text.isEmpty ||
-        parentNameController.text.isEmpty ||
-        parentPhoneController.text.isEmpty) {
-      Get.snackbar("Error", "Please fill in all the required fields.");
-      return;
+        subjectController.text.isEmpty
+    ) {
+      showSnackbar(context, "Please fill in all the required teacher fields.");
+      return false;
+    }
+    // Validate phone number for teachers based on the country
+    if (!validatePhoneNumber(context)) {
+      return false;
+    }
+    // Validate Aadhar number for students
+    if (aadharNumberController.text.isNotEmpty) {
+      if (!validateAadharNumber(aadharNumberController.text,context)) {
+        return false;
+      }
+    }
+    // Validate email for students
+    if (emailController.text.isNotEmpty) {
+      if (!emailValidation(context)) {
+        return false;
+      }
+    }
+
+    return true; // Return true if all fields are valid
+  }
+
+
+
+  // Function to save data to Firestore
+  // Function to save data to Firestore
+  Future<void> saveProfileData(BuildContext context) async {
+    if(!await NetworkHelper.isInternetAvailable()){
+      isLoading(false);
+      showSnackbar(context, "No internet connection");
+      return ;
+    };
+
+    // Check if the user is a teacher or a student and validate accordingly
+    if (CurrentUserData.isTeacher) {
+      if (!validateTeacherFields(context)) {
+        isLoading(false);
+        return;
+      }
+    } else {
+      if (!validateStudentFields(context)) {
+        isLoading(false);
+        return;
+      }
     }
 
     // Set loading state
     isLoading.value = true;
 
     try {
-      String uid = DateTime.now().millisecondsSinceEpoch.toString();
-      // Add to Firestore
-      await FirebaseFirestore.instance.collection(academicTableName).doc(uid).set({
-        'uid' : CurrentUserData.uid,
-        'full_name': fullNameController.text,
-        'class_section': classSectionController.text,
-        'roll_number': rollNumberController.text,
-        'admission_number': admissionNumberController.text,
-        'dob': dobController.text,
-        'blood_group': bloodGroupController.text,  // Adjusted to use text from the text controller
-        'aadhar_number': aadharNumberController.text,
-        'email': emailController.text,
-        'phone_number': phoneNumberController.text,
-        'residential_address': residentialAddressController.text,
-        'parent_name': parentNameController.text,
-        'parent_phone': parentPhoneController.text,
-      });
+      TeacherModel teacherModel = TeacherModel(
+        uid: CurrentUserData.uid,
+        fullName: fullNameController.text.isNotEmpty ? fullNameController.text : CurrentUserData.name,
+        dob: dobController.text.isNotEmpty ? dobController.text : CurrentUserData.dob,
+        bloodGroup: selectedBloodGroup.value.isNotEmpty ? selectedBloodGroup.value : CurrentUserData.bloodGroup,
+        aadharNumber: aadharNumberController.text.isNotEmpty ? aadharNumberController.text : CurrentUserData.aadharNumber,
+        email: emailController.text.isNotEmpty ? emailController.text : CurrentUserData.email,
+        phoneNumber: phoneNumberController.text.isNotEmpty ? phoneNumberController.text : CurrentUserData.phoneNumber,
+        residentialAddress: residentialAddressController.text.isNotEmpty ? residentialAddressController.text : CurrentUserData.residentialAddress,
+        subject: subjectController.text.isNotEmpty ? subjectController.text : CurrentUserData.subject,
+        profileUrl: CurrentUserData.profileUrl,
+        currentLocation: CurrentUserData.currentLocation,
+        schoolName: CurrentUserData.schoolName,
+        isTeacher: true,
+      );
+
+
+      StudentModel studentModel = StudentModel(
+        uid: CurrentUserData.uid,
+        fullName: fullNameController.text.isNotEmpty ? fullNameController.text : CurrentUserData.name,
+        dob: dobController.text.isNotEmpty ? dobController.text : CurrentUserData.dob,
+        bloodGroup: selectedBloodGroup.value.isNotEmpty ? selectedBloodGroup.value : CurrentUserData.bloodGroup,
+        aadharNumber: aadharNumberController.text.isNotEmpty ? aadharNumberController.text : CurrentUserData.aadharNumber,
+        email: emailController.text.isNotEmpty ? emailController.text : CurrentUserData.email,
+        phoneNumber: phoneNumberController.text.isNotEmpty ? phoneNumberController.text : CurrentUserData.phoneNumber,
+        residentialAddress: residentialAddressController.text.isNotEmpty ? residentialAddressController.text : CurrentUserData.residentialAddress,
+        rollNumber: rollNumberController.text.isNotEmpty ? rollNumberController.text : CurrentUserData.rollNumber,
+        admissionNumber: admissionNumberController.text.isNotEmpty ? admissionNumberController.text : CurrentUserData.admissionNumber,
+        parentName: parentNameController.text.isNotEmpty ? parentNameController.text : CurrentUserData.parentName,
+        parentPhone: parentPhoneController.text.isNotEmpty ? parentPhoneController.text : CurrentUserData.parentPhone,
+        standard: selectedClass.value.isNotEmpty ? selectedClass.value : CurrentUserData.standard,
+        division: selectedSection.value.isNotEmpty ? selectedSection.value : CurrentUserData.division,
+        isStudent: true,
+        schoolName: CurrentUserData.schoolName,
+        currentLocation: CurrentUserData.currentLocation,
+        profileUrl: CurrentUserData.profileUrl,
+      );
+
+
+      // Open Hive boxes
+      var teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
+      var studentBox = await Hive.openBox<StudentModel>(studentTableName);
+
+      // Update current user data in Firestore and Hive
+      if (CurrentUserData.isTeacher) {
+        try {
+          // Update teacher data in Firestore
+          await FirebaseFirestore.instance
+              .collection(teacherTableName)
+              .doc(CurrentUserData.uid)
+              .update(teacherModel.toMap());
+
+          // Update teacher data in Hive
+          await teacherBox.putAt(0, teacherModel);
+
+          // Update static data in CurrentUserData
+          CurrentUserData.name = teacherModel.fullName ?? CurrentUserData.name;
+          CurrentUserData.subject = teacherModel.subject ?? CurrentUserData.subject ;
+          CurrentUserData.phoneNumber = teacherModel.phoneNumber ?? CurrentUserData.phoneNumber;
+          CurrentUserData.dob = teacherModel.dob ?? CurrentUserData.dob;
+          CurrentUserData.bloodGroup = teacherModel.bloodGroup ?? CurrentUserData.bloodGroup;
+          CurrentUserData.aadharNumber = teacherModel.aadharNumber ?? CurrentUserData.aadharNumber;
+          CurrentUserData.email = teacherModel.email ?? CurrentUserData.email;
+          CurrentUserData.residentialAddress = teacherModel.residentialAddress ?? CurrentUserData.residentialAddress;
+
+        } on FirebaseException catch (e) {
+        }
+      } else if (CurrentUserData.isStudent) {
+        try {
+          // Update student data in Firestore
+          await FirebaseFirestore.instance
+              .collection(studentTableName)
+              .doc(CurrentUserData.uid)
+              .update(studentModel.toMap());
+
+          // Update student data in Hive
+          try {
+            await studentBox.putAt(0, studentModel);
+          } on Exception catch (e) {
+            showSnackbar(context, "$e");
+          }
+
+          // Update static data in CurrentUserData
+          CurrentUserData.name = studentModel.fullName ?? CurrentUserData.name;
+          CurrentUserData.standard = studentModel.standard ?? CurrentUserData.standard; // Store class
+          CurrentUserData.division = studentModel.division ?? CurrentUserData.division; // Store section
+          CurrentUserData.phoneNumber = studentModel.phoneNumber ?? CurrentUserData.phoneNumber;
+          CurrentUserData.dob = studentModel.dob ?? CurrentUserData.dob;
+          CurrentUserData.bloodGroup = studentModel.bloodGroup ?? CurrentUserData.bloodGroup;
+          CurrentUserData.aadharNumber = studentModel.aadharNumber ?? CurrentUserData.aadharNumber;
+          CurrentUserData.email = studentModel.email ?? CurrentUserData.email;
+          CurrentUserData.residentialAddress = studentModel.residentialAddress ?? CurrentUserData.residentialAddress;
+          CurrentUserData.parentName = studentModel.parentName ?? CurrentUserData.parentName;
+          CurrentUserData.parentPhone = studentModel.parentPhone ?? CurrentUserData.parentPhone;
+
+        } on FirebaseException catch (e) {
+          showSnackbar(context, "$e");
+        }
+      }
 
       // Show success message and clear fields
-      clearFields();
-      Get.back(); // Go back to previous screen after successful data save
-
+      showSnackbar(context, "Profile data updated successfully.");
+      isLoading(false);
+      Get.back(); // Go back to the previous screen after successful data save
     } catch (e) {
-
+      // Handle any other exceptions
+      isLoading(false);
+      showSnackbar(context, "Error: $e");
     } finally {
       // Hide loading state
+      isLoading(false);
       isLoading.value = false;
     }
   }
 
+
   // Function to pick date of birth
   Future<void> pickDateOfBirth(BuildContext context) async {
+    // Calculate the date 6 years ago from today
+    DateTime sixYearsAgo = DateTime.now().subtract(Duration(days: 6 * 365));
+
+    // Ensure initialDate is not later than lastDate (6 years ago)
+    DateTime initialDate = DateTime.now().isBefore(sixYearsAgo) ? DateTime.now() : sixYearsAgo;
+
     final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2101),
+      initialDate: initialDate, // Use a valid initial date
+      firstDate: DateTime(1900), // This could be the earliest date someone can choose
+      lastDate: sixYearsAgo, // The latest date they can pick (6 years ago)
     );
 
     if (pickedDate != null) {
@@ -420,20 +743,4 @@ class ProfileController extends GetxController {
     }
   }
 
-  // Method to clear all fields after successful profile update
-  void clearFields() {
-    fullNameController.clear();
-    classSectionController.clear();
-    rollNumberController.clear();
-    admissionNumberController.clear();
-    dobController.clear();
-    bloodGroupController.clear();
-    aadharNumberController.clear();
-    emailController.clear();
-    phoneNumberController.clear();
-    residentialAddressController.clear();
-    parentNameController.clear();
-    parentPhoneController.clear();
-    selectedClass.value = 'Select Class';
-  }
 }

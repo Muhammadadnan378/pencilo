@@ -34,21 +34,21 @@ class SellBookView extends StatelessWidget {
               alignment: Alignment.center,
               borderRadius: 12,
               width: SizeConfig.screenWidth * 0.9,
-              height: 79,
+              height: 120,
               color: Color(0xffD9D9D9),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.camera_alt, size: 30, color: bgColor),
+                    icon: Icon(Icons.camera_alt, size: 45, color: bgColor),
                     onPressed: () {
                       controller.pickImageFromCamera();
                     },
                   ),
                   SizedBox(width: 10,),
                   IconButton(
-                    icon: Icon(Icons.photo, size: 30, color: bgColor),
+                    icon: Icon(Icons.photo, size: 45, color: bgColor),
                     onPressed: () {
                       controller.selectImage();  // Select image from gallery
                     },
@@ -150,6 +150,7 @@ class SellBookView extends StatelessWidget {
               isMultiline: true,
             ),
             SellBookClassTextField(
+              keyboardType: TextInputType.phone,
               hintText: "Enter Contact Number",
               title: 'Contact number',
               controller: controller.contactNumberController, // Pass controller
@@ -159,12 +160,12 @@ class SellBookView extends StatelessWidget {
               child: GestureDetector(
                 onTap: () {
                   // Call saveBook method to validate and store data
-                  controller.saveBook();
+                  controller.saveBook(context);
                 },
                 child: CustomCard(
                   alignment: Alignment.center,
-                  width: 151,
-                  height: 38,
+                  width: 140,
+                  height: 45,
                   borderRadius: 6,
                   color: blackColor,
                   child: CustomText(text: "Ok", fontWeight: FontWeight.w700, size: 16),
@@ -210,8 +211,8 @@ class SellBookClassTextField extends StatelessWidget {
           CustomText(text: title,color: blackColor,fontWeight: FontWeight.w500,size: 14),
           SizedBox(height: 7),
           SizedBox(
-            height: isMultiline ? 100 : 42,
-            width: SizeConfig.screenHeight * 0.32,
+            height: isMultiline ? 100 : 45,
+            width: double.infinity,
             child: TextField(
               controller: controller,
               maxLines: isMultiline ? null : 1,

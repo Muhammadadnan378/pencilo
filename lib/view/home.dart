@@ -96,7 +96,7 @@ class Home extends StatelessWidget {
             final teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
             final newTeacher = TeacherModel(
               uid: CurrentUserData.uid,
-              name: CurrentUserData.name,
+              fullName: CurrentUserData.name,
               schoolName: CurrentUserData.schoolName,
               phoneNumber: CurrentUserData.phoneNumber,
               currentLocation: location,
@@ -115,7 +115,7 @@ class Home extends StatelessWidget {
             final studentBox = await Hive.openBox<StudentModel>(studentTableName);
             final newStudent = StudentModel(
               uid: CurrentUserData.uid,
-              name: CurrentUserData.name,
+              fullName: CurrentUserData.name,
               schoolName: CurrentUserData.schoolName,
               standard: CurrentUserData.standard,
               division: CurrentUserData.division,

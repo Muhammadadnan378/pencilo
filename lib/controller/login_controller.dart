@@ -38,11 +38,42 @@ class LoginController extends GetxController {
     selectedDivision.value = value;
   }
 
-  // Example usage in form validation
-  bool get isFormValid {
-    return name.isNotEmpty && schoolName.isNotEmpty && phoneNumber.isNotEmpty &&
-        validatePhoneNumber(phoneNumber.value) &&
-        (isTeacher ? subject.isNotEmpty : true);
+// Validate the form fields and phone number format for Pakistan and India
+  Future<bool> validateForm(BuildContext context) async {
+    // Check if the required fields are filled
+    if (name.value.isEmpty ||
+        schoolName.value.isEmpty ||
+        phoneNumber.value.isEmpty ||
+        (isTeacher && subject.value.isEmpty) ||
+        (!isTeacher && selectedStandard.value.isEmpty) ||
+        (!isTeacher && selectedDivision.value.isEmpty)) {
+      showSnackbar(context, 'Please fill all the required fields.');
+      return false;
+    }
+
+    // Validate phone number format
+    bool isPhoneValid = await validatePhoneNumber(context);
+    if (!isPhoneValid) {
+      return false;
+    }
+
+    return true; // Return true if form is valid
+  }
+
+
+// Validate the phone number for Pakistan and India
+  Future<bool> validatePhoneNumber(BuildContext context) async {
+    // India phone number validation with required +91 or 91 at the start
+    final indianPhoneNumberRegex = RegExp(r'^(?:\+91|91)[789]\d{9}$');
+
+    if (!indianPhoneNumberRegex.hasMatch(phoneNumber.value)) {
+      showSnackbar(context, "Please enter a valid Indian phone number starting with +91.");
+      return false;
+    }
+
+    // Add validation for Pakistan here if needed, or continue for further validation.
+
+    return true; // Return true if phone number is valid
   }
 
   // Fetch user data and store it in Hive if the phone number already exists
@@ -62,57 +93,50 @@ class LoginController extends GetxController {
             .where('phoneNumber', isEqualTo: phoneNumber.value)
             .get()).docs.first;
       }
-
       // Assign the uid of the existing user to existId
       existId = userDoc['uid'];
 
-      // Load data into CurrentUserData and Hive
-      CurrentUserData.uid = userDoc['uid'];
-      CurrentUserData.name = userDoc['name'];
-      CurrentUserData.schoolName = userDoc['schoolName'];
-      CurrentUserData.currentLocation = userDoc['currentLocation'];
-      CurrentUserData.phoneNumber = userDoc['phoneNumber'];
+      // Load data into CurrentUserData and Hive, ensuring all fields are included
+      CurrentUserData.uid = userDoc['uid'] ?? '';
+      CurrentUserData.name = userDoc['fullName'] ?? '';
+      CurrentUserData.schoolName = userDoc['schoolName'] ?? '';
+      CurrentUserData.currentLocation = userDoc['currentLocation'] ?? '';
+      CurrentUserData.phoneNumber = userDoc['phoneNumber'] ?? '';
+      CurrentUserData.profileUrl = userDoc['profileUrl'] ?? '';
 
       if (isTeacher) {
-        CurrentUserData.subject = userDoc['subject'];
-        CurrentUserData.isTeacher = userDoc['isTeacher'];
+        CurrentUserData.subject = userDoc['subject'] ?? '';
+        CurrentUserData.isTeacher = userDoc['isTeacher'] ?? true;
+        // Ensure all teacher-related fields are stored
+        CurrentUserData.dob = userDoc['dob'] ?? '';
+        CurrentUserData.bloodGroup = userDoc['bloodGroup'] ?? '';
+        CurrentUserData.aadharNumber = userDoc['aadharNumber'] ?? '';
+        CurrentUserData.email = userDoc['email'] ?? '';
+        CurrentUserData.residentialAddress = userDoc['residentialAddress'] ?? '';
         addTeacherDataToHive(userDoc);
       } else {
-        CurrentUserData.standard = userDoc['standard'];
-        CurrentUserData.isStudent = userDoc['isStudent'];
-        CurrentUserData.division = userDoc['division'];
+        // Ensure all student-related fields are stored
+        CurrentUserData.standard = userDoc['standard'] ?? '';
+        CurrentUserData.rollNumber = userDoc['rollNumber'] ?? '';
+        CurrentUserData.admissionNumber = userDoc['admissionNumber'] ?? '';
+        CurrentUserData.classSection = userDoc['classSection'] ?? '';
+        CurrentUserData.isStudent = userDoc['isStudent'] ?? true;
+        CurrentUserData.division = userDoc['division'] ?? '';
+        CurrentUserData.dob = userDoc['dob'] ?? '';
+        CurrentUserData.bloodGroup = userDoc['bloodGroup'] ?? '';
+        CurrentUserData.aadharNumber = userDoc['aadharNumber'] ?? '';
+        CurrentUserData.email = userDoc['email'] ?? '';
+        CurrentUserData.residentialAddress = userDoc['residentialAddress'] ?? '';
+        CurrentUserData.parentName = userDoc['parentName'] ?? '';
+        CurrentUserData.parentPhone = userDoc['parentPhone'] ?? '';
         addStudentDataToHive(userDoc);
       }
 
       // Navigate to Home after storing data
-      Get.off(Home());
+      Get.offAll(Home());
     } catch (e) {
       Get.snackbar('Error', 'Failed to fetch user data: $e');
-      print("Error : $e");
-    }
-  }
-
-  // Validate the phone number for Pakistan and India
-  bool validatePhoneNumber(String phoneNumber) {
-    // Pakistan phone number regex pattern
-    final pakistanPattern = RegExp(r'^03[0-9]{9}$');
-
-    // India phone number regex pattern
-    final indiaPattern = RegExp(r'^[789][0-9]{9}$');
-
-    // Check if the number matches either of the patterns
-    if (pakistanPattern.hasMatch(phoneNumber) || indiaPattern.hasMatch(phoneNumber)) {
-      return true;  // Valid phone number
-    } else {
-      // Show error message if the phone number format is invalid
-      Get.snackbar(
-        'Invalid Phone Number',
-        'Please enter a valid phone number. Format: Pakistan (03XXXXXXXXX) or India (7, 8, 9XXXXXXXXX)',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      return false;  // Invalid phone number
+      print("Error: $e");
     }
   }
 
@@ -140,9 +164,18 @@ class LoginController extends GetxController {
   // Store user data in Firestore (with DateTime as UID)
   Future<void> storeUserData() async {
     try {
-      // Check if phone number already exists
-      bool exists = await isPhoneNumberExist();
-      if (exists) {
+      //check if user exist then donot add data again
+        final teacherDoc = await FirebaseFirestore.instance
+            .collection(teacherTableName)
+            .where('phoneNumber', isEqualTo: phoneNumber.value)
+            .get();
+        final studentDoc = await FirebaseFirestore.instance
+            .collection(studentTableName)
+            .where('phoneNumber', isEqualTo: phoneNumber.value)
+            .get();
+
+
+      if (teacherDoc.docs.isNotEmpty || studentDoc.docs.isNotEmpty) {
         // Fetch existing data from Firestore
         await fetchUserDataAndStoreInHive();
       } else {
@@ -161,132 +194,159 @@ class LoginController extends GetxController {
     }
   }
 
-  // Add Teacher Data to Hive
+// Add Teacher Data to Hive
   void addTeacherDataToHive(DocumentSnapshot userDoc) async {
     final teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
+
+    // Initialize the newTeacher object with empty fields if they're missing
     final newTeacher = TeacherModel(
       uid: userDoc['uid'],
-      name: userDoc['name'],
+      fullName: userDoc['fullName'],
       schoolName: userDoc['schoolName'],
       subject: userDoc['subject'],
       phoneNumber: userDoc['phoneNumber'],
       currentLocation: userDoc['currentLocation'],
-      isTeacher: true
+      isTeacher: userDoc['isTeacher'],
+      dob: userDoc['dob'],
+      bloodGroup: userDoc['bloodGroup'],
+      aadharNumber: userDoc['aadharNumber'],
+      email: userDoc['email'] ?? '',
+      residentialAddress: userDoc['residentialAddress'],
+      profileUrl: userDoc['profileUrl'],
     );
+
     await teacherBox.add(newTeacher);
   }
 
-  // Add Student Data to Hive
+// Add Student Data to Hive
   void addStudentDataToHive(DocumentSnapshot userDoc) async {
     final studentBox = await Hive.openBox<StudentModel>(studentTableName);
+
+    // Initialize the newStudent object with empty fields if they're missing
     final newStudent = StudentModel(
-      uid: userDoc['uid'],
-      name: userDoc['name'],
-      schoolName: userDoc['schoolName'],
-      standard: userDoc['standard'],
-      division: userDoc['division'],
-      phoneNumber: userDoc['phoneNumber'],
-      currentLocation: userDoc['currentLocation'],
-      isStudent: true
+      uid: userDoc['uid'] ?? '',
+      fullName: userDoc['fullName'] ?? '',
+      rollNumber: userDoc['rollNumber'] ?? '',
+      admissionNumber: userDoc['admissionNumber'] ?? '',
+      dob: userDoc['dob'] ?? '',
+      bloodGroup: userDoc['bloodGroup'] ?? '',
+      aadharNumber: userDoc['aadharNumber'] ?? '',
+      email: userDoc['email'] ?? '',
+      phoneNumber: userDoc['phoneNumber'] ?? '',
+      residentialAddress: userDoc['residentialAddress'] ?? '',
+      parentName: userDoc['parentName'] ?? '',
+      parentPhone: userDoc['parentPhone'] ?? '',
+      schoolName: userDoc['schoolName'] ?? '',
+      standard: userDoc['standard'] ?? '',
+      division: userDoc['division'] ?? '',
+      currentLocation: userDoc['currentLocation'] ?? '',
+      isStudent: userDoc['isStudent'] ?? true,
+      profileUrl: userDoc['profileUrl'] ?? '',
     );
+
     await studentBox.add(newStudent);
   }
 
-  // Store Teacher Data in Firestore
+
   Future<void> storeTeacherData(String uid) async {
     try {
       final newTeacher = TeacherModel(
-        uid: uid,
-        name: name.value,
-        schoolName: schoolName.value,
-        subject: subject.value,
-        phoneNumber: phoneNumber.value,
-        currentLocation: currentLocation.value,
+          uid: uid,
+          fullName: name.value,
+          schoolName: schoolName.value,
+          subject: subject.value,
+          phoneNumber: phoneNumber.value.trim(),
+          currentLocation: currentLocation.value,
+          dob: "", // Default empty string
+          bloodGroup: "", // Default empty string
+          aadharNumber: "", // Default empty string
+          email: "", // Default empty string
+          residentialAddress: "", // Default empty string
+          profileUrl: "",// Default empty string
+          isTeacher: true
       );
 
-      // Store the teacher data in Firestore
-      await FirebaseFirestore.instance.collection(teacherTableName).doc(uid).set({
-        'uid': uid,
-        'name': name.value,
-        'schoolName': schoolName.value,
-        'subject': subject.value,
-        'phoneNumber': phoneNumber.value,
-        'isTeacher': true,
-      }).then((_) {
-        // Store the teacher data in Hive
-        addTeacherData(newTeacher);
+      // Store the teacher data in Firestore using the toMap method
+      await FirebaseFirestore.instance.collection(teacherTableName).doc(uid).set(newTeacher.toMap()).then((_) {
+
 
         // Update static data in CurrentUserData class
         CurrentUserData.uid = uid;
         CurrentUserData.name = name.value;
         CurrentUserData.schoolName = schoolName.value;
-        CurrentUserData.phoneNumber = phoneNumber.value;
+        CurrentUserData.phoneNumber = phoneNumber.value.trim();
         CurrentUserData.currentLocation = currentLocation.value;
         CurrentUserData.subject = subject.value;
         CurrentUserData.isTeacher = true;
         CurrentUserData.isStudent = false; // This will make sure the current user is marked as a teacher
+        // Store the teacher data in Hive
+        addTeacherData(newTeacher);
       });
     } catch (e) {
       Get.snackbar('Error', 'Failed to store teacher data: $e');
     }
   }
 
-  // Store Student Data in Firestore
   Future<void> storeStudentData(String uid) async {
     try {
       final newStudent = StudentModel(
-        uid: uid,
-        name: name.value,
-        schoolName: schoolName.value,
-        standard: selectedStandard.value,
-        division: selectedDivision.value,
-        phoneNumber: phoneNumber.value,
-        currentLocation: currentLocation.value,
+          uid: uid,
+          fullName: name.value,
+          schoolName: schoolName.value,
+          standard: selectedStandard.value,
+          division: selectedDivision.value,
+          phoneNumber: phoneNumber.value.trim(),
+          currentLocation: currentLocation.value,
+          dob: "", // Default empty string
+          bloodGroup: "", // Default empty string
+          aadharNumber: "", // Default empty string
+          email: "", // Default empty string
+          residentialAddress: "", // Default empty string
+          parentName: "", // Default empty string
+          parentPhone: "", // Default empty string
+          profileUrl: "",// Default empty string
+          isStudent: true,
+          rollNumber: "", // Default empty string
+          admissionNumber: "", // Default empty string
       );
 
-      // Store the student data in Firestore
-      await FirebaseFirestore.instance.collection(studentTableName).doc(uid).set({
-        'uid': uid,
-        'name': name.value,
-        'schoolName': schoolName.value,
-        'standard': selectedStandard.value,
-        'division': selectedDivision.value,
-        'phoneNumber': phoneNumber.value,
-        'currentLocation': currentLocation.value,
-        'isStudent': true,
-      }).then((_) {
-        // Store the student data in Hive
-        addStudentData(newStudent);
+      // Store the student data in Firestore using the toMap method
+      await FirebaseFirestore.instance.collection(studentTableName).doc(uid).set(newStudent.toMap()).then((_) {
+
 
         // Update static data in CurrentUserData class
         CurrentUserData.uid = uid;
         CurrentUserData.name = name.value;
         CurrentUserData.schoolName = schoolName.value;
-        CurrentUserData.phoneNumber = phoneNumber.value;
+        CurrentUserData.phoneNumber = phoneNumber.value.trim();
         CurrentUserData.currentLocation = currentLocation.value;
         CurrentUserData.standard = selectedStandard.value;
         CurrentUserData.division = selectedDivision.value;
         CurrentUserData.isTeacher = false; // This will make sure the current user is marked as a student
         CurrentUserData.isStudent = true;
+        // Store the student data in Hive
+        addStudentData(newStudent);
       });
     } catch (e) {
       Get.snackbar('Error', 'Failed to store student data: $e');
     }
   }
 
+
   // Add Teacher Data to Hive
   void addTeacherData(TeacherModel teacher) async {
     final teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
     await teacherBox.add(teacher).then((value) {
-      Get.off(Home());  // Navigate to Home screen
+      Get.offAll(Home());  // Navigate to Home screen
     });
   }
+
 
   // Add Student Data to Hive
   void addStudentData(StudentModel student) async {
     final studentBox = await Hive.openBox<StudentModel>(studentTableName);
     await studentBox.add(student).then((value) {
-      Get.off(Home());  // Navigate to Home screen
+      Get.offAll(Home());  // Navigate to Home screen
     });
   }
 }

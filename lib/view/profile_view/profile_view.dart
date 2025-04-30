@@ -1,8 +1,12 @@
+import 'package:intl/intl.dart';
 import 'package:pencilo/controller/profile_controller.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/consts/images.dart';
 import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
+import 'package:pencilo/db_helper/model_name.dart';
+import 'package:pencilo/model/student_model.dart';
+import 'package:pencilo/model/teacher_model.dart';
 
 import 'academic_tabs_view/profile_exam_result_view.dart';
 import 'academic_tabs_view/profile_home_work_view.dart';
@@ -25,84 +29,154 @@ class ProfileView extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: GestureDetector(
               child: Icon(Icons.picture_as_pdf),
-              onTap:() => controller.generatePDF(),
+              onTap: () => controller.generatePDF(),
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Profile Section
-              Stack(
-                children: [
-                  CustomCard(
-                    width: double.infinity,
-                    height: 255,
-                    alignment: Alignment.bottomCenter,
-                    child: CustomCard(
-                      width: double.infinity,
-                      height: 220,
-                      padding: EdgeInsets.all(16),
-                      color: Color(0xff0A3B87),
-                      borderRadius: 12,
-                      child: Column(
-                        children: [
-                          SizedBox(height: 27),
-                          CustomText(
-                            text: CurrentUserData.name,
-                            color: Colors.white,
-                            size: 22,
-                            fontFamily: poppinsFontFamily,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          CustomText(
-                            text: CurrentUserData.standard,
-                            color: Colors.white,
-                            fontFamily: interFontFamily,
-                          ),
-                          CustomText(
-                            text: CurrentUserData.phoneNumber,
-                            color: Colors.white,
-                            fontFamily: interFontFamily,
-                          ),
-                          SizedBox(height: 8),
-                          CustomText(
-                            text: '05-Oct-2002',
-                            color: Colors.white,
-                            fontFamily: interFontFamily,
-                          ),
-                          SizedBox(height: 10),
-                          CustomCard(
-                            onTap: () => Get.to(EditProfilePage()),
-                            borderRadius: 12,
-                            width: 160,
-                            height: 40,
-                            alignment: Alignment.center,
-                            child: CustomText(text: 'Edit Profile'),
-                            color: Color(0xff9AC3FF),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    child: InkWell(
-                      onTap: () {
-                        _showProfileBottomSheet(context);
-                      },
-                      child: CircleAvatar(
-                        radius: 36,
-                        backgroundColor: Colors.white,
+              ValueListenableBuilder(
+                valueListenable: CurrentUserData.isTeacher ? Hive
+                    .box<TeacherModel>(teacherTableName)
+                    .listenable()
+                    : Hive
+                    .box<StudentModel>(studentTableName)
+                    .listenable(),
+                builder: (context, value, child) {
+                  // Check if the value is empty, meaning no user data is stored in Hive yet
+                  if (value.isEmpty) {
+                    return CircleAvatar(
+                      radius: 36,
+                      backgroundColor: Colors.white,
+                      child: InkWell(
+                        onTap: () {
+                          _showProfileBottomSheet(context, null);
+                        },
                         child: CircleAvatar(
                           radius: 33,
-                          backgroundImage: AssetImage(startBoyImage),
+                          backgroundImage: AssetImage(
+                              startBoyImage), // Default image
                         ),
                       ),
-                    ),
-                  ),
-                ],
-              ),
+                    );
+                  }
+
+                  // Get the profile URL based on the user type (teacher or student)
+                  String? profileUrl;
+                  String? name;
+                  String? phoneNumber;
+                  String? dateOfBirth;
+                  String? standard;
+                  if (CurrentUserData.isTeacher) {
+                    // Cast the object to TeacherModel to access profileUrl
+                    var teacher = value.getAt(0) as TeacherModel; // Cast to TeacherModel
+                    profileUrl = teacher.profileUrl; // Get the profile URL for the teacher
+                    name = teacher.fullName; // Get the profile URL for the teacher
+                    phoneNumber = teacher.phoneNumber; // Get the profile URL for the teacher
+                    dateOfBirth = teacher.dob; // Get the profile URL for the teacher
+                  } else if (CurrentUserData.isStudent) {
+                    // Cast the object to StudentModel to access profileUrl
+                    var student = value.getAt(0) as StudentModel; // Cast to StudentModel
+                    name = student.fullName;
+                    phoneNumber = student.phoneNumber;
+                    profileUrl = student.profileUrl; // Get the profile URL for the student
+                    dateOfBirth = student.dob; // Get the profile URL for the teacher
+                    standard = student.standard; // Get the profile URL for the teacher
+                  }
+
+                  // Format the date of birth if it's available
+                  String formattedDob = 'N/A'; // Default text if DOB is not available
+                  if (dateOfBirth != null && dateOfBirth.isNotEmpty) {
+                    try {
+                      // Use intl package to parse the date if it's in DD/MM/YYYY format
+                      DateFormat format = DateFormat("dd/MM/yyyy"); // Specify the custom format
+                      DateTime dobDate = format.parse(dateOfBirth); // Parse the date
+                      formattedDob = "${dobDate.day}-${dobDate.month.toString().padLeft(2, '0')}-${dobDate.year}";
+                    } catch (e) {
+                      print("Error parsing date: $e");
+                      formattedDob = 'Invalid Date Format';
+                    }
+                  }
+                  return Stack(
+                    children: [
+                      CustomCard(
+                        width: double.infinity,
+                        height: 255,
+                        alignment: Alignment.bottomCenter,
+                        child: CustomCard(
+                          width: double.infinity,
+                          height: 220,
+                          padding: EdgeInsets.all(16),
+                          color: Color(0xff0A3B87),
+                          borderRadius: 12,
+                          child: Column(
+                            children: [
+                              SizedBox(height: 27),
+                              CustomText(
+                                text: name!,
+                                color: Colors.white,
+                                size: 22,
+                                fontFamily: poppinsFontFamily,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              // Check if `standard` is null or empty before displaying
+                              standard != null && standard.isNotEmpty
+                                  ? CustomText(
+                                text: standard,
+                                color: Colors.white,
+                                fontFamily: interFontFamily,
+                              )
+                                  : SizedBox(),
+                              CustomText(
+                                text: phoneNumber!,
+                                color: Colors.white,
+                                fontFamily: interFontFamily,
+                              ),
+                              SizedBox(height: 8),
+                              formattedDob != "N/A" ? CustomText(
+                                text: formattedDob,
+                                color: Colors.white,
+                                fontFamily: interFontFamily,
+                              ) : SizedBox(),
+                              SizedBox(height: 10),
+                              CustomCard(
+                                onTap: () => Get.to(EditProfilePage()),
+                                borderRadius: 12,
+                                width: 160,
+                                height: 40,
+                                alignment: Alignment.center,
+                                color: Color(0xff9AC3FF),
+                                child: CustomText(text: 'Edit Profile'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        child: InkWell(
+                          onTap: () {
+                            _showProfileBottomSheet(context, profileUrl);
+                          },
+                          child: CircleAvatar(
+                            radius: 36,
+                            backgroundColor: Colors.white,
+                            child: CircleAvatar(
+                              radius: 33,
+                              backgroundImage: (profileUrl != null &&
+                                  profileUrl.isNotEmpty)
+                                  ? NetworkImage(profileUrl)
+                                  : AssetImage(
+                                  startBoyImage), // Use the stored image or the default image
+                            ),
+                          ),
+                        ),
+                      )
+                    ],
+                  );
+                },),
               SizedBox(height: 20),
               CustomText(
                 text: 'Academic Essentials',
@@ -122,7 +196,7 @@ class ProfileView extends StatelessWidget {
                 childAspectRatio: 1.7,
                 children: [
                   _buildCard(
-                    title: "Home",
+                    title: "Home Work",
                     icon: Icons.home,
                     onTap: () => Get.to(ProfileHomeWorkView()),
                   ),
@@ -168,12 +242,14 @@ class ProfileView extends StatelessWidget {
     );
   }
 
-  Widget _buildCard({required String title, required IconData icon, Function()? onTap}) {
+  Widget _buildCard(
+      {required String title, required IconData icon, Function()? onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: CustomCard(
         height: 90,
-        color: Colors.black,  // Ensure blackColor is defined or replace with a color value
+        color: Colors.black,
+        // Ensure blackColor is defined or replace with a color value
         borderRadius: 15,
         child: Row(
           children: [
@@ -188,7 +264,8 @@ class ProfileView extends StatelessWidget {
                     child: CustomText(
                       text: title,
                       size: 19,
-                      color: Colors.white,  // Ensure whiteColor is defined or replace with Colors.white
+                      color: Colors.white,
+                      // Ensure whiteColor is defined or replace with Colors.white
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -216,12 +293,12 @@ class ProfileView extends StatelessWidget {
     return Expanded(
       child: CustomCard(
         height: 67,
-          color: color.withOpacity(0.2),
-          borderRadius: 8,
+        color: color.withOpacity(0.2),
+        borderRadius: 8,
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 8.0,top: 5),
+              padding: const EdgeInsets.only(left: 8.0, top: 5),
               child: CustomText(
                 text: label,
                 size: 14,
@@ -248,7 +325,7 @@ class ProfileView extends StatelessWidget {
     );
   }
 
-  void _showProfileBottomSheet(BuildContext context) {
+  void _showProfileBottomSheet(BuildContext context, String? profileUrl) {
     showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
@@ -260,22 +337,31 @@ class ProfileView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Align(alignment: Alignment.centerRight,
+              Align(
+                  alignment: Alignment.centerRight,
                   child: GestureDetector(
                     onTap: () {
                       Get.back();
                     },
-                    child: CustomText(text: "X",
+                    child: CustomText(
+                      text: "X",
                       color: blackColor,
                       fontWeight: FontWeight.bold,
-                      size: 24,),
-                  )
-              ),
+                      size: 24,
+                    ),
+                  )),
               // Profile Picture Preview
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.asset(
-                  startBoyImage, // Profile image
+                child: profileUrl == null || profileUrl.isEmpty
+                    ? Image.asset(
+                  startBoyImage, // Default image
+                  width: 230,
+                  height: 230,
+                  fit: BoxFit.cover,
+                )
+                    : Image.network(
+                  profileUrl, // Profile image
                   width: 230,
                   height: 230,
                   fit: BoxFit.cover,
@@ -288,27 +374,35 @@ class ProfileView extends StatelessWidget {
                 children: [
                   CustomCard(
                     onTap: () {
-                      // Add Retake action
+                      // Pick image from gallery and update the profile
+                      controller.pickImage(context);
+                      Get.back();
                     },
                     alignment: Alignment.center,
                     borderRadius: 25,
                     width: 123,
                     height: 40,
-                    border: Border.all(color: Color(0xff0A3B87),width: 0.5),
-                    child: CustomText(text: 'Retake', color: Color(0xff0A3B87),),
+                    border: Border.all(color: Color(0xff0A3B87), width: 0.5),
+                    child: CustomText(
+                      text: 'Retake',
+                      color: Color(0xff0A3B87),
+                    ),
                   ),
                   SizedBox(width: 20),
                   CustomCard(
                     onTap: () {
-                      Get.back();
+                      Get.back(); // Navigate back
                     },
                     color: Color(0xff0A3B87),
                     alignment: Alignment.center,
                     borderRadius: 25,
                     width: 123,
                     height: 40,
-                    border: Border.all(color: blackColor,width: 0.5),
-                    child: CustomText(text: 'Ok',color: whiteColor,),
+                    border: Border.all(color: blackColor, width: 0.5),
+                    child: CustomText(
+                      text: 'Ok',
+                      color: whiteColor,
+                    ),
                   ),
                 ],
               ),
@@ -321,9 +415,6 @@ class ProfileView extends StatelessWidget {
 
 
 }
-
-
-
 
 
 //

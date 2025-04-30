@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:pencilo/controller/profile_controller.dart';
 import 'package:pencilo/data/consts/images.dart';
 import 'package:pencilo/view/login_view/otp_view.dart';
 import '../../../data/consts/const_import.dart';
@@ -58,44 +59,10 @@ class LoginView extends StatelessWidget {
                   ],
                 ),
               if (!isTeacher)
-                Obx(() => SizedBox(
-                  height: 42,
-                  child: DropdownButtonFormField<String>(
-                    decoration: _dropdownDecoration("Standard"),
-                    value: controller.selectedStandard.value.isEmpty
-                        ? null
-                        : controller.selectedStandard.value,
-                    items: controller.standards
-                        .map((std) => DropdownMenuItem(
-                      value: std,
-                      child: Text(std),
-                    ))
-                        .toList(),
-                    onChanged: (val) {
-                      if (val != null) controller.selectStandard(val);
-                    },
-                  ),
-                )),
+              _buildStandardDropdown(controller),
               if (!isTeacher) SizedBox(height: 12),
               if (!isTeacher)
-                Obx(() => SizedBox(
-                  height: 42,
-                  child: DropdownButtonFormField<String>(
-                    decoration: _dropdownDecoration("Div"),
-                    value: controller.selectedDivision.value.isEmpty
-                        ? null
-                        : controller.selectedDivision.value,
-                    items: controller.divisions
-                        .map((div) => DropdownMenuItem(
-                      value: div,
-                      child: Text(div),
-                    ))
-                        .toList(),
-                    onChanged: (val) {
-                      if (val != null) controller.selectDivision(val);
-                    },
-                  ),
-                )),
+                _buildDivisionDropdown(controller),
               SizedBox(height: 12),
               // LoginClassTextField(
               //   hintText: "Current location",
@@ -104,72 +71,153 @@ class LoginView extends StatelessWidget {
               // SizedBox(height: 12),
               LoginClassTextField(
                 hintText: "Phone number",
-                keyboardType: TextInputType.number,
+                keyboardType: TextInputType.phone,
                 onChanged: (value) => controller.phoneNumber.value = value,
               ),
-              if(!isTeacher)SizedBox(height: SizeConfig.screenHeight * 0.05),
-              if(isTeacher)SizedBox(height: SizeConfig.screenHeight * 0.1),
-              Obx(() =>
-              controller.isLoginUser.value ? Center(
-                child: CircularProgressIndicator(),)
-                  : CustomCard(
-                onTap: () async {
-                  controller.isLoginUser(true);
-                  if (controller.isFormValid) {
-                    // Trigger Firebase phone verification
-                    await controller.storeUserData().then((value) {
-                      controller.isLoginUser(false);
-                    },); // Call the method to start phone verification
-                  } else {
-                    // Show a message if form is invalid
-                    Get.snackbar('Error', 'Please fill all the required fields.');
-                    controller.isLoginUser(false);
-                  }
-                },
-                alignment: Alignment.center,
-                borderRadius: 7,
-                width: SizeConfig.screenWidth * 0.8,
-                height: 42,
-                color: const Color(0xff9AC3FF),
-                boxShadow: [
-                  BoxShadow(
-                      color: grayColor,
-                      blurRadius: 5,
-                      offset: const Offset(0, 3))
-                ],
-                child: CustomText(
-                  text: "Start",
-                  fontWeight: FontWeight.w500,
-                  size: 15,
-                  color: blackColor,
-                  fontFamily: poppinsFontFamily,
-                ),
-              ),
-              )
             ],
           ),
         ),
       ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(bottom: 30.0,left: 25,right: 25),
+        child: Obx(() =>
+        controller.isLoginUser.value ? SizedBox(width: 50,height: 50,child: Center(child: CircularProgressIndicator()))
+            : CustomCard(
+          onTap: () async {
+            controller.isLoginUser(true);
+            bool isFormValid = await controller.validateForm(context);
+
+            if (isFormValid) {
+              // Trigger Firebase phone verification
+              await controller.storeUserData().then((value) {
+                controller.isLoginUser(false);
+              });
+            } else {
+              // Show a message if form is invalid
+              controller.isLoginUser(false);
+            }
+          },
+
+          alignment: Alignment.center,
+          borderRadius: 7,
+          width: SizeConfig.screenWidth * 0.8,
+          height: 42,
+          color: const Color(0xff9AC3FF),
+          boxShadow: [
+            BoxShadow(
+                color: grayColor,
+                blurRadius: 5,
+                offset: const Offset(0, 3))
+          ],
+          child: CustomText(
+            text: "Start",
+            fontWeight: FontWeight.w500,
+            size: 15,
+            color: blackColor,
+            fontFamily: poppinsFontFamily,
+          ),
+        ),
+        ),
+      ),
+
     );
   }
 
-  InputDecoration _dropdownDecoration(String label) {
-    return InputDecoration(
-      hintText: label,
-      hintStyle: TextStyle(
-        fontFamily: poppinsFontFamily,
-        fontWeight: FontWeight.w500,
-        fontSize: 14,
-      ),
-      contentPadding: const EdgeInsets.only(left: 13, bottom: 2),
-      border: const OutlineInputBorder(
-        borderSide: BorderSide(color: Color(0xff4C4C4C), width: 0.1),
-      ),
-      enabledBorder: const OutlineInputBorder(
-        borderSide: BorderSide(color: Color(0xff4C4C4C), width: 0.1),
-      ),
-    );
+// Custom Dropdown with dividers between items for Class
+  Widget _buildStandardDropdown(LoginController controller) {
+    final List<String> classes = ['4th', '5th', '6th', '7th', '8th', '9th', '10th'];
+
+    return Obx(() {
+      return CustomCard(
+        borderRadius: 5,
+        height: 42,
+        border: Border.all(color: grayColor,width: 0.3),
+        child: PopupMenuButton<String>(
+          color: whiteColor,
+          onSelected: (String value) {
+            controller.selectedStandard.value = value;
+          },
+          itemBuilder: (BuildContext context) {
+            return classes.map((classItem) {
+              return PopupMenuItem<String>(
+                value: classItem,
+                child: Column(
+                  children: [
+                    Text(classItem),  // Display the class
+                    Divider(), // Divider after each item
+                  ],
+                ),
+              );
+            }).toList();
+          },
+          child: Row(
+            children: [
+              SizedBox(width: 9),
+              CustomText(
+                text: controller.selectedStandard.value.isEmpty
+                    ? "Select Standard"
+                    : controller.selectedStandard.value,
+                color: blackColor,
+                size: 15,
+              ),
+              Spacer(),
+              Icon(Icons.arrow_drop_down),
+              SizedBox(width: 5)
+            ],
+          ),
+        ),
+      );
+    });
   }
+
+// Custom Dropdown with dividers between items for Section
+  Widget _buildDivisionDropdown(LoginController controller) {
+    final List<String> sections = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+
+    return Obx(() {
+      return CustomCard(
+        borderRadius: 5,
+        height: 42,
+        border: Border.all(color: grayColor,width: 0.3),
+        child: PopupMenuButton<String>(
+          color: whiteColor,
+          onSelected: (String value) {
+            controller.selectedDivision.value = value;
+          },
+          itemBuilder: (BuildContext context) {
+            return sections.map((section) {
+              return PopupMenuItem<String>(
+                value: section,
+                child: Column(
+                  children: [
+                    Text(section),  // Display the section
+                    Divider(), // Divider after each item
+                  ],
+                ),
+              );
+            }).toList();
+          },
+          child: Row(
+            children: [
+              SizedBox(width: 9),
+              CustomText(
+                text: controller.selectedDivision.value.isEmpty
+                    ? "Select Division"
+                    : controller.selectedDivision.value,
+                color: blackColor,
+                size: 15,
+              ),
+              Spacer(),
+              Icon(Icons.arrow_drop_down),
+              SizedBox(width: 5),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+
 }
 
 class LoginClassTextField extends StatelessWidget {

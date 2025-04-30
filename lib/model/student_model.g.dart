@@ -17,37 +17,67 @@ class StudentModelAdapter extends TypeAdapter<StudentModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return StudentModel(
-      uid: fields[0] as String,
-      name: fields[1] as String,
-      schoolName: fields[2] as String,
-      standard: fields[3] as String,
-      division: fields[4] as String,
-      phoneNumber: fields[5] as String,
-      currentLocation: fields[6] as String,
-      isStudent: fields[7] as bool?,
+      uid: fields[0] as String?,
+      fullName: fields[1] as String?,
+      rollNumber: fields[3] as String?,
+      admissionNumber: fields[4] as String?,
+      dob: fields[5] as String?,
+      bloodGroup: fields[6] as String?,
+      aadharNumber: fields[7] as String?,
+      email: fields[8] as String?,
+      phoneNumber: fields[9] as String?,
+      residentialAddress: fields[10] as String?,
+      parentName: fields[11] as String?,
+      parentPhone: fields[12] as String?,
+      schoolName: fields[13] as String?,
+      standard: fields[14] as String?,
+      division: fields[15] as String?,
+      currentLocation: fields[16] as String?,
+      isStudent: fields[17] as bool?,
+      profileUrl: fields[18] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, StudentModel obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(18)
       ..writeByte(0)
       ..write(obj.uid)
       ..writeByte(1)
-      ..write(obj.name)
-      ..writeByte(2)
-      ..write(obj.schoolName)
+      ..write(obj.fullName)
       ..writeByte(3)
-      ..write(obj.standard)
+      ..write(obj.rollNumber)
       ..writeByte(4)
-      ..write(obj.division)
+      ..write(obj.admissionNumber)
       ..writeByte(5)
-      ..write(obj.phoneNumber)
+      ..write(obj.dob)
       ..writeByte(6)
-      ..write(obj.currentLocation)
+      ..write(obj.bloodGroup)
       ..writeByte(7)
-      ..write(obj.isStudent);
+      ..write(obj.aadharNumber)
+      ..writeByte(8)
+      ..write(obj.email)
+      ..writeByte(9)
+      ..write(obj.phoneNumber)
+      ..writeByte(10)
+      ..write(obj.residentialAddress)
+      ..writeByte(11)
+      ..write(obj.parentName)
+      ..writeByte(12)
+      ..write(obj.parentPhone)
+      ..writeByte(13)
+      ..write(obj.schoolName)
+      ..writeByte(14)
+      ..write(obj.standard)
+      ..writeByte(15)
+      ..write(obj.division)
+      ..writeByte(16)
+      ..write(obj.currentLocation)
+      ..writeByte(17)
+      ..write(obj.isStudent)
+      ..writeByte(18)
+      ..write(obj.profileUrl);
   }
 
   @override

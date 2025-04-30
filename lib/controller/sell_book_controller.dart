@@ -45,10 +45,24 @@ class SellBookController extends GetxController {
     selectedOption.value = value;
   }
 
+// Validate the phone number for Pakistan and India
+  bool validatePhoneNumber(BuildContext context) {
+    // India phone number validation with required +91 or 91 at the start
+    final indianPhoneNumberRegex = RegExp(r'^(?:\+91|91)[789]\d{9}$');
+
+    if (!indianPhoneNumberRegex.hasMatch(contactNumberController.text)) {
+      showSnackbar(context, "Please enter a valid Indian phone number starting with +91.");
+      return false;
+    }
+
+    // Add validation for Pakistan here if needed, or continue for further validation.
+
+    return true; // Return true if phone number is valid
+  }
 
 
   // Save data to Hive
-  saveBook() async {
+  saveBook(BuildContext context) async {
     String title = titleController.text;
     String amount = amountController.text;
     String contactNumber = contactNumberController.text;
@@ -57,6 +71,11 @@ class SellBookController extends GetxController {
     if (title.isEmpty || amount.isEmpty || contactNumber.isEmpty || location.isEmpty || images.isEmpty) {
       Get.snackbar("Error", "Please fill all fields");
       return;
+    }
+
+    // Validate phone number for students based on the country
+    if (!validatePhoneNumber(context)) {
+      return false;
     }
 
     var newBook = SellBookModel(

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:pencilo/data/custom_widget/show_youtube_video.dart';
+import 'package:pencilo/model/subjects_model.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../../controller/home_view_controller.dart';
@@ -11,9 +12,9 @@ import '../../data/custom_widget/custom_media_query.dart';
 import '../../data/custom_widget/custom_text_widget.dart';
 
 class AnswerView extends StatelessWidget {
-  final String? subject;
+  final SubjectModel myData;
 
-  AnswerView({super.key, this.subject});
+  AnswerView({super.key,required this.myData});
   final HomeViewController controller = Get.put(HomeViewController());
 
   @override
@@ -59,7 +60,7 @@ class AnswerView extends StatelessWidget {
             ),
             SizedBox(height: 20),
             CustomText(
-              text: '$subject Answer',
+              text: '${myData.chapterPart} Answer',
               color: blackColor,
               fontFamily: poppinsFontFamily,
               size: 18,
@@ -67,7 +68,7 @@ class AnswerView extends StatelessWidget {
             ),
             SizedBox(height: 10),
             CustomText(
-              text: 'Chapter Name',
+              text: myData.chapterName!,
               color: blackColor,
               fontFamily: poppinsFontFamily,
               size: 18,
@@ -75,7 +76,7 @@ class AnswerView extends StatelessWidget {
             ),
             SizedBox(height: 10),
             CustomText(
-              text: 'Q.1  What is your name?',
+              text: "Q. ${myData.question}",
               color: blackColor,
               fontFamily: poppinsFontFamily,
               size: 18,
@@ -95,7 +96,7 @@ class AnswerView extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                   TextSpan(
-                    text: 'My name is Muhammad Adnan',
+                    text: myData.ans,
                     style: TextStyle(fontWeight: FontWeight.w100),
                   ),
                 ],
@@ -110,115 +111,40 @@ class AnswerView extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
             SizedBox(height: 12),
-            // StreamBuilder to fetch URL from Firestore and show the video or play icon
-            StreamBuilder<DocumentSnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('youtube_urls')
-                  .doc(controller.videoUrlUid)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-
-                if (!snapshot.hasData || snapshot.data == null) {
-                  return Center(child: Text('No data available'));
-                }
-
-                var videoUrl = snapshot.data!['videoUrl'];
-
-                if (videoUrl != null && videoUrl.isNotEmpty) {
-                  // Show thumbnail or player if URL is available
-                  return GestureDetector(
-                    onTap: () {
-                      Get.to(ShowYoutubeVideo(
-                        videoUrl: videoUrl, // Navigate to ShowYoutubeVideo
-                      ));
-                    },
-                    child: CustomCard(
-                      alignment: Alignment.center,
-                      width: SizeConfig.screenWidth * 0.8,
-                      height: SizeConfig.screenHeight * 0.3,
-                      color: Color(0xffD9D9D9),
-                      child: Stack(
-                        children: [
-                          Image.network(
-                            "https://img.youtube.com/vi/${YoutubePlayer.convertUrlToId(videoUrl)}/0.jpg", // YouTube thumbnail
-                            height: SizeConfig.screenHeight * 0.3,
-                            width: SizeConfig.screenWidth * 0.8,
-                            fit: BoxFit.cover,
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            top: 0,
-                            left: 0,
-                            child: Icon(
-                              Icons.play_circle,
-                              size: 40,
-                              color: whiteColor,
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  );
-                } else {
-                  // If no URL is provided, show play icon
-                  return GestureDetector(
-                    onTap: () {
-                      Get.to(ShowYoutubeVideo(
-                        videoUrl: "https://www.youtube.com/shorts/ZkfAaEKV0pk?feature=share",
-                      ));
-                    },
-                    child: CustomCard(
-                      alignment: Alignment.center,
-                      width: SizeConfig.screenWidth * 0.8,
-                      height: SizeConfig.screenHeight * 0.3,
-                      color: Color(0xffD9D9D9),
-                      child: Icon(Icons.play_circle, size: 50, color: bgColor),
-                    ),
-                  );
-                }
+            GestureDetector(
+              onTap: () {
+                Get.to(ShowYoutubeVideo(
+                  videoUrl: myData.youtubeVideoPath!, // Navigate to ShowYoutubeVideo
+                ));
               },
-            ),
-            SizedBox(height: 30),
-            CustomText(
-              text: 'Add Youtube View url',
-              color: blackColor,
-              fontFamily: poppinsFontFamily,
-              size: 16,
-            ),
-            SizedBox(height: 10),
-            Align(
-              alignment: Alignment.center,
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: 300,
-                    child: TextField(
-                      controller: controller.urlController,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                      ),
+              child: CustomCard(
+                alignment: Alignment.center,
+                width: SizeConfig.screenWidth * 0.8,
+                height: SizeConfig.screenHeight * 0.3,
+                color: Color(0xffD9D9D9),
+                child: Stack(
+                  children: [
+                    Image.network(
+                      "https://img.youtube.com/vi/${YoutubePlayer.convertUrlToId(myData.youtubeVideoPath!)}/0.jpg", // YouTube thumbnail
+                      height: SizeConfig.screenHeight * 0.3,
+                      width: SizeConfig.screenWidth * 0.8,
+                      fit: BoxFit.cover,
                     ),
-                  ),
-                  SizedBox(height: 15),
-                  CustomCard(
-                    onTap: () {
-                      controller.saveVideoUrl(controller.videoUrlUid); // Save the URL
-                    },
-                    alignment: Alignment.center,
-                    borderRadius: 4,
-                    width: 73,
-                    height: 33,
-                    color: blackColor,
-                    child: CustomText(text: "Change Url", size: 13),
-                  ),
-                ],
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      top: 0,
+                      left: 0,
+                      child: Icon(
+                        Icons.play_circle,
+                        size: 40,
+                        color: whiteColor,
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
-            SizedBox(height: SizeConfig.screenHeight * 0.08),
           ],
         ),
       ),

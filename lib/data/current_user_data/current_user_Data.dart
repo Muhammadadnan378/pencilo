@@ -17,69 +17,114 @@ class CurrentUserData {
   static String subject = ''; // Only for teachers
   static bool isTeacher = false; // Flag to distinguish teacher and student
   static bool isStudent = false; // Flag to distinguish teacher and student
+  static String profileUrl = ''; // URL for profile picture
+
+  // Fields for students
+  static String rollNumber = ''; // Only for students
+  static String admissionNumber = ''; // Only for students
+  static String dob = ''; // Date of birth for both students and teachers
+  static String bloodGroup = ''; // Blood group for both students and teachers
+  static String aadharNumber = ''; // Aadhar number for both students and teachers
+  static String email = ''; // Email for both students and teachers
+  static String residentialAddress = ''; // Residential address for both students and teachers
+  static String parentName = ''; // Parent's name for students only
+  static String parentPhone = ''; // Parent's phone number for students only
+  static String classSection = ''; // Parent's phone classSection for students only
 
   // Method to load user data from Hive (either teacher or student)
+// Method to load user data from Hive (either teacher or student)
   static Future<void> loadUserDataFromHive() async {
     try {
+      // Open the Hive boxes for teacher and student models
       var teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
       var studentBox = await Hive.openBox<StudentModel>(studentTableName);
 
       // Check for teacher data first
       if (teacherBox.isNotEmpty) {
-        final teacher = teacherBox.getAt(0);
-        uid = teacher?.uid ?? '';
-        name = teacher?.name ?? '';
-        schoolName = teacher?.schoolName ?? '';
-        phoneNumber = teacher?.phoneNumber ?? '';
-        currentLocation = teacher?.currentLocation ?? '';
-        subject = teacher?.subject ?? '';
-        isTeacher = true;
-        isStudent = false; // Ensure student flag is false
-      } else if (studentBox.isNotEmpty) {
-        final student = studentBox.getAt(0);
-        uid = student?.uid ?? '';
-        name = student?.name ?? '';
-        schoolName = student?.schoolName ?? '';
-        phoneNumber = student?.phoneNumber ?? '';
-        currentLocation = student?.currentLocation ?? '';
-        standard = student?.standard ?? '';
-        division = student?.division ?? '';
-        isTeacher = false;
-        isStudent = true; // Ensure student flag is true
+        final teacher = teacherBox.getAt(0); // Assuming the teacher is at index 0
+        if (teacher != null) {
+          // Load data into CurrentUserData
+          uid = teacher.uid ?? '';
+          name = teacher.fullName ?? '';
+          schoolName = teacher.schoolName ?? '';
+          phoneNumber = teacher.phoneNumber ?? '';
+          currentLocation = teacher.currentLocation ?? '';
+          subject = teacher.subject ?? '';
+          dob = teacher.dob ?? '';
+          bloodGroup = teacher.bloodGroup ?? '';
+          aadharNumber = teacher.aadharNumber ?? '';
+          email = teacher.email ?? '';
+          residentialAddress = teacher.residentialAddress ?? '';
+          profileUrl = teacher.profileUrl ?? '';  // Assign profileUrl from Hive
+          isTeacher = true;
+          isStudent = false; // Ensure student flag is false
+
+          // Print all teacher data fields
+          print('Teacher Data Loaded:');
+          print('uid: $uid');
+          print('name: $name');
+          print('schoolName: $schoolName');
+          print('phoneNumber: $phoneNumber');
+          print('currentLocation: $currentLocation');
+          print('subject: $subject');
+          print('dob: $dob');
+          print('bloodGroup: $bloodGroup');
+          print('aadharNumber: $aadharNumber');
+          print('email: $email');
+          print('residentialAddress: $residentialAddress');
+          print('profileUrl: $profileUrl');
+        }
+      }
+
+      // Check for student data
+      if (studentBox.isNotEmpty) {
+        final student = studentBox.getAt(0); // Assuming the student is at index 0
+        if (student != null) {
+          // Load data into CurrentUserData
+          uid = student.uid ?? '';
+          name = student.fullName ?? '';
+          schoolName = student.schoolName ?? '';
+          phoneNumber = student.phoneNumber ?? '';
+          currentLocation = student.currentLocation ?? '';
+          standard = student.standard ?? '';
+          division = student.division ?? '';
+          dob = student.dob ?? '';
+          bloodGroup = student.bloodGroup ?? '';
+          aadharNumber = student.aadharNumber ?? '';
+          email = student.email ?? '';
+          residentialAddress = student.residentialAddress ?? '';
+          parentName = student.parentName ?? '';
+          parentPhone = student.parentPhone ?? '';
+          profileUrl = student.profileUrl ?? '';  // Assign profileUrl from Hive
+          isTeacher = false;
+          isStudent = true; // Ensure student flag is true
+
+          // Print all student data fields
+          print('Student Data Loaded:');
+          print('uid: $uid');
+          print('name: $name');
+          print('schoolName: $schoolName');
+          print('phoneNumber: $phoneNumber');
+          print('currentLocation: $currentLocation');
+          print('standard: $standard');
+          print('division: $division');
+          print('dob: $dob');
+          print('bloodGroup: $bloodGroup');
+          print('aadharNumber: $aadharNumber');
+          print('email: $email');
+          print('residentialAddress: $residentialAddress');
+          print('parentName: $parentName');
+          print('parentPhone: $parentPhone');
+          print('profileUrl: $profileUrl');
+        }
       }
     } catch (e) {
       print('Error loading user data from Hive: $e');
     }
   }
 
-  // Method to load user data from Firestore (either teacher or student)
-  static Future<void> loadUserDataFromFirestore(String uid) async {
-    try {
-      var userDoc = await FirebaseFirestore.instance.collection(isTeacher ? teacherTableName : studentTableName).doc(uid).get();
 
-      if (userDoc.exists) {
-        Map<String, dynamic> userData = userDoc.data()!;
-        CurrentUserData.uid = userData['uid'];
-        CurrentUserData.name = userData['name'];
-        CurrentUserData.schoolName = userData['schoolName'];
-        CurrentUserData.phoneNumber = userData['phoneNumber'];
-        CurrentUserData.currentLocation = userData['currentLocation'];
 
-        if (isTeacher) {
-          subject = userData['subject'];
-          isTeacher = true;
-          isStudent = false; // Ensure student flag is false
-        } else {
-          standard = userData['standard'];
-          division = userData['division'];
-          isTeacher = false;
-          isStudent = true; // Ensure student flag is true
-        }
-      }
-    } catch (e) {
-      print('Error loading user data from Firestore: $e');
-    }
-  }
 
   static Future<void> logout() async {
     try {

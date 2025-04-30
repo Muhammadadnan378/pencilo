@@ -1,15 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/db_helper/model_name.dart';
 import 'package:pencilo/firebase_options.dart';
 import 'package:pencilo/model/sell_book_model.dart';
 import 'package:pencilo/model/student_model.dart';
 import 'package:pencilo/model/teacher_model.dart';
-import 'package:pencilo/phone_auth_view.dart';
 import 'package:pencilo/view/splash_view/splash_view.dart';
-
 import 'data/custom_widget/custom_media_query.dart';
 
 void main() async {
@@ -53,7 +49,8 @@ class MyApp extends StatelessWidget {
         ),
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: SplashView(),
+      home:
+      SplashView(),
     );
   }
 }

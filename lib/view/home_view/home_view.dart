@@ -4,6 +4,7 @@ import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 import 'package:pencilo/view/home_view/subject_parts_view.dart';
 import '../../controller/home_view_controller.dart';
 import '../../data/consts/images.dart';
+import 'add_subjects.dart';
 
 class HomeView extends StatelessWidget {
   HomeViewController controller = Get.put(HomeViewController());
@@ -63,25 +64,55 @@ class HomeView extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
                 SizedBox(width: 14,),
+                Obx(() {
+                  return CustomCard(
+                    height: 28,
+                    borderRadius: 9,
+                    border: Border.all(color: bgColor, width: 0.3),
+                    child: Row(
+                      children: [
+                        SizedBox(width: 14),
+                        // The DropdownButton that displays the options
+                        DropdownButton<String>(
+                          value: controller.selectedValue.value, // Display selected value
+                          icon: Icon(Icons.arrow_drop_down),
+                          underline: SizedBox(), // Remove the default underline
+                          onChanged: (String? newValue) {
+                            // Update the selected value when an item is selected
+                            if (newValue != null) {
+                              controller.changeValue(newValue);
+                            }
+                          },
+                          items: <String>['4th', '5th', '6th', '7th', '8th', '9th', '10th',]
+                              .map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: CustomText(
+                                text: value,
+                                fontFamily: poppinsFontFamily,
+                                size: 16,
+                                color: bgColor,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                Spacer(),
                 CustomCard(
+                  alignment: Alignment.center,
                   height: 28,
+                  padding: EdgeInsets.only(left: 10,right: 10,top: 3,bottom: 3),
                   borderRadius: 9,
-                  border: Border.all(color: bgColor,width: 0.3),
-                  child: Row(
-                    children: [
-                      SizedBox(width: 14,),
-                      CustomText(
-                        text: '4th',
-                        fontFamily: poppinsFontFamily,
-                        size: 16,
-                        color: bgColor,
-                        fontWeight: FontWeight.w600,),
-                      SizedBox(width: 3,),
-                      Icon(Icons.arrow_drop_down),
-                      SizedBox(width: 5,),
-                    ],
-                  ),
-                ),
+                  onTap: () {
+                    Get.to(AddSubjects());
+                  },
+                  border: Border.all(color: bgColor, width: 0.3),
+                  child: CustomText(text: "Add Subjects",color: blackColor,size: 15,),
+                )
               ],
             ),
             SizedBox(height: 10,),
@@ -97,7 +128,7 @@ class HomeView extends StatelessWidget {
                     padding: const EdgeInsets.only(bottom: 10.0),
                     child: CustomCard(
                       onTap: () {
-                        Get.to(SubjectPartsView(subject: classBooks[index])); // Navigate to parts view
+                        Get.to(SubjectPartsView(subject: classBooks[index],colors: controller.curvedCardColors[index],bgColor: controller.bGCardColors[index],),); // Navigate to parts view
                       },
                       width: double.infinity,
                       height: 147, // Reduced height of the CustomCard
@@ -110,7 +141,7 @@ class HomeView extends StatelessWidget {
                           Align(
                             alignment: Alignment.bottomCenter,
                             child: ClipRRect(
-                              borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(6),bottomRight: Radius.circular(10)),
+                              borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(10),bottomRight: Radius.circular(10)),
                               child: Image.asset(
                                 controller.curvedImages[index],  // Replace with your dynamic image for each subject
                                 width: double.infinity,
