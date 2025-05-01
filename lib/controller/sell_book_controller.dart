@@ -48,10 +48,9 @@ class SellBookController extends GetxController {
 // Validate the phone number for Pakistan and India
   bool validatePhoneNumber(BuildContext context) {
     // India phone number validation with required +91 or 91 at the start
-    final indianPhoneNumberRegex = RegExp(r'^(?:\+91|91)[789]\d{9}$');
-
-    if (!indianPhoneNumberRegex.hasMatch(contactNumberController.text)) {
-      showSnackbar(context, "Please enter a valid Indian phone number starting with +91.");
+    final myPhoneNumber = RegExp(r'^[789]\d{9}$');
+    if (!myPhoneNumber.hasMatch(contactNumberController.text)) {
+      showSnackbar(context, "Please enter a valid Indian phone number.");
       return false;
     }
 

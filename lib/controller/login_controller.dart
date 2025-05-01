@@ -64,12 +64,11 @@ class LoginController extends GetxController {
 // Validate the phone number for Pakistan and India
   Future<bool> validatePhoneNumber(BuildContext context) async {
     // India phone number validation with required +91 or 91 at the start
-    final indianPhoneNumberRegex = RegExp(r'^(?:\+91|91)[789]\d{9}$');
-
-    if (!indianPhoneNumberRegex.hasMatch(phoneNumber.value)) {
-      showSnackbar(context, "Please enter a valid Indian phone number starting with +91.");
-      return false;
-    }
+      final myPhoneNumber = RegExp(r'^[789]\d{9}$');
+      if (!myPhoneNumber.hasMatch(phoneNumber.value)) {
+        showSnackbar(context, "Please enter a valid Indian phone number.");
+        return false;
+      }
 
     // Add validation for Pakistan here if needed, or continue for further validation.
 
@@ -119,7 +118,6 @@ class LoginController extends GetxController {
         CurrentUserData.standard = userDoc['standard'] ?? '';
         CurrentUserData.rollNumber = userDoc['rollNumber'] ?? '';
         CurrentUserData.admissionNumber = userDoc['admissionNumber'] ?? '';
-        CurrentUserData.classSection = userDoc['classSection'] ?? '';
         CurrentUserData.isStudent = userDoc['isStudent'] ?? true;
         CurrentUserData.division = userDoc['division'] ?? '';
         CurrentUserData.dob = userDoc['dob'] ?? '';

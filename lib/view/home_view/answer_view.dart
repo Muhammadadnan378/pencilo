@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:pencilo/data/custom_widget/show_images_view.dart';
 import 'package:pencilo/data/custom_widget/show_youtube_video.dart';
 import 'package:pencilo/model/subjects_model.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -14,7 +15,7 @@ import '../../data/custom_widget/custom_text_widget.dart';
 class AnswerView extends StatelessWidget {
   final SubjectModel myData;
 
-  AnswerView({super.key,required this.myData});
+  AnswerView({super.key, required this.myData});
   final HomeViewController controller = Get.put(HomeViewController());
 
   @override
@@ -60,89 +61,134 @@ class AnswerView extends StatelessWidget {
             ),
             SizedBox(height: 20),
             CustomText(
-              text: '${myData.chapterPart} Answer',
+              text: myData.chapterName ?? "",
               color: blackColor,
               fontFamily: poppinsFontFamily,
               size: 18,
               fontWeight: FontWeight.w600,
             ),
             SizedBox(height: 10),
-            CustomText(
-              text: myData.chapterName!,
-              color: blackColor,
-              fontFamily: poppinsFontFamily,
-              size: 18,
-              fontWeight: FontWeight.w300,
-            ),
-            SizedBox(height: 10),
-            CustomText(
-              text: "Q. ${myData.question}",
-              color: blackColor,
-              fontFamily: poppinsFontFamily,
-              size: 18,
-              fontWeight: FontWeight.w600,
-            ),
-            SizedBox(height: 10),
-            RichText(
-              text: TextSpan(
-                style: TextStyle(
-                  fontFamily: poppinsFontFamily,
-                  fontSize: 16,
-                  color: blackColor,
-                ),
-                children: [
-                  TextSpan(
-                    text: 'Ans: ',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  TextSpan(
-                    text: myData.ans,
-                    style: TextStyle(fontWeight: FontWeight.w100),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 20),
-            CustomText(
-              text: 'Tutorial Video',
-              color: blackColor,
-              fontFamily: poppinsFontFamily,
-              size: 16,
-              fontWeight: FontWeight.w700,
-            ),
-            SizedBox(height: 12),
-            GestureDetector(
-              onTap: () {
-                Get.to(ShowYoutubeVideo(
-                  videoUrl: myData.youtubeVideoPath!, // Navigate to ShowYoutubeVideo
-                ));
-              },
-              child: CustomCard(
-                alignment: Alignment.center,
-                width: SizeConfig.screenWidth * 0.8,
-                height: SizeConfig.screenHeight * 0.3,
-                color: Color(0xffD9D9D9),
-                child: Stack(
+
+            // Display multiple questions and answers
+            myData.questions != null && myData.questions!.isNotEmpty
+                ? ListView.builder(
+              shrinkWrap: true,
+              itemCount: myData.questions!.length,
+              physics: NeverScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                final questionData = SubjectModel.fromMap(myData.questions![index]);
+                final questionNumber = index + 1;
+                final isLastQuestion = index == myData.questions!.length - 1;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Image.network(
-                      "https://img.youtube.com/vi/${YoutubePlayer.convertUrlToId(myData.youtubeVideoPath!)}/0.jpg", // YouTube thumbnail
-                      height: SizeConfig.screenHeight * 0.3,
-                      width: SizeConfig.screenWidth * 0.8,
-                      fit: BoxFit.cover,
+                    CustomText(
+                      text: "Q $questionNumber. ${questionData.question}",
+                      color: blackColor,
+                      fontFamily: poppinsFontFamily,
+                      size: 18,
+                      fontWeight: FontWeight.w600,
                     ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      top: 0,
-                      left: 0,
-                      child: Icon(
-                        Icons.play_circle,
-                        size: 40,
-                        color: whiteColor,
+                    SizedBox(height: 10),
+                    RichText(
+                      text: TextSpan(
+                        style: TextStyle(
+                          fontFamily: poppinsFontFamily,
+                          fontSize: 16,
+                          color: blackColor,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: 'Ans: ',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          TextSpan(
+                            text: questionData.ans ?? '',
+                            style: TextStyle(fontWeight: FontWeight.w100),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    questionData.imgUrl != null
+                        ? GestureDetector(
+                      onTap: () {
+                        Get.to(ShowImagesView(
+                            imagePaths: [questionData.imgUrl!],
+                            initialIndex: 0));
+                      },
+                      child: Image.network(
+                        questionData.imgUrl!,
+                        height: 200,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.broken_image),
                       ),
                     )
+                        : SizedBox(),
+                    SizedBox(height: 12),
+                    CustomText(
+                      text: 'Tutorial Video',
+                      color: blackColor,
+                      fontFamily: poppinsFontFamily,
+                      size: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    SizedBox(height: 12),
+                    questionData.youtubeVideoPath != null
+                        ? GestureDetector(
+                      onTap: () {
+                        Get.to(ShowYoutubeVideo(
+                          videoUrl: questionData.youtubeVideoPath!,
+                        ));
+                      },
+                      child: CustomCard(
+                        alignment: Alignment.center,
+                        width: SizeConfig.screenWidth * 0.8,
+                        height: SizeConfig.screenHeight * 0.3,
+                        color: Color(0xffD9D9D9),
+                        child: Stack(
+                          children: [
+                            Image.network(
+                              "https://img.youtube.com/vi/${YoutubePlayer.convertUrlToId(questionData.youtubeVideoPath!!)}/0.jpg", // YouTube thumbnail
+                              height: SizeConfig.screenHeight * 0.3,
+                              width: SizeConfig.screenWidth * 0.8,
+                              fit: BoxFit.cover,
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              top: 0,
+                              left: 0,
+                              child: Icon(
+                                Icons.play_circle,
+                                size: 40,
+                                color: whiteColor,
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    )
+                        : SizedBox(),
+                    SizedBox(height: 10),
+                    if (!isLastQuestion)
+                      Divider(
+                        color: blackColor,
+                        thickness: 1,
+                      ),
+                    SizedBox(height: 10),
                   ],
-                ),
+                );
+              },
+            )
+                : Center(
+              child: CustomText(
+                text: "No questions available for this chapter.",
+                color: blackColor,
+                fontFamily: poppinsFontFamily,
+                size: 16,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -151,3 +197,4 @@ class AnswerView extends StatelessWidget {
     );
   }
 }
+

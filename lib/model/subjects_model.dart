@@ -10,6 +10,8 @@ class SubjectModel {
   String? chapterId;
   String? youtubeVideoPath;
   String? imgUrl;
+  List<Map<String, dynamic>>? questions; // List to hold multiple questions
+
 
   SubjectModel({
     this.uid,
@@ -23,6 +25,7 @@ class SubjectModel {
     this.chapterId,
     this.youtubeVideoPath,
     this.imgUrl,
+    this.questions,
   });
 
   /// Map for only subject-related fields
@@ -58,9 +61,12 @@ class SubjectModel {
     );
   }
 
-  factory SubjectModel.fromChapter(Map<String, dynamic> json) {
+  factory SubjectModel.fromMap(Map<String, dynamic> json) {
     return SubjectModel(
+      uid: json['uid'],
       subjectId: json['subjectId'],
+      subjectName: json['subjectName'],
+      subjectParts: json['subjectParts'],
       ans: json['ans'],
       chapterName: json['chapterName'],
       chapterPart: json['chapterPart'],
@@ -68,6 +74,7 @@ class SubjectModel {
       chapterId: json['chapterId'],
       youtubeVideoPath: json['youtubeVideoPath'],
       imgUrl: json['imgUrl'],
+      questions: json['questions'] != null ? List<Map<String, dynamic>>.from(json['questions']) : null,
     );
   }
 }
