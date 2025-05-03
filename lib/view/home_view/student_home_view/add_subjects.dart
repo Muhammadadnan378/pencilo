@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../controller/home_view_controller.dart';
-import '../../data/consts/const_import.dart';
-import '../../data/custom_widget/custom_media_query.dart';
+import '../../../controller/student_home_view_controller.dart';
+import '../../../data/consts/const_import.dart';
+import '../../../data/custom_widget/custom_media_query.dart';
 
 class AddSubjects extends StatelessWidget {
   AddSubjects({super.key});

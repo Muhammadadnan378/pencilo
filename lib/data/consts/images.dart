@@ -29,6 +29,7 @@ const historyCurvedImage = "assets/images/history_card_curved.png";
 const hindiCurvedImage = "assets/images/hindi_card_curved.png";
 const mathsCurvedImage = "assets/images/marathi_card_curved.png";
 const marathiCurvedImage = "assets/images/maths_card_curved.png";
+const basketBallImage = "assets/images/basketBalImage.png";
 
 //Videos Url
 const video1 = "assets/videos/video1.mp4";

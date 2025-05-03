@@ -14,8 +14,9 @@ import '../controller/home_controller.dart';
 import '../model/student_model.dart';
 import '../model/teacher_model.dart';
 import 'friend_view/friend_view.dart';
-import 'home_view/home_startup_view.dart';
-import 'home_view/home_view.dart';
+import 'friend_view/popular_games_view.dart';
+import 'home_view/teacher_home_cards_view/teacher_home_view.dart';
+import 'home_view/student_home_view/student_home_view.dart';
 
 class Home extends StatelessWidget {
   Home({super.key});
@@ -23,8 +24,8 @@ class Home extends StatelessWidget {
   final List<Widget> _screens = [
     PlayShortVideo(),
     BuyBookView(),
-    HomeView(),
-    FriendsView(),
+    CurrentUserData.isTeacher == true ? TeacherHomeView() : StudentHomeView(),
+    CurrentUserData.isTeacher != true ? FriendsView() : PopularGamesView(),
     ProfileView(),
   ];
 

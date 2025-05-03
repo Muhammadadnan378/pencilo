@@ -58,6 +58,7 @@ class LoginView extends StatelessWidget {
                     ),
                   ],
                 ),
+              if (isTeacher) SizedBox(height: 12),
               Obx((){
                 controller.selectedGender.value;
                 return _selectSubjectsDropdown(
@@ -86,7 +87,7 @@ class LoginView extends StatelessWidget {
                     dropdownTitle: "Select Division",
                   );
                 }),
-              SizedBox(height: 12),
+              if (!isTeacher) SizedBox(height: 12),
               LoginClassTextField(
                 hintText: "Phone number",
                 keyboardType: TextInputType.phone,

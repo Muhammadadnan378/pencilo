@@ -1,14 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
-import 'package:pencilo/view/home_view/subject_parts_view.dart';
-import '../../controller/home_view_controller.dart';
-import '../../data/consts/images.dart';
+import 'package:pencilo/view/home_view/student_home_view/subject_parts_view.dart';
+import '../../../controller/student_home_view_controller.dart';
+import '../../../data/consts/images.dart';
 import 'add_subjects.dart';
 
-class HomeView extends StatelessWidget {
+class StudentHomeView extends StatelessWidget {
   HomeViewController controller = Get.put(HomeViewController());
-  HomeView({super.key});
+  StudentHomeView({super.key});
 
   // Updated Data structure to hold more random books for each class
   final Map<String, List<String>> classBooksMap = {

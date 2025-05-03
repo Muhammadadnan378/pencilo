@@ -26,6 +26,7 @@ class EditProfilePage extends StatelessWidget {
               _buildTextField('Full Name', isName: true, controller.fullNameController),
               if (CurrentUserData.isTeacher)
                 _buildTextField('Subject', controller.subjectController),
+              if (!CurrentUserData.isTeacher)
               Row(
                 children: [
                   Expanded(

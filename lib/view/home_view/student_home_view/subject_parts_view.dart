@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:pencilo/controller/home_view_controller.dart';
+import 'package:pencilo/controller/student_home_view_controller.dart';
 import 'package:pencilo/data/consts/const_import.dart';
-import '../../data/consts/images.dart';
-import '../../model/subjects_model.dart';
+import '../../../data/consts/images.dart';
+import '../../../model/subjects_model.dart';
 import 'answer_view.dart';
 
 class SubjectPartsView extends StatelessWidget {

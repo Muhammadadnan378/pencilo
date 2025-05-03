@@ -5,12 +5,12 @@ import 'package:pencilo/data/custom_widget/show_youtube_video.dart';
 import 'package:pencilo/model/subjects_model.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-import '../../controller/home_view_controller.dart';
-import '../../data/consts/const_import.dart';
-import '../../data/consts/images.dart';
-import '../../data/custom_widget/custom_card.dart';
-import '../../data/custom_widget/custom_media_query.dart';
-import '../../data/custom_widget/custom_text_widget.dart';
+import '../../../controller/student_home_view_controller.dart';
+import '../../../data/consts/const_import.dart';
+import '../../../data/consts/images.dart';
+import '../../../data/custom_widget/custom_card.dart';
+import '../../../data/custom_widget/custom_media_query.dart';
+import '../../../data/custom_widget/custom_text_widget.dart';
 
 class AnswerView extends StatelessWidget {
   final SubjectModel myData;
