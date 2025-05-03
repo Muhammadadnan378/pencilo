@@ -11,55 +11,42 @@ import '../model/teacher_model.dart';
 class LoginController extends GetxController {
   final standards = ['4th', '5th', '6th', '7th', '8th', '9th', '10th'];
   final divisions = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-
+  final gender = ['Male', 'Female'];
   var selectedStandard = ''.obs;
+  var selectedGender = ''.obs;
   var selectedDivision = ''.obs;
   var name = ''.obs;
   var currentLocation = ''.obs;
   var schoolName = ''.obs;
   var phoneNumber = ''.obs;
   var subject = ''.obs;
-
   var isLoginUser = false.obs;
-
   var existId = "";  // Variable to store the uid of existing user
-
   var isTeacher = false; // Tracks whether the user is a teacher
 
   void setIsTeacher(bool value) {
     isTeacher = value;
   }
-
-  void selectStandard(String value) {
-    selectedStandard.value = value;
-  }
-
-  void selectDivision(String value) {
-    selectedDivision.value = value;
-  }
-
 // Validate the form fields and phone number format for Pakistan and India
   Future<bool> validateForm(BuildContext context) async {
     // Check if the required fields are filled
     if (name.value.isEmpty ||
         schoolName.value.isEmpty ||
         phoneNumber.value.isEmpty ||
+        selectedGender.value.isEmpty ||
         (isTeacher && subject.value.isEmpty) ||
         (!isTeacher && selectedStandard.value.isEmpty) ||
         (!isTeacher && selectedDivision.value.isEmpty)) {
       showSnackbar(context, 'Please fill all the required fields.');
       return false;
     }
-
     // Validate phone number format
     bool isPhoneValid = await validatePhoneNumber(context);
     if (!isPhoneValid) {
       return false;
     }
-
     return true; // Return true if form is valid
   }
-
 
 // Validate the phone number for Pakistan and India
   Future<bool> validatePhoneNumber(BuildContext context) async {
@@ -69,18 +56,13 @@ class LoginController extends GetxController {
         showSnackbar(context, "Please enter a valid Indian phone number.");
         return false;
       }
-
-    // Add validation for Pakistan here if needed, or continue for further validation.
-
     return true; // Return true if phone number is valid
   }
-
   // Fetch user data and store it in Hive if the phone number already exists
   Future<void> fetchUserDataAndStoreInHive() async {
     try {
       // Fetch data from Firestore for either teacher or student
       DocumentSnapshot userDoc;
-
       if (isTeacher) {
         userDoc = (await FirebaseFirestore.instance
             .collection(teacherTableName)
@@ -94,7 +76,6 @@ class LoginController extends GetxController {
       }
       // Assign the uid of the existing user to existId
       existId = userDoc['uid'];
-
       // Load data into CurrentUserData and Hive, ensuring all fields are included
       CurrentUserData.uid = userDoc['uid'] ?? '';
       CurrentUserData.name = userDoc['fullName'] ?? '';
@@ -102,7 +83,7 @@ class LoginController extends GetxController {
       CurrentUserData.currentLocation = userDoc['currentLocation'] ?? '';
       CurrentUserData.phoneNumber = userDoc['phoneNumber'] ?? '';
       CurrentUserData.profileUrl = userDoc['profileUrl'] ?? '';
-
+      CurrentUserData.gender = userDoc['gender'] ?? '';
       if (isTeacher) {
         CurrentUserData.subject = userDoc['subject'] ?? '';
         CurrentUserData.isTeacher = userDoc['isTeacher'] ?? true;
@@ -129,7 +110,6 @@ class LoginController extends GetxController {
         CurrentUserData.parentPhone = userDoc['parentPhone'] ?? '';
         addStudentDataToHive(userDoc);
       }
-
       // Navigate to Home after storing data
       Get.offAll(Home());
     } catch (e) {
@@ -137,7 +117,6 @@ class LoginController extends GetxController {
       print("Error: $e");
     }
   }
-
   // Check if the phone number already exists in Firestore
   Future<bool> isPhoneNumberExist() async {
     try {
@@ -158,7 +137,6 @@ class LoginController extends GetxController {
       return false;
     }
   }
-
   // Store user data in Firestore (with DateTime as UID)
   Future<void> storeUserData() async {
     try {
@@ -171,8 +149,6 @@ class LoginController extends GetxController {
             .collection(studentTableName)
             .where('phoneNumber', isEqualTo: phoneNumber.value)
             .get();
-
-
       if (teacherDoc.docs.isNotEmpty || studentDoc.docs.isNotEmpty) {
         // Fetch existing data from Firestore
         await fetchUserDataAndStoreInHive();
@@ -211,6 +187,7 @@ class LoginController extends GetxController {
       email: userDoc['email'] ?? '',
       residentialAddress: userDoc['residentialAddress'],
       profileUrl: userDoc['profileUrl'],
+      gender: userDoc['gender'],
     );
 
     await teacherBox.add(newTeacher);
@@ -240,6 +217,7 @@ class LoginController extends GetxController {
       currentLocation: userDoc['currentLocation'] ?? '',
       isStudent: userDoc['isStudent'] ?? true,
       profileUrl: userDoc['profileUrl'] ?? '',
+      gender: userDoc['gender'] ?? '',
     );
 
     await studentBox.add(newStudent);
@@ -261,7 +239,8 @@ class LoginController extends GetxController {
           email: "", // Default empty string
           residentialAddress: "", // Default empty string
           profileUrl: "",// Default empty string
-          isTeacher: true
+          isTeacher: true,
+          gender: selectedGender.value
       );
 
       // Store the teacher data in Firestore using the toMap method
@@ -277,6 +256,7 @@ class LoginController extends GetxController {
         CurrentUserData.subject = subject.value;
         CurrentUserData.isTeacher = true;
         CurrentUserData.isStudent = false; // This will make sure the current user is marked as a teacher
+        CurrentUserData.gender = selectedGender.value; // This will make sure the current user is marked as a teacher
         // Store the teacher data in Hive
         addTeacherData(newTeacher);
       });
@@ -306,6 +286,7 @@ class LoginController extends GetxController {
           isStudent: true,
           rollNumber: "", // Default empty string
           admissionNumber: "", // Default empty string
+          gender: selectedGender.value,
       );
 
       // Store the student data in Firestore using the toMap method
@@ -319,6 +300,7 @@ class LoginController extends GetxController {
         CurrentUserData.phoneNumber = phoneNumber.value.trim();
         CurrentUserData.currentLocation = currentLocation.value;
         CurrentUserData.standard = selectedStandard.value;
+        CurrentUserData.gender = selectedGender.value;
         CurrentUserData.division = selectedDivision.value;
         CurrentUserData.isTeacher = false; // This will make sure the current user is marked as a student
         CurrentUserData.isStudent = true;

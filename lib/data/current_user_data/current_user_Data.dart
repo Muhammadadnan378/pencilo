@@ -13,6 +13,7 @@ class CurrentUserData {
   static String phoneNumber = '';
   static String currentLocation = '';
   static String standard = ''; // Only for students
+  static String gender = ''; // Only for students
   static String division = ''; // Only for students
   static String subject = ''; // Only for teachers
   static bool isTeacher = false; // Flag to distinguish teacher and student
@@ -31,7 +32,6 @@ class CurrentUserData {
   static String parentPhone = ''; // Parent's phone number for students only
   static String classSection = ''; // Parent's phone classSection for students only
 
-  // Method to load user data from Hive (either teacher or student)
 // Method to load user data from Hive (either teacher or student)
   static Future<void> loadUserDataFromHive() async {
     try {
@@ -58,21 +58,7 @@ class CurrentUserData {
           profileUrl = teacher.profileUrl ?? '';  // Assign profileUrl from Hive
           isTeacher = true;
           isStudent = false; // Ensure student flag is false
-
-          // Print all teacher data fields
-          print('Teacher Data Loaded:');
-          print('uid: $uid');
-          print('name: $name');
-          print('schoolName: $schoolName');
-          print('phoneNumber: $phoneNumber');
-          print('currentLocation: $currentLocation');
-          print('subject: $subject');
-          print('dob: $dob');
-          print('bloodGroup: $bloodGroup');
-          print('aadharNumber: $aadharNumber');
-          print('email: $email');
-          print('residentialAddress: $residentialAddress');
-          print('profileUrl: $profileUrl');
+          gender = teacher.gender ?? ''; // Ensure student flag is false
         }
       }
 
@@ -98,24 +84,7 @@ class CurrentUserData {
           profileUrl = student.profileUrl ?? '';  // Assign profileUrl from Hive
           isTeacher = false;
           isStudent = true; // Ensure student flag is true
-
-          // Print all student data fields
-          print('Student Data Loaded:');
-          print('uid: $uid');
-          print('name: $name');
-          print('schoolName: $schoolName');
-          print('phoneNumber: $phoneNumber');
-          print('currentLocation: $currentLocation');
-          print('standard: $standard');
-          print('division: $division');
-          print('dob: $dob');
-          print('bloodGroup: $bloodGroup');
-          print('aadharNumber: $aadharNumber');
-          print('email: $email');
-          print('residentialAddress: $residentialAddress');
-          print('parentName: $parentName');
-          print('parentPhone: $parentPhone');
-          print('profileUrl: $profileUrl');
+          gender = student.gender ?? ''; // Ensure student flag is false
         }
       }
     } catch (e) {

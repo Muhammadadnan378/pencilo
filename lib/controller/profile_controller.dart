@@ -427,23 +427,26 @@ class ProfileController extends GetxController {
 
   ///Edit Profile View methods
 // Define controller variables to store text field values
-  final fullNameController = TextEditingController();
-  final rollNumberController = TextEditingController();
-  final admissionNumberController = TextEditingController();
-  final dobController = TextEditingController();
-  final aadharNumberController = TextEditingController();
-  final emailController = TextEditingController();
-  final phoneNumberController = TextEditingController();
-  final residentialAddressController = TextEditingController();
-  final parentNameController = TextEditingController();
-  final parentPhoneController = TextEditingController();
-  final subjectController = TextEditingController();
+  final fullNameController = TextEditingController(text: CurrentUserData.name);
+  final rollNumberController = TextEditingController(text: CurrentUserData.rollNumber);
+  final admissionNumberController = TextEditingController(text: CurrentUserData.admissionNumber);
+  final schoolNameController = TextEditingController(text: CurrentUserData.schoolName);
+  final dobController = TextEditingController(text: CurrentUserData.dob);
+  final aadharNumberController = TextEditingController(text: CurrentUserData.aadharNumber);
+  final emailController = TextEditingController(text: CurrentUserData.email);
+  final phoneNumberController = TextEditingController(text: CurrentUserData.phoneNumber);
+  final residentialAddressController = TextEditingController(text: CurrentUserData.residentialAddress);
+  final parentNameController = TextEditingController(text: CurrentUserData.parentName);
+  final parentPhoneController = TextEditingController(text: CurrentUserData.parentPhone);
+  final subjectController = TextEditingController(text: CurrentUserData.subject);
   // final selectedClass = 'Select Class'.obs; // For dropdown
   var isLoading = false.obs;
   // Reactive variable to hold the selected blood group
   var selectedBloodGroup = RxString('');
-  var selectedClass = ''.obs;
-  var selectedSection = ''.obs;
+  final standards = ['4th', '5th', '6th', '7th', '8th', '9th', '10th'];
+  final divisions = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+  var selectedStandard = CurrentUserData.standard.obs;
+  var selectedDivision = CurrentUserData.division.obs;
 
   // List of available blood groups
   var bloodGroups = [
@@ -457,151 +460,61 @@ class ProfileController extends GetxController {
     'O-',
   ];
 
-  bool validateAadharNumber(String aadharNumber, BuildContext context) {
-    // Check if the Aadhar number is empty
-    if (aadharNumber.isEmpty) {
-      showSnackbar(context, "Please enter an Aadhar number.");
-      return false;
-    }
-
-    // Regular expression for 12-digit numeric Aadhar number
-    final aadharRegex = RegExp(r'^\d{12}$');
-    if (!aadharRegex.hasMatch(aadharNumber)) {
-      showSnackbar(context, "Please enter a valid 12-digit Aadhar number.");
-      return false;
-    }
-
-    return true; // Return true if Aadhar number is valid
-  }
-
-  bool emailValidation(BuildContext context) {
+  bool emailValidation() {
     // Regular expression for validating Gmail email addresses
     final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$');
 
-    if (emailController.text.isEmpty) {
-      showSnackbar(context, "Please enter an email address.");
-      return false;
-    }
-
     if (!emailRegex.hasMatch(emailController.text)) {
-      showSnackbar(context, "Please enter a valid Gmail address (ending with @gmail.com).");
       return false;
     }
-
     return true; // Return true if email is valid
   }
 
 
-  bool validatePhoneNumber(BuildContext context) {
-
+  bool validatePhoneNumber(String phoneNumber) {
     // India phone number validation
       final myPhoneNumber = RegExp(r'^[789]\d{9}$');
-      if (!myPhoneNumber.hasMatch(phoneNumberController.text)) {
-        showSnackbar(context, "Please enter a valid Indian phone number.");
+      if (!myPhoneNumber.hasMatch(phoneNumber)) {
         return false;
       }
-
     return true; // Return true if phone number is valid
   }
 
-
-
-  bool validateStudentFields(BuildContext context) {
-    // Check if all the required fields for students are filled
-    if (fullNameController.text.isEmpty ||
-        selectedClass.isEmpty ||
-        selectedSection.isEmpty ||
-        phoneNumberController.text.isEmpty
-    ) {
-      showSnackbar(context, "Please fill in all the required student fields.");
-      return false;
+  validation({required String value,
+    required bool isName,
+    required bool isAadharNumber,
+    required bool isEmail,
+    required bool isPhoneNumber,
+    required bool isGurdianPhone}){
+    if (isName && value.isEmpty) {
+      return 'Name is required';
     }
-
-    // Validate phone number for students based on the country
-    if (parentPhoneController.text.isNotEmpty) {
-      // India phone number validation
-      final parentNumber = RegExp(r'^[789]\d{9}$');
-      if (!parentNumber.hasMatch(parentPhoneController.text)) {
-        showSnackbar(context, "Please enter a valid Indian phone number.");
-        return false;
+    if (isAadharNumber && value.isNotEmpty && value.length != 12) {
+      return 'Aadhar number should be 12 digits';
+    }
+    if (isEmail && value.isNotEmpty && !emailValidation()) {
+      return 'Please enter a valid Gmail address';
+    }
+    if (isPhoneNumber && !validatePhoneNumber(phoneNumberController.text)) {
+      if(phoneNumberController.text.isEmpty){
+        return 'Phone number is required';
+      }else{
+        return 'Invalid phone number';
       }
     }
-
-    if (phoneNumberController.text.isNotEmpty) {
-      if (!validatePhoneNumber(context)) {
-        return false;
-      }
+    if (isGurdianPhone && !validatePhoneNumber(parentPhoneController.text) && value.isNotEmpty) {
+      return 'Invalid phone number';
     }
-
-
-    if (aadharNumberController.text.isNotEmpty) {
-      if (!validateAadharNumber(aadharNumberController.text,context)) {
-        return false;
-      }
-    }
-    // Validate email for students
-    if (emailController.text.isNotEmpty) {
-      if (!emailValidation(context)) {
-        return false;
-      }
-    }
-
-    return true; // Return true if all fields are valid
+    return null; // No error
   }
 
-  bool validateTeacherFields(BuildContext context) {
-    // Check if all the required fields for teachers are filled
-    if (fullNameController.text.isEmpty ||
-        phoneNumberController.text.isEmpty ||
-        residentialAddressController.text.isEmpty ||
-        subjectController.text.isEmpty
-    ) {
-      showSnackbar(context, "Please fill in all the required teacher fields.");
-      return false;
-    }
-    // Validate phone number for teachers based on the country
-    if (!validatePhoneNumber(context)) {
-      return false;
-    }
-    // Validate Aadhar number for students
-    if (aadharNumberController.text.isNotEmpty) {
-      if (!validateAadharNumber(aadharNumberController.text,context)) {
-        return false;
-      }
-    }
-    // Validate email for students
-    if (emailController.text.isNotEmpty) {
-      if (!emailValidation(context)) {
-        return false;
-      }
-    }
-
-    return true; // Return true if all fields are valid
-  }
-
-
-
   // Function to save data to Firestore
-  // Function to save data to Firestore
-  Future<void> saveProfileData(BuildContext context) async {
+  Future<void> updateProfile(BuildContext context) async {
     if(!await NetworkHelper.isInternetAvailable()){
       isLoading(false);
       showSnackbar(context, "No internet connection");
       return ;
     };
-
-    // Check if the user is a teacher or a student and validate accordingly
-    if (CurrentUserData.isTeacher) {
-      if (!validateTeacherFields(context)) {
-        isLoading(false);
-        return;
-      }
-    } else {
-      if (!validateStudentFields(context)) {
-        isLoading(false);
-        return;
-      }
-    }
 
     // Set loading state
     isLoading.value = true;
@@ -637,10 +550,10 @@ class ProfileController extends GetxController {
         admissionNumber: admissionNumberController.text.isNotEmpty ? admissionNumberController.text : CurrentUserData.admissionNumber,
         parentName: parentNameController.text.isNotEmpty ? parentNameController.text : CurrentUserData.parentName,
         parentPhone: parentPhoneController.text.isNotEmpty ? parentPhoneController.text : CurrentUserData.parentPhone,
-        standard: selectedClass.value.isNotEmpty ? selectedClass.value : CurrentUserData.standard,
-        division: selectedSection.value.isNotEmpty ? selectedSection.value : CurrentUserData.division,
+        standard: selectedStandard.value.isNotEmpty ? selectedStandard.value : CurrentUserData.standard,
+        division: selectedDivision.value.isNotEmpty ? selectedDivision.value : CurrentUserData.division,
         isStudent: true,
-        schoolName: CurrentUserData.schoolName,
+        schoolName: schoolNameController.text.isNotEmpty ? schoolNameController.text : CurrentUserData.schoolName,
         currentLocation: CurrentUserData.currentLocation,
         profileUrl: CurrentUserData.profileUrl,
       );
@@ -671,8 +584,10 @@ class ProfileController extends GetxController {
           CurrentUserData.aadharNumber = teacherModel.aadharNumber ?? CurrentUserData.aadharNumber;
           CurrentUserData.email = teacherModel.email ?? CurrentUserData.email;
           CurrentUserData.residentialAddress = teacherModel.residentialAddress ?? CurrentUserData.residentialAddress;
+          CurrentUserData.residentialAddress = teacherModel.residentialAddress ?? CurrentUserData.residentialAddress;
 
-        } on FirebaseException catch (e) {
+        } on FirebaseFirestore catch (e) {
+          showSnackbar(context, "$e");
         }
       } else if (CurrentUserData.isStudent) {
         try {
@@ -701,6 +616,7 @@ class ProfileController extends GetxController {
           CurrentUserData.residentialAddress = studentModel.residentialAddress ?? CurrentUserData.residentialAddress;
           CurrentUserData.parentName = studentModel.parentName ?? CurrentUserData.parentName;
           CurrentUserData.parentPhone = studentModel.parentPhone ?? CurrentUserData.parentPhone;
+          CurrentUserData.schoolName = studentModel.schoolName ?? CurrentUserData.schoolName;
 
         } on FirebaseException catch (e) {
           showSnackbar(context, "$e");

@@ -58,17 +58,35 @@ class LoginView extends StatelessWidget {
                     ),
                   ],
                 ),
+              Obx((){
+                controller.selectedGender.value;
+                return _selectSubjectsDropdown(
+                  subjects: controller.gender,
+                  selectedValue: controller.selectedGender,
+                  dropdownTitle: "Select Gender",
+                );
+              }),
+              SizedBox(height: 10),
               if (!isTeacher)
-              _buildStandardDropdown(controller),
+                Obx((){
+                  controller.selectedStandard.value;
+                  return _selectSubjectsDropdown(
+                    subjects: controller.standards,
+                    selectedValue: controller.selectedStandard,
+                    dropdownTitle: "Select Standard",
+                  );
+                }),
               if (!isTeacher) SizedBox(height: 12),
               if (!isTeacher)
-                _buildDivisionDropdown(controller),
+                Obx((){
+                  controller.selectedDivision.value;
+                  return _selectSubjectsDropdown(
+                    subjects: controller.divisions,
+                    selectedValue: controller.selectedDivision,
+                    dropdownTitle: "Select Division",
+                  );
+                }),
               SizedBox(height: 12),
-              // LoginClassTextField(
-              //   hintText: "Current location",
-              //   onChanged: (value) => controller.currentLocation.value = value,
-              // ),
-              // SizedBox(height: 12),
               LoginClassTextField(
                 hintText: "Phone number",
                 keyboardType: TextInputType.phone,
@@ -123,101 +141,52 @@ class LoginView extends StatelessWidget {
     );
   }
 
-// Custom Dropdown with dividers between items for Class
-  Widget _buildStandardDropdown(LoginController controller) {
-    final List<String> classes = ['4th', '5th', '6th', '7th', '8th', '9th', '10th'];
-
-    return Obx(() {
-      return CustomCard(
-        borderRadius: 5,
-        height: 42,
-        border: Border.all(color: grayColor,width: 0.3),
-        child: PopupMenuButton<String>(
-          color: whiteColor,
-          onSelected: (String value) {
-            controller.selectedStandard.value = value;
-          },
-          itemBuilder: (BuildContext context) {
-            return classes.map((classItem) {
-              return PopupMenuItem<String>(
-                value: classItem,
-                child: Column(
-                  children: [
-                    Text(classItem),  // Display the class
-                    Divider(), // Divider after each item
-                  ],
-                ),
-              );
-            }).toList();
-          },
-          child: Row(
-            children: [
-              SizedBox(width: 9),
-              CustomText(
-                text: controller.selectedStandard.value.isEmpty
-                    ? "Select Standard"
-                    : controller.selectedStandard.value,
-                color: blackColor,
-                size: 15,
+  Widget _selectSubjectsDropdown({
+    required List<String> subjects,
+    required RxString selectedValue,
+    required String dropdownTitle,
+  }) {
+    return CustomCard(
+      borderRadius: 5,
+      height: 47,
+      border: Border.all(color: grayColor,width: 0.3),
+      child: PopupMenuButton<String>(
+        color: whiteColor,
+        onSelected: (String value) {
+          selectedValue.value = value;
+        },
+        itemBuilder: (BuildContext context) {
+          return subjects.map((item) {
+            return PopupMenuItem<String>(
+              value: item,
+              child: Column(
+                children: [
+                  Text(item),
+                  Divider(),
+                ],
               ),
-              Spacer(),
-              Icon(Icons.arrow_drop_down),
-              SizedBox(width: 5)
-            ],
-          ),
-        ),
-      );
-    });
+            );
+          }).toList();
+        },
+        child: Obx(() => Row(
+          children: [
+            const SizedBox(width: 9),
+            CustomText(
+              text: selectedValue.value.isEmpty
+                  ? dropdownTitle
+                  : selectedValue.value,
+              color: selectedValue.value.isNotEmpty ? blackColor : grayColor,
+              size: 16,
+              fontWeight: FontWeight.w400,
+            ),
+            const Spacer(),
+            const Icon(Icons.arrow_drop_down),
+            const SizedBox(width: 5),
+          ],
+        )),
+      ),
+    );
   }
-
-// Custom Dropdown with dividers between items for Section
-  Widget _buildDivisionDropdown(LoginController controller) {
-    final List<String> sections = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-
-    return Obx(() {
-      return CustomCard(
-        borderRadius: 5,
-        height: 42,
-        border: Border.all(color: grayColor,width: 0.3),
-        child: PopupMenuButton<String>(
-          color: whiteColor,
-          onSelected: (String value) {
-            controller.selectedDivision.value = value;
-          },
-          itemBuilder: (BuildContext context) {
-            return sections.map((section) {
-              return PopupMenuItem<String>(
-                value: section,
-                child: Column(
-                  children: [
-                    Text(section),  // Display the section
-                    Divider(), // Divider after each item
-                  ],
-                ),
-              );
-            }).toList();
-          },
-          child: Row(
-            children: [
-              SizedBox(width: 9),
-              CustomText(
-                text: controller.selectedDivision.value.isEmpty
-                    ? "Select Division"
-                    : controller.selectedDivision.value,
-                color: blackColor,
-                size: 15,
-              ),
-              Spacer(),
-              Icon(Icons.arrow_drop_down),
-              SizedBox(width: 5),
-            ],
-          ),
-        ),
-      );
-    });
-  }
-
-
 }
 
 class LoginClassTextField extends StatelessWidget {
@@ -240,9 +209,12 @@ class LoginClassTextField extends StatelessWidget {
         decoration: InputDecoration(
             suffixIcon: suffixIcon,
             hintText: hintText,
-            hintStyle: TextStyle(fontFamily: poppinsFontFamily,
-                fontWeight: FontWeight.w500,
-                fontSize: 14),
+            hintStyle: TextStyle(
+                fontFamily: poppinsFontFamily,
+                fontWeight: FontWeight.w400,
+                fontSize: 14,
+                color: grayColor
+            ),
             contentPadding: EdgeInsets.only(left: 13, bottom: 2),
             border: OutlineInputBorder(
                 borderSide: BorderSide(color: Color(0xff4C4C4C),width: 0.1)

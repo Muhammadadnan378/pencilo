@@ -35,13 +35,14 @@ class StudentModelAdapter extends TypeAdapter<StudentModel> {
       currentLocation: fields[16] as String?,
       isStudent: fields[17] as bool?,
       profileUrl: fields[18] as String?,
+      gender: fields[19] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, StudentModel obj) {
     writer
-      ..writeByte(18)
+      ..writeByte(19)
       ..writeByte(0)
       ..write(obj.uid)
       ..writeByte(1)
@@ -77,7 +78,9 @@ class StudentModelAdapter extends TypeAdapter<StudentModel> {
       ..writeByte(17)
       ..write(obj.isStudent)
       ..writeByte(18)
-      ..write(obj.profileUrl);
+      ..write(obj.profileUrl)
+      ..writeByte(19)
+      ..write(obj.gender);
   }
 
   @override

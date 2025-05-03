@@ -58,6 +58,9 @@ class StudentModel extends HiveObject {
   @HiveField(18)
   String? profileUrl;
 
+  @HiveField(19)
+  String? gender;
+
   StudentModel({
     this.uid,
     this.fullName,
@@ -76,7 +79,8 @@ class StudentModel extends HiveObject {
     this.division,
     this.currentLocation,
     this.isStudent,
-    this.profileUrl
+    this.profileUrl,
+    this.gender,
   });
 
   // Convert StudentModel to Map
@@ -100,6 +104,7 @@ class StudentModel extends HiveObject {
       'currentLocation': currentLocation, // Store empty string if null
       'isStudent': isStudent, // Store default value if null
       'profileUrl': profileUrl, // Store empty string if null
+      'gender': gender, // Store empty string if null
     };
   }
 
@@ -124,6 +129,7 @@ class StudentModel extends HiveObject {
       currentLocation: map['currentLocation'] ?? '',
       isStudent: map['isStudent'] ?? true,
       profileUrl: map['profileUrl'] ?? '',
+      gender: map['gender'] ?? '',
     );
   }
 }
