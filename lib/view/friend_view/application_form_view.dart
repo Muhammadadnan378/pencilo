@@ -1,16 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:pencilo/controller/friend_view_controller.dart';
+import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 
 import '../../data/consts/colors.dart';
 import '../../data/consts/images.dart';
+import '../../data/custom_widget/custom_card.dart';
 import '../../data/custom_widget/custom_text_field.dart';
 import '../../data/custom_widget/custom_text_widget.dart';
+import '../../model/create_event_model.dart';
 
 class ApplicationFormView extends StatelessWidget {
-
-  ApplicationFormView({super.key,});
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController schoolNameController = TextEditingController();
-  final TextEditingController contactNumberController = TextEditingController();
+  final EventModel eventModel;
+  ApplicationFormView({super.key, required this.eventModel,});
+  final FriendViewController controller = Get.put(FriendViewController());
 
   @override
   Widget build(BuildContext context) {
@@ -18,49 +22,96 @@ class ApplicationFormView extends StatelessWidget {
       appBar: AppBar(),
       body: Padding(
         padding: const EdgeInsets.only(left: 8.0,right: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CustomText(
-              text: 'Application form',
-              color: bgColor,
-              fontWeight: FontWeight.bold,
-              size: 30,
-              fontFamily: poppinsFontFamily,
-            ),
-            SizedBox(height: 10,),
-            CustomText(
-              text: 'Basketball Game',
-              color: bgColor,
-              fontWeight: FontWeight.w500,
-              size: 20,
-              fontFamily: poppinsFontFamily,),
-            SizedBox(height: 15,),
-            buildCustomIconTextFields(
-              icon: Icons.person,
-              labelText: 'Your Name',
-              textFieldControl: nameController,
-              keyboardType: TextInputType.text,
-            ),
-            SizedBox(height: 10),
-            buildCustomIconTextFields(
-              icon: Icons.school,
-              labelText: 'School Name',
-              textFieldControl: schoolNameController,
-              keyboardType: TextInputType.text,
-            ),
-            SizedBox(height: 10),
-            buildCustomIconTextFields(
-              icon: Icons.call,
-              labelText: 'Contact Number',
-              textFieldControl: contactNumberController,
-              keyboardType: TextInputType.text,
-            )
-          ],
+        child: Form(
+          key: controller.formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomText(
+                text: 'Application form',
+                color: bgColor,
+                fontWeight: FontWeight.bold,
+                size: 30,
+                fontFamily: poppinsFontFamily,
+              ),
+              SizedBox(height: 10,),
+              CustomText(
+                text: 'Basketball Game',
+                color: bgColor,
+                fontWeight: FontWeight.w500,
+                size: 20,
+                fontFamily: poppinsFontFamily,
+              ),
+              SizedBox(height: 15,),
+              buildCustomIconTextFields(
+                icon: Icons.person,
+                labelText: 'Your Name',
+                textFieldControl: controller.nameController,
+                keyboardType: TextInputType.text,
+                validate: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your name';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 10),
+              buildCustomIconTextFields(
+                icon: Icons.school,
+                labelText: 'School Name',
+                textFieldControl: controller.schoolNameController,
+                keyboardType: TextInputType.text,
+                validate: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter school name';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 10),
+              buildCustomIconTextFields(
+                icon: Icons.call,
+                labelText: 'Contact Number',
+                textFieldControl: controller.contactNumberController,
+                keyboardType: TextInputType.text,
+                validate: (value) {
+                  final myPhoneNumber = RegExp(r'^[789]\d{9}$');
+                  if (value == null || value.isEmpty || !myPhoneNumber.hasMatch(value)) {
+                    return 'Please enter a valid Indian phone number.';
+                  }
+                  return null;
+                },
+              ),
+
+              SizedBox(height: 50),
+              Obx(() => !controller.isLoading.value ? Center(
+                child: CustomCard(
+                  width: SizeConfig.screenWidth * 0.7,
+                  height: 45,
+                  borderRadius: 7,
+                  color: Color(0xff57A8B8),
+                  alignment: Alignment.center,
+                  onTap: () {
+                    controller.isLoading(true);
+                    // Validate form before proceeding
+                    FocusScope.of(context).unfocus();
+                    if (controller.formKey.currentState!.validate()) {
+                      controller.joinEvent(context,eventModel).then((value) => controller.isLoading(false),);
+                    }else{
+                      controller.isLoading(false);
+                    }
+                  },
+                  child: CustomText(text: 'Join Event',size: 18,fontWeight: FontWeight.bold,),
+                ),
+              ) : Center(child: CircularProgressIndicator())
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
 
   Widget buildCustomIconTextFields({
     required IconData icon,
@@ -68,6 +119,7 @@ class ApplicationFormView extends StatelessWidget {
     String? hintText,
     int? maxLines,
     bool? isRuls = false,
+    FocusNode? focusNode,
     required TextEditingController textFieldControl,
     required TextInputType keyboardType,
     String? Function(String?)? validate}) {
@@ -89,6 +141,7 @@ class ApplicationFormView extends StatelessWidget {
             contentPadding: EdgeInsets.only(left: 10, bottom: 10, top: 10),
             hintText: hintText ?? '',
             maxLines: maxLines,
+            focusNode: focusNode,
           ),
         ),
       ],

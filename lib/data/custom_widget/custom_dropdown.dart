@@ -8,8 +8,9 @@ class CustomDropdown extends StatelessWidget {
   final List<String> subjects;
   final RxString selectedValue;
   final String dropdownTitle;
+  final bool? isValidate;
 
-  const CustomDropdown({super.key, required this.subjects, required this.selectedValue, required this.dropdownTitle,});
+  const CustomDropdown({super.key, required this.subjects, required this.selectedValue, required this.dropdownTitle, this.isValidate,});
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +18,8 @@ class CustomDropdown extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10.0),
       child: CustomCard(
         borderRadius: 5,
-        height: 57,
-        border: Border.all(color: blackColor),
+        height: 47,
+        border: Border.all(color: isValidate == true ? Colors.red : blackColor),
         child: PopupMenuButton<String>(
           color: whiteColor,
           onSelected: (String value) {
@@ -40,15 +41,18 @@ class CustomDropdown extends StatelessWidget {
           child: Obx(() => Row(
             children: [
               const SizedBox(width: 9),
-              CustomText(
-                text: selectedValue.value.isEmpty
-                    ? dropdownTitle
-                    : selectedValue.value,
-                color: selectedValue.value.isNotEmpty ? blackColor : grayColor,
-                size: 16,
-                fontWeight: FontWeight.w400,
+              Expanded(
+                flex: 1,
+                child: CustomText(
+                  text: selectedValue.value.isEmpty
+                      ? dropdownTitle
+                      : selectedValue.value,
+                  color: selectedValue.value.isNotEmpty ? blackColor : grayColor,
+                  size: 16,
+                  maxLines: 1,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
-              const Spacer(),
               const Icon(Icons.arrow_drop_down),
               const SizedBox(width: 5),
             ],
