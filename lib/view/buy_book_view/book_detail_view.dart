@@ -8,6 +8,8 @@ import 'package:pencilo/data/custom_widget/show_images_view.dart';
 
 import '../../data/consts/images.dart';
 import '../../data/custom_widget/custom_media_query.dart';
+import 'buy_book_view.dart';
+import 'buy_sell_book_view.dart';
 
 class BookDetail extends StatelessWidget {
   final SellBookModel book;
@@ -23,137 +25,88 @@ class BookDetail extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CustomText(
-              text: 'Book Detail',
-              color: blackColor,
-              fontFamily: poppinsFontFamily,
-              size: 18,
-              fontWeight: FontWeight.w600,
-            ),
-            SizedBox(height: 14),
+            SizedBox(
+              height: 250, // Adjust height as needed
+              child: PageView.builder(
+                itemCount: book.images.length,
+                controller: PageController(viewportFraction: 0.9),
+                itemBuilder: (context, index) {
+                  final image = book.images[index];
 
-            // Book Info Card
-            CustomCard(
-              width: SizeConfig.screenWidth,
-              borderRadius: 6,
-              padding: EdgeInsets.all(13),
-              border: Border.all(color: bgColor, width: 0.1),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CustomText(
-                    text: book.title,
-                    color: blackColor,
-                    fontFamily: poppinsFontFamily,
-                    size: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  SizedBox(height: 7),
-
-                  CustomText(
-                    text: book.oldOrNewBook,  // Display "New" or "Old"
-                    color: Color(0xff666666),
-                    fontFamily: poppinsFontFamily,
-                    size: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  SizedBox(height: 7),
-
-                  // Display Images in GridView
-                  // Book Image GridView
-                  Padding(
-                    padding: const EdgeInsets.only(left: 20.0, right: 20),
-                    child: GridView.builder(
-                      itemCount: book.images.length,  // Dynamically use the length of images list
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 15,
-                        mainAxisSpacing: 15,
-                        mainAxisExtent: 140,
+                  return GestureDetector(
+                    onTap: () {
+                      Get.to(ShowImagesView(imagePaths: book.images, initialIndex: index));
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: image.startsWith('http') || image.startsWith('https')
+                          ? Image.network(
+                        image,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      )
+                          : File(image).existsSync()
+                          ? Image.file(
+                        File(image),
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      )
+                          : Image.asset(
+                        'assets/images/fallback.png',
+                        width: double.infinity,
+                        fit: BoxFit.cover,
                       ),
-                      physics: NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        String image = book.images[index];
-
-                        return GestureDetector(
-                          onTap: () {
-                            // Navigate to the ShowImagesView when tapped
-                            Get.to(ShowImagesView(imagePaths: book.images, initialIndex: index));
-                          },
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: image.startsWith('http') || image.startsWith('https')
-                                ? Image.network(
-                              image,
-                              fit: BoxFit.cover,
-                            )
-                                : File(image).existsSync()
-                                ? Image.file(
-                              File(image),
-                              fit: BoxFit.cover,
-                            )
-                                : Image.asset(
-                              'assets/images/fallback.png', // Fallback if image path is invalid
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        );
-                      },
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
-            SizedBox(height: 18),
-            // Buy Now Button (same as before)
-            CustomCard(
-              width: SizeConfig.screenWidth,
-              borderRadius: 6,
-              padding: EdgeInsets.all(13),
-              border: Border.all(color: bgColor, width: 0.1),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CustomText(
-                        text: book.title,
-                        color: blackColor,
-                        fontFamily: poppinsFontFamily,
-                        size: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      SizedBox(height: 7),
-                      CustomText(
-                        text: book.oldOrNewBook,
-                        color: Color(0xff666666),
-                        fontFamily: poppinsFontFamily,
-                        size: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ],
-                  ),
-                  Spacer(),
-                  CustomCard(
-                    onTap: () {
-                      // Your onTap action (e.g., navigate to AmountView)
-                    },
-                    alignment: Alignment.center,
-                    borderRadius: 4,
-                    width: 63,
-                    height: 28,
-                    color: blackColor,
-                    child: CustomText(
-                      text: "Buy now",
-                      size: 10,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  SizedBox(width: 10)
-                ],
+
+            SizedBox(height: 15),
+            CustomText(
+              text: book.title,
+              color: blackColor,
+              fontFamily: poppinsFontFamily,
+              size: 16,
+              fontWeight: FontWeight.w600,
+            ),
+            SizedBox(height: 7),
+
+            CustomText(
+              text: book.oldOrNewBook,  // Display "New" or "Old"
+              color: Color(0xff666666),
+              fontFamily: poppinsFontFamily,
+              size: 12,
+              fontWeight: FontWeight.w600,
+            ),
+            SizedBox(height: 7),
+
+            CustomText(
+              text: book.currentLocation,  // Display "New" or "Old"
+              color: Color(0xff666666),
+              fontFamily: poppinsFontFamily,
+              size: 12,
+              fontWeight: FontWeight.w600,
+            ),
+            Spacer(),
+            Padding(
+              padding: const EdgeInsets.only(left: 15.0,right: 15,bottom: 10),
+              child: CustomCard(
+                onTap: () {
+                  // Your onTap action (e.g., navigate to AmountView)
+                  Get.to(BuyBookView());
+                },
+                alignment: Alignment.center,
+                borderRadius: 11,
+                width: double.infinity,
+                height: 57,
+                color: blackColor,
+                child: CustomText(
+                  text: "Buy now",
+                  size: 16,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: poppinsFontFamily,
+                ),
               ),
             ),
           ],

@@ -8,7 +8,7 @@ import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'package:pencilo/db_helper/model_name.dart';
 import 'package:pencilo/data/custom_widget/play_short_video.dart';
 import 'package:pencilo/view/profile_view/profile_view.dart';
-import 'package:pencilo/view/buy_book_view/buy_book_view.dart';
+import 'package:pencilo/view/buy_book_view/buy_sell_book_view.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../controller/home_controller.dart';
 import '../model/student_model.dart';
@@ -23,9 +23,9 @@ class Home extends StatelessWidget {
 
   final List<Widget> _screens = [
     PlayShortVideo(),
-    BuyBookView(),
+    BuySellBookView(),
     CurrentUserData.isTeacher == true ? TeacherHomeView() : StudentHomeView(),
-    CurrentUserData.isTeacher != true ? FriendsView() : PopularGamesView(),
+    CurrentUserData.isTeacher == true ? FriendsView() : PopularGamesView(),
     ProfileView(),
   ];
 

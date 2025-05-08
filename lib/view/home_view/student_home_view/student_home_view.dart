@@ -31,7 +31,7 @@ class StudentHomeView extends StatelessWidget {
       "Geography"
     ],
     '10th': [
-      "Hindi",
+      "Marathi",
     ]
   };
 

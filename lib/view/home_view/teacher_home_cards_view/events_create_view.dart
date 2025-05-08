@@ -15,8 +15,7 @@ import '../../../data/custom_widget/custom_text_field.dart';
 class CreateEventView extends StatelessWidget {
   CreateEventView({super.key});
 
-  final TeacherHomeViewController controller = Get.put(
-      TeacherHomeViewController());
+  final TeacherHomeViewController controller = Get.put(TeacherHomeViewController());
 
   @override
   Widget build(BuildContext context) {
@@ -425,11 +424,7 @@ class EventTab extends StatelessWidget {
   }
 
   showTimeSelectDialog(BuildContext context) async {
-    // Initialize the default values
-    // controller.selectedHours.value = 0;
-    // controller.selectedMinutes.value = 0;
-    // controller.selectAmPm.value = "AM";
-
+    controller.selectedHours.value = 1;
     // Show the modal bottom sheet
     return showBottomSheet(
       context: context,
@@ -476,13 +471,13 @@ class EventTab extends StatelessWidget {
                       child: CupertinoPicker(
                         itemExtent: 32,
                         onSelectedItemChanged: (int value) {
-                          controller.selectedHours.value =
-                              value; // Update selected hours
+                          controller.selectedHours.value = value + 1; // Update selected hours
                         },
-                        children: List.generate(13, (index) {
+                        children: List.generate(12, (index) {
+                          int startIndex = index + 1;
                           return Center(
                             child: Text(
-                              "$index H",
+                              "$startIndex",
                               style: const TextStyle(
                                   fontSize: 16, color: Colors.black87),
                             ),
@@ -495,10 +490,9 @@ class EventTab extends StatelessWidget {
                       child: CupertinoPicker(
                         itemExtent: 32,
                         onSelectedItemChanged: (int value) {
-                          controller.selectedMinutes.value =
-                              value; // Update selected minutes
+                          controller.selectedMinutes.value = value; // Update selected minutes
                         },
-                        children: List.generate(61, (index) {
+                        children: List.generate(60, (index) {
                           int startIndex = index + 1;
                           return Center(
                             child: Text(
@@ -785,10 +779,11 @@ class ApplicationTab extends StatelessWidget {
                           ),
                           eventData.participants.isNotEmpty
                               ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               SizedBox(height: 15),
                               CustomText(
-                                text: "Basketball Application",
+                                text: "${eventData.selectedEventType} Application",
                                 color: blackColor,
                                 size: 25,
                                 fontWeight: FontWeight.bold,

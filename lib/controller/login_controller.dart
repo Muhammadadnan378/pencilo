@@ -140,22 +140,26 @@ class LoginController extends GetxController {
   // Store user data in Firestore (with DateTime as UID)
   Future<void> storeUserData() async {
     try {
-      //check if user exist then donot add data again
-        final teacherDoc = await FirebaseFirestore.instance
+      QuerySnapshot userDoc;
+
+      if (isTeacher) {
+        userDoc = await FirebaseFirestore.instance
             .collection(teacherTableName)
             .where('phoneNumber', isEqualTo: phoneNumber.value)
             .get();
-        final studentDoc = await FirebaseFirestore.instance
+      } else {
+        userDoc = await FirebaseFirestore.instance
             .collection(studentTableName)
             .where('phoneNumber', isEqualTo: phoneNumber.value)
             .get();
-      if (teacherDoc.docs.isNotEmpty || studentDoc.docs.isNotEmpty) {
-        // Fetch existing data from Firestore
+      }
+
+      if (userDoc.docs.isNotEmpty) {
+        // User already exists, fetch data
         await fetchUserDataAndStoreInHive();
       } else {
-        // Generate UID using current timestamp (millisecondsSinceEpoch)
+        // New user, generate UID and store
         final String uid = DateTime.now().millisecondsSinceEpoch.toString();
-
         if (isTeacher) {
           await storeTeacherData(uid);
         } else {
@@ -164,9 +168,10 @@ class LoginController extends GetxController {
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to store data: $e');
-      print("Error : $e");
+      print("Error: $e");
     }
   }
+
 
 // Add Teacher Data to Hive
   void addTeacherDataToHive(DocumentSnapshot userDoc) async {

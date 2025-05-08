@@ -20,16 +20,16 @@ class TeacherHomeView extends StatelessWidget {
             size: 25,
             fontWeight: FontWeight.w700,
           ),
-          // CustomCard(
-          //   onTap: () {
-          //     CurrentUserData.logout();
-          //   },
-          //   alignment: Alignment.center,
-          //   borderRadius: 100,
-          //   color: Color(0xff57A8B8),
-          //   width: 41,
-          //   height: 41,
-          // ),
+          CustomCard(
+            onTap: () {
+              CurrentUserData.logout();
+            },
+            alignment: Alignment.center,
+            borderRadius: 100,
+            color: Color(0xff57A8B8),
+            width: 41,
+            height: 41,
+          ),
           SizedBox(height: 14,),
           buildCustomCard(title: "Attendance",subtitle: "Take a attendance of your school students",image: homeAttendance),
           buildCustomCard(title: "Quiz",subtitle: "Quiz for your students to check their understanding",image: homeQuiz),

@@ -10,7 +10,10 @@ class SubjectModel {
   String? chapterId;
   String? youtubeVideoPath;
   String? imgUrl;
+  String? questionsTitle;
+  String? questionsImage;
   List<Map<String, dynamic>>? questions; // List to hold multiple questions
+  List<Map<String, dynamic>>? subQuestion; // List to hold multiple subQuestion
 
 
   SubjectModel({
@@ -22,7 +25,10 @@ class SubjectModel {
     this.chapterName,
     this.chapterPart,
     this.question,
+    this.subQuestion,
     this.chapterId,
+    this.questionsTitle,
+    this.questionsImage,
     this.youtubeVideoPath,
     this.imgUrl,
     this.questions,
@@ -72,9 +78,12 @@ class SubjectModel {
       chapterPart: json['chapterPart'],
       question: json['question'],
       chapterId: json['chapterId'],
+      questionsImage: json['questionsImage'],
+      questionsTitle: json['questionsTitle'],
       youtubeVideoPath: json['youtubeVideoPath'],
       imgUrl: json['imgUrl'],
       questions: json['questions'] != null ? List<Map<String, dynamic>>.from(json['questions']) : null,
+      subQuestion: json['subQuestion'] != null ? List<Map<String, dynamic>>.from(json['subQuestion']) : null,
     );
   }
 }

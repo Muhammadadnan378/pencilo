@@ -5,7 +5,7 @@ import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';  // Import Firebase Storage
 import 'package:pencilo/db_helper/model_name.dart';
-import 'package:pencilo/view/buy_book_view/buy_book_view.dart';
+import 'package:pencilo/view/buy_book_view/buy_sell_book_view.dart';
 import '../data/consts/const_import.dart';
 import '../db_helper/network_check.dart';
 import '../model/sell_book_model.dart';
@@ -23,6 +23,8 @@ class SellBookController extends GetxController {
   var searchQuery = ''.obs;
 
   var isBookViewSearching = false.obs;
+  RxBool isSelectBooksView = true.obs;
+  RxBool isSelectBuying = true.obs;
 
   FocusNode searchFocusNode = FocusNode();
 
@@ -30,6 +32,7 @@ class SellBookController extends GetxController {
   var selectedOption = 'New'.obs;
   var images = <File>[].obs;  // List to store selected images
   var uploading = false.obs;
+  var isSelectCashDelivery = true.obs;
   RxString currentLocation = ''.obs; // Observable to store the full address
   var books = <SellBookModel>[].obs;
 

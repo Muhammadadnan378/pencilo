@@ -105,23 +105,20 @@ class TeacherHomeViewController extends GetxController{
 
   // Function to pick date of birth
   Future<void> pickDateOfBirth(BuildContext context) async {
-    // Calculate the date 6 years ago from today
-    DateTime sixYearsAgo = DateTime.now();
-
-    // Ensure initialDate is not later than lastDate (6 years ago)
-    DateTime initialDate = DateTime.now();
+    DateTime today = DateTime.now();
 
     final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: initialDate, // Use a valid initial date
-      firstDate: DateTime(1900), // This could be the earliest date someone can choose
-      lastDate: sixYearsAgo, // The latest date they can pick (6 years ago)
+      initialDate: today,
+      firstDate: today, // Prevent selection of past dates
+      lastDate: DateTime(2100), // Arbitrary far future limit
     );
 
     if (pickedDate != null) {
       selectedDateTime.value = DateFormat('dd/MM/yyyy').format(pickedDate);
     }
   }
+
 
   validate() {
     // Validation for required fields

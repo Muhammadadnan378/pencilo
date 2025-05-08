@@ -30,10 +30,7 @@ const hindiCurvedImage = "assets/images/hindi_card_curved.png";
 const mathsCurvedImage = "assets/images/marathi_card_curved.png";
 const marathiCurvedImage = "assets/images/maths_card_curved.png";
 const basketBallImage = "assets/images/basketBalImage.png";
-const bg1 = "assets/images/bg1.jpg";
-const bg2 = "assets/images/bg2.jpg";
-const bg3 = "assets/images/bg3.jpg";
-const bg4 = "assets/images/bg4.jpg";
+
 
 //Videos Url
 const video1 = "assets/videos/video1.mp4";
