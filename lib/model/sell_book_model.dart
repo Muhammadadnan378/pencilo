@@ -37,6 +37,21 @@ class SellBookModel {
   @HiveField(10)
   bool? uploading = false;
 
+  @HiveField(11)
+  List<Map<String, dynamic>>? buyBookUsersList;
+
+  @HiveField(12)
+  final String? userName;
+
+  @HiveField(13)
+  final String? userAddress;
+
+  @HiveField(14)
+  final String? userContact;
+
+  @HiveField(15)
+  final List<String>? storageImagePath;
+
   SellBookModel({
     required this.bookUid,
     required this.uid,
@@ -49,6 +64,11 @@ class SellBookModel {
     required this.currentLocation,
     this.uploading,
     this.uploaded,
+    this.buyBookUsersList,
+    this.userName,
+    this.userAddress,
+    this.userContact,
+    this.storageImagePath,
   });
 
   // Convert Firestore data to SellBookModel
@@ -63,6 +83,11 @@ class SellBookModel {
       addedDate: firestore['addedDate'],
       oldOrNewBook: firestore['oldOrNewBook'],
       currentLocation: firestore['currentLocation'],
+      userName: firestore['userName'],
+      userAddress: firestore['userAddress'],
+      userContact: firestore['userContact'],
+      storageImagePath: List<String>.from(firestore['storageImagePath']),
+      buyBookUsersList: firestore['buyBookUsersList'] != null ? List<Map<String, dynamic>>.from(firestore['buyBookUsersList']) : null,
     );
   }
 
@@ -78,6 +103,10 @@ class SellBookModel {
       'addedDate': addedDate,
       'oldOrNewBook': oldOrNewBook,
       'currentLocation': currentLocation,
+      'userName': userName,
+      'userAddress': userAddress,
+      'userContact': userContact,
+      'storageImagePath': storageImagePath,
     };
   }
 }

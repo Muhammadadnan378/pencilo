@@ -2,11 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:pencilo/db_helper/model_name.dart';
+import 'package:pencilo/db_helper/network_check.dart';
 import 'package:pencilo/view/home.dart';
 import '../data/consts/const_import.dart';
 import '../data/current_user_data/current_user_Data.dart';
+import '../db_helper/get_server_key.dart';
 import '../model/student_model.dart';
 import '../model/teacher_model.dart';
+import '../view/login_view/login_view.dart';
 
 class LoginController extends GetxController {
   final standards = ['4th', '5th', '6th', '7th', '8th', '9th', '10th'];
@@ -23,6 +26,12 @@ class LoginController extends GetxController {
   var isLoginUser = false.obs;
   var existId = "";  // Variable to store the uid of existing user
   var isTeacher = false; // Tracks whether the user is a teacher
+  String pushToken = "";
+
+  void getPushToken() async {
+    String? token = await FcmService.getPushToken();
+    pushToken = token!;
+  }
 
   void setIsTeacher(bool value) {
     isTeacher = value;
@@ -84,6 +93,7 @@ class LoginController extends GetxController {
       CurrentUserData.phoneNumber = userDoc['phoneNumber'] ?? '';
       CurrentUserData.profileUrl = userDoc['profileUrl'] ?? '';
       CurrentUserData.gender = userDoc['gender'] ?? '';
+      CurrentUserData.pushToken = userDoc['pushToken'] ?? '';
       if (isTeacher) {
         CurrentUserData.subject = userDoc['subject'] ?? '';
         CurrentUserData.isTeacher = userDoc['isTeacher'] ?? true;
@@ -139,6 +149,13 @@ class LoginController extends GetxController {
   }
   // Store user data in Firestore (with DateTime as UID)
   Future<void> storeUserData() async {
+
+    if(!await NetworkHelper.isInternetAvailable()){
+      Get.snackbar('Error', 'No Internet Connection');
+      return;
+    }
+    getPushToken();
+
     try {
       QuerySnapshot userDoc;
 
@@ -193,6 +210,7 @@ class LoginController extends GetxController {
       residentialAddress: userDoc['residentialAddress'],
       profileUrl: userDoc['profileUrl'],
       gender: userDoc['gender'],
+      pushToken: userDoc['pushToken'],
     );
 
     await teacherBox.add(newTeacher);
@@ -223,6 +241,7 @@ class LoginController extends GetxController {
       isStudent: userDoc['isStudent'] ?? true,
       profileUrl: userDoc['profileUrl'] ?? '',
       gender: userDoc['gender'] ?? '',
+      pushToken: userDoc['pushToken'] ?? '',
     );
 
     await studentBox.add(newStudent);
@@ -245,7 +264,8 @@ class LoginController extends GetxController {
           residentialAddress: "", // Default empty string
           profileUrl: "",// Default empty string
           isTeacher: true,
-          gender: selectedGender.value
+          gender: selectedGender.value,
+          pushToken: pushToken
       );
 
       // Store the teacher data in Firestore using the toMap method
@@ -262,6 +282,7 @@ class LoginController extends GetxController {
         CurrentUserData.isTeacher = true;
         CurrentUserData.isStudent = false; // This will make sure the current user is marked as a teacher
         CurrentUserData.gender = selectedGender.value; // This will make sure the current user is marked as a teacher
+        CurrentUserData.pushToken = pushToken; // This will make sure the current user is marked as a teacher
         // Store the teacher data in Hive
         addTeacherData(newTeacher);
       });
@@ -292,6 +313,7 @@ class LoginController extends GetxController {
           rollNumber: "", // Default empty string
           admissionNumber: "", // Default empty string
           gender: selectedGender.value,
+          pushToken: pushToken,
       );
 
       // Store the student data in Firestore using the toMap method
@@ -309,6 +331,7 @@ class LoginController extends GetxController {
         CurrentUserData.division = selectedDivision.value;
         CurrentUserData.isTeacher = false; // This will make sure the current user is marked as a student
         CurrentUserData.isStudent = true;
+        CurrentUserData.pushToken = pushToken;
         // Store the student data in Hive
         addStudentData(newStudent);
       });

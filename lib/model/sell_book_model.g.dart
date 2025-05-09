@@ -28,13 +28,20 @@ class SellBookModelAdapter extends TypeAdapter<SellBookModel> {
       currentLocation: fields[8] as String,
       uploading: fields[10] as bool?,
       uploaded: fields[9] as bool?,
+      buyBookUsersList: (fields[11] as List?)
+          ?.map((dynamic e) => (e as Map).cast<String, dynamic>())
+          ?.toList(),
+      userName: fields[12] as String?,
+      userAddress: fields[13] as String?,
+      userContact: fields[14] as String?,
+      storageImagePath: (fields[15] as List?)?.cast<String>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, SellBookModel obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(16)
       ..writeByte(0)
       ..write(obj.bookUid)
       ..writeByte(1)
@@ -56,7 +63,17 @@ class SellBookModelAdapter extends TypeAdapter<SellBookModel> {
       ..writeByte(9)
       ..write(obj.uploaded)
       ..writeByte(10)
-      ..write(obj.uploading);
+      ..write(obj.uploading)
+      ..writeByte(11)
+      ..write(obj.buyBookUsersList)
+      ..writeByte(12)
+      ..write(obj.userName)
+      ..writeByte(13)
+      ..write(obj.userAddress)
+      ..writeByte(14)
+      ..write(obj.userContact)
+      ..writeByte(15)
+      ..write(obj.storageImagePath);
   }
 
   @override

@@ -50,4 +50,6 @@ dependencies {
     implementation("androidx.core:core-ktx:1.9.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     implementation("com.google.android.gms:play-services-location:18.0.0")
+    implementation("com.google.firebase:firebase-messaging:23.1.0")
 }
+

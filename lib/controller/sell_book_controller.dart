@@ -18,20 +18,23 @@ class SellBookController extends GetxController {
     super.onInit();
   }
 
+  void onDispose() {
+    print("object");
+    super.dispose();
+  }
+
   /// Sell book view methods and values
   TextEditingController searchController = TextEditingController();
   var searchQuery = ''.obs;
-
   var isBookViewSearching = false.obs;
   RxBool isSelectBooksView = true.obs;
   RxBool isSelectBuying = true.obs;
-
   FocusNode searchFocusNode = FocusNode();
-
-
   var selectedOption = 'New'.obs;
   var images = <File>[].obs;  // List to store selected images
+  var updateImageList = [].obs;  // List to store selected images
   var uploading = false.obs;
+  RxBool sellingRequest = false.obs;
   var isSelectCashDelivery = true.obs;
   RxString currentLocation = ''.obs; // Observable to store the full address
   var books = <SellBookModel>[].obs;
@@ -101,6 +104,97 @@ class SellBookController extends GetxController {
     Get.back();  // Close the form or navigate back after saving
   }
 
+  List<String> firestoreImageUrls = [];
+  List<String> firestoreStorageImagePath = [];
+
+  Future<void> deleteImageFromFirestoreAndStorage(String bookUid)async{
+    // Remove image from Firestore
+    for (var item in firestoreImageUrls) {
+      await FirebaseFirestore.instance.collection(sellBookTableName).doc(bookUid).update({
+        'images': FieldValue.arrayRemove([item]),
+      });
+    }
+    // Delete the image from Firebase Storage
+    try {
+      for (var item in firestoreStorageImagePath) {
+        String fileName = item; // Extract file name from URL
+        await FirebaseStorage.instance.ref(fileName).delete();
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Failed to delete image from storage: $e");
+    }
+  }
+
+  updateBook(BuildContext context, SellBookModel book) async {
+    String title = titleController.text;
+    String amount = amountController.text;
+    String contactNumber = contactNumberController.text;
+    String location = currentLocationController.text;
+
+    // Check for internet connection
+    if (!await NetworkHelper.isInternetAvailable()) {
+      Get.snackbar("Error", "Internet connection problem");
+      return;
+    }
+
+    // Check if all fields are filled
+    if (title.isEmpty || amount.isEmpty || contactNumber.isEmpty || location.isEmpty) {
+      Get.snackbar("Error", "Please fill all fields");
+      return;
+    }
+
+    // Validate phone number for students based on the country
+    if (!validatePhoneNumber(context)) {
+      return;
+    }
+
+    try {
+      if (firestoreImageUrls.isNotEmpty) {
+        await deleteImageFromFirestoreAndStorage(book.bookUid);
+      }
+
+      List<String> imageUrls = [];
+      List<String> storageImagePath = [];
+      for(var item in book.images){
+        imageUrls.add(item);
+        storageImagePath.add(item);
+      }
+      // Upload images to Firebase Storage and get the download URLs
+      for (var imageFile in images) {
+        String fileName = '$sellBookTableName/${CurrentUserData.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+        TaskSnapshot uploadTaskSnapshot = await _firebaseStorage.ref(fileName).putFile(imageFile);
+        storageImagePath.add(fileName);
+        String downloadUrl = await uploadTaskSnapshot.ref.getDownloadURL();
+        imageUrls.add(downloadUrl);
+      }
+
+      // Store the updated book data in Firestore
+      await _firestore.collection(sellBookTableName).doc(book.bookUid).update({
+        'bookUid': book.bookUid,
+        'uid': book.uid,
+        'title': title,  // Use updated title
+        'amount': amount, // Use updated amount
+        'contactNumber': contactNumber, // Use updated contact number
+        'images': imageUrls,  // Updated image URLs
+        'addedDate': book.addedDate,
+        'currentLocation': location, // Use updated location
+        'oldOrNewBook': book.oldOrNewBook,
+        'storageImagePath' : storageImagePath
+      });
+
+      // Clear data after successful upload
+      clearDataAfterUpload();
+      uploading(false);
+      // Close the form or navigate back after saving
+      Get.back();
+      Get.snackbar("Success", "Sell book updated successfully!");
+    } on FirebaseException catch (e) {
+      // Handle Firebase exceptions
+      Get.snackbar("Error", "$e");
+      print('Failed to update book: $e');
+    }
+  }
+
 // Select multiple images from gallery
   Future<void> selectImage() async {
     try {
@@ -117,7 +211,6 @@ class SellBookController extends GetxController {
       Get.snackbar('Error', 'Failed to pick images: $e');
     }
   }
-
 // Pick image from camera
   Future<void> pickImageFromCamera() async {
     try {
@@ -129,7 +222,6 @@ class SellBookController extends GetxController {
       Get.snackbar('Error', 'Failed to pick image from camera: $e');
     }
   }
-
 // Store book data in Firestore and upload images to Firebase Storage
   Future<void> storeInFirestore(SellBookModel book) async {
     var box = await Hive.openBox<SellBookModel>(sellBookTableName);
@@ -147,14 +239,12 @@ class SellBookController extends GetxController {
     }
     try {
       List<String> imageUrls = [];
+      List<String> storageImagePath = [];
 
-      // Upload images to Firebase Storage and get the download URLs
       for (var imageFile in book.images) {
-        String fileName = '$sellBookTableName/${book.bookUid}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-        TaskSnapshot uploadTaskSnapshot = await _firebaseStorage
-            .ref(fileName)
-            .putFile(File(imageFile));
-
+        String fileName = '$sellBookTableName/${CurrentUserData.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+        TaskSnapshot uploadTaskSnapshot = await _firebaseStorage.ref(fileName).putFile(File(imageFile));
+        storageImagePath.add(fileName);
         String downloadUrl = await uploadTaskSnapshot.ref.getDownloadURL();
         imageUrls.add(downloadUrl);
       }
@@ -170,6 +260,7 @@ class SellBookController extends GetxController {
         'addedDate': book.addedDate,
         'currentLocation': book.currentLocation,
         'oldOrNewBook': book.oldOrNewBook,
+        'storageImagePath' : storageImagePath
       }).then((_) {
         // delete the book from hive
         var box = Hive.box<SellBookModel>(sellBookTableName);
@@ -182,7 +273,6 @@ class SellBookController extends GetxController {
     }
   }
 
-
 // Method to clear data after successful upload
   void clearDataAfterUpload() {
     images.clear();  // Clear the list of images
@@ -191,6 +281,9 @@ class SellBookController extends GetxController {
     currentLocationController.clear();
     contactNumberController.clear();
     selectedOption.value = 'New';
+    firestoreImageUrls.clear();
+    firestoreStorageImagePath.clear();
+    uploading(false);
   }
 
 // Method to extract latitude and longitude from the currentLocation string and get the full address
@@ -218,6 +311,64 @@ class SellBookController extends GetxController {
     } catch (e) {
       print('Error getting address: $e');
       currentLocation.value = 'Unable to fetch address'; // Set an error message
+    }
+  }
+
+  Future<void> buyMethod(SellBookModel book) async {
+    String userAmount = amountController.text; // Replace with actual user name from Firebase or other source
+    String userAddress = currentLocationController.text;
+    String userContact = contactNumberController.text;
+    String paymentMethod = isSelectCashDelivery.value ? "Cash on Delivery" : "Online Payment";
+
+    // Create user data to add to the buyBookUsersList
+    Map<String, dynamic> userData = {
+      'uid': CurrentUserData.uid, // Use the current user's UID
+      'userName': CurrentUserData.name,
+      'userAmount': userAmount,
+      'userAddress': userAddress,
+      'userContact': userContact,
+      'paymentMethod': paymentMethod,
+      'sellingRequest': false,
+    };
+
+    // Check if the current user is already in the buyBookUsersList
+    bool userExists = false;
+    if (book.buyBookUsersList != null) {
+      // Check if the current user's UID already exists in the list
+      for (var user in book.buyBookUsersList!) {
+        if (user['uid'] == CurrentUserData.uid) {
+          userExists = true;
+          uploading(false);
+          Get.snackbar('Already Purchased', 'You have already purchased this book.');
+          return;
+        }
+      }
+    }
+
+    // If the user doesn't exist, add their data to the list
+    if (!userExists) {
+      try {
+        // Update the book data in Firestore by adding the new user data to buyBookUsersList
+        await FirebaseFirestore.instance.collection(sellBookTableName).doc(book.bookUid).update({
+          'buyBookUsersList': FieldValue.arrayUnion([userData]), // Use arrayUnion to add the userData without duplicating
+        }).then((value) {
+          // After successful update, perform the UI updates
+          isSelectBooksView(false);
+          isSelectBuying(true);
+          uploading(false);
+          Get.back();
+
+          // Show success message
+          Get.snackbar('Success', 'Purchase completed successfully.');
+        });
+      } catch (e) {
+        uploading(false);
+        // Handle any errors that occur during the Firestore update
+        Get.snackbar('Error', 'There was an issue processing your purchase.');
+      }
+    } else {
+      // Notify the user that they are already in the list
+      Get.snackbar('Already Purchased', 'You have already purchased this book.');
     }
   }
 

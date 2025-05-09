@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -17,6 +18,13 @@ import 'friend_view/friend_view.dart';
 import 'friend_view/popular_games_view.dart';
 import 'home_view/teacher_home_cards_view/teacher_home_view.dart';
 import 'home_view/student_home_view/student_home_view.dart';
+
+class FcmService {
+  static Future<String?> getPushToken() async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    return token;
+  }
+}
 
 class Home extends StatelessWidget {
   Home({super.key});
@@ -42,7 +50,9 @@ class Home extends StatelessWidget {
     final controller = Get.put(HomeController());
 
     // Start location stream to continuously update the location
-    _startLocationStream();
+    _startLocationStream().then((value) {
+      controller.requestNotificationPermission();
+    },);
 
     return Obx(() {
       return Scaffold(
@@ -67,7 +77,7 @@ class Home extends StatelessWidget {
     });
   }
 
-  void _startLocationStream()async {
+  Future<void> _startLocationStream()async {
     if(!(await Permission.location.isGranted)){
       await Geolocator.requestPermission();
     }

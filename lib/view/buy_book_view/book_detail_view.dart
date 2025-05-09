@@ -7,6 +7,7 @@ import 'package:pencilo/model/sell_book_model.dart';
 import 'package:pencilo/data/custom_widget/show_images_view.dart';
 
 import '../../data/consts/images.dart';
+import '../../data/current_user_data/current_user_Data.dart';
 import '../../data/custom_widget/custom_media_query.dart';
 import 'buy_book_view.dart';
 import 'buy_sell_book_view.dart';
@@ -89,12 +90,13 @@ class BookDetail extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
             Spacer(),
+            // if(book.uid != CurrentUserData.uid)
             Padding(
               padding: const EdgeInsets.only(left: 15.0,right: 15,bottom: 10),
               child: CustomCard(
                 onTap: () {
                   // Your onTap action (e.g., navigate to AmountView)
-                  Get.to(BuyBookView());
+                  Get.off(BuyBookView(book: book,));
                 },
                 alignment: Alignment.center,
                 borderRadius: 11,

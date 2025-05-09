@@ -46,6 +46,9 @@ class TeacherModel {
   @HiveField(14)
   String? gender;
 
+  @HiveField(15)
+  String? pushToken;
+
   TeacherModel({
     this.uid,
     this.fullName,
@@ -61,6 +64,7 @@ class TeacherModel {
     this.residentialAddress,
     this.profileUrl,
     this.gender,
+    this.pushToken,
   });
 
   // Convert TeacherModel to Map
@@ -80,6 +84,7 @@ class TeacherModel {
       'residentialAddress': residentialAddress, // Store empty string if null
       'profileUrl': profileUrl, // Store empty string if null
       'gender': gender, // Store empty string if null
+      'pushToken': pushToken, // Store empty string if null
     };
   }
 
@@ -100,6 +105,7 @@ class TeacherModel {
       residentialAddress: map['residentialAddress'] ?? '',
       profileUrl: map['profileUrl'] ?? '',
       gender: map['gender'] ?? '',
+      pushToken: map['pushToken'] ?? '',
     );
   }
 }

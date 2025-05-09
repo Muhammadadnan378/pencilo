@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pencilo/controller/profile_controller.dart';
@@ -154,6 +155,7 @@ class LoginView extends StatelessWidget {
       child: PopupMenuButton<String>(
         color: whiteColor,
         onSelected: (String value) {
+          FocusManager.instance.primaryFocus?.unfocus();
           selectedValue.value = value;
         },
         itemBuilder: (BuildContext context) {
@@ -203,7 +205,7 @@ class LoginClassTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 42,
+      height: 47,
       child: TextField(
         onChanged: onChanged,
         keyboardType: keyboardType,
@@ -231,3 +233,4 @@ class LoginClassTextField extends StatelessWidget {
     );
   }
 }
+

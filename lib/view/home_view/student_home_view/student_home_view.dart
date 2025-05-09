@@ -5,6 +5,7 @@ import 'package:pencilo/view/home_view/student_home_view/subject_parts_view.dart
 import '../../../controller/student_home_view_controller.dart';
 import '../../../data/consts/images.dart';
 import 'add_subjects.dart';
+import 'notification_view.dart';
 
 class StudentHomeView extends StatelessWidget {
   HomeViewController controller = Get.put(HomeViewController());
@@ -73,7 +74,9 @@ class StudentHomeView extends StatelessWidget {
                 ),
                 Spacer(),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Get.to(NotificationView());
+                  },
                   icon: Icon(
                     Icons.notifications_rounded,
                     size: 25,

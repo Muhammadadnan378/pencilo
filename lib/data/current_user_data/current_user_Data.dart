@@ -19,6 +19,7 @@ class CurrentUserData {
   static bool isTeacher = false; // Flag to distinguish teacher and student
   static bool isStudent = false; // Flag to distinguish teacher and student
   static String profileUrl = ''; // URL for profile picture
+  static String pushToken = ''; // URL for profile picture
 
   // Fields for students
   static String rollNumber = ''; // Only for students
@@ -59,6 +60,7 @@ class CurrentUserData {
           isTeacher = true;
           isStudent = false; // Ensure student flag is false
           gender = teacher.gender ?? ''; // Ensure student flag is false
+          pushToken = teacher.pushToken ?? ''; // Ensure student flag is false
         }
       }
 
@@ -85,6 +87,7 @@ class CurrentUserData {
           isTeacher = false;
           isStudent = true; // Ensure student flag is true
           gender = student.gender ?? ''; // Ensure student flag is false
+          pushToken = student.pushToken ?? ''; // Ensure student flag is false
         }
       }
     } catch (e) {

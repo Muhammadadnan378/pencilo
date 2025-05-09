@@ -63,5 +63,22 @@
         <key>YourPurposeKey</key>
         <string>The app requires temporary access to your precise location for specific features.</string>
     </dict>
+
+    <!-- Push Notifications Permissions -->
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>fetch</string>
+        <string>remote-notification</string>
+    </array>
+
+    <key>UIUserNotificationSettings</key>
+    <dict>
+        <key>types</key>
+        <array>
+            <string>UIUserNotificationTypeAlert</string>
+            <string>UIUserNotificationTypeBadge</string>
+            <string>UIUserNotificationTypeSound</string>
+        </array>
+    </dict>
 </dict>
 </plist>

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:pencilo/controller/sell_book_controller.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/consts/images.dart';
+import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 import 'dart:io';
 import '../../model/sell_book_model.dart';
@@ -17,7 +18,8 @@ import 'dart:io';
 import '../../model/sell_book_model.dart';
 
 class BuyBookView extends StatelessWidget {
-  BuyBookView({super.key});
+  final SellBookModel book;
+  BuyBookView({super.key, required this.book});
 
   final SellBookController controller = Get.put(SellBookController());
 
@@ -58,11 +60,13 @@ class BuyBookView extends StatelessWidget {
             SellBookClassTextField(
               hintText: "Enter Your amount",
               title: 'Your amount',
-              controller: controller.titleController, // Pass controller
+              keyboardType: TextInputType.number,
+              controller: controller.amountController, // Pass controller
             ),
             SellBookClassTextField(
               hintText: "Enter Your Address",
               title: 'Address',
+              keyboardType: TextInputType.streetAddress,
               controller: controller.currentLocationController,
               isMultiline: true,
             ),
@@ -191,13 +195,16 @@ class BuyBookView extends StatelessWidget {
                     // controller.saveBook(context);
                   },
                   child: CustomCard(
+                    onTap: (){
+                      controller.uploading(true);
+                      controller.buyMethod(book).then((value) => controller.uploading(false),);
+                    },
                     alignment: Alignment.center,
                     width: double.infinity,
                     height: 36,
                     borderRadius: 6,
                     color: blackColor,
-                    child: CustomText(
-                        text: "Done", fontWeight: FontWeight.w700, size: 14),
+                    child: CustomText(text: "Done", fontWeight: FontWeight.w700, size: 14),
                   ),
                 ),
               ),
