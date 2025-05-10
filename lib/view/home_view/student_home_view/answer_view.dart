@@ -17,7 +17,7 @@ class AnswerView extends StatelessWidget {
 
   AnswerView({super.key, required this.myData});
 
-  final HomeViewController controller = Get.put(HomeViewController());
+  final StudentHomeViewController controller = Get.put(StudentHomeViewController());
 
   RxInt currentSelectedQuestion = 0.obs;
 

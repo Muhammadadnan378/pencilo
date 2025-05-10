@@ -9,13 +9,13 @@ import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'package:pencilo/db_helper/model_name.dart';
 import 'package:pencilo/data/custom_widget/play_short_video.dart';
 import 'package:pencilo/view/profile_view/profile_view.dart';
-import 'package:pencilo/view/buy_book_view/buy_sell_book_view.dart';
+import 'package:pencilo/view/buy_book_view/student_buy_book_view/buy_sell_book_view.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../controller/home_controller.dart';
 import '../model/student_model.dart';
 import '../model/teacher_model.dart';
-import 'friend_view/friend_view.dart';
-import 'friend_view/popular_games_view.dart';
+import 'events_view/events_view.dart';
+import 'events_view/popular_games_view.dart';
 import 'home_view/teacher_home_cards_view/teacher_home_view.dart';
 import 'home_view/student_home_view/student_home_view.dart';
 

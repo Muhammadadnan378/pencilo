@@ -6,9 +6,9 @@ import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/model/sell_book_model.dart';
 import 'package:pencilo/data/custom_widget/show_images_view.dart';
 
-import '../../data/consts/images.dart';
-import '../../data/current_user_data/current_user_Data.dart';
-import '../../data/custom_widget/custom_media_query.dart';
+import '../../../data/consts/images.dart';
+import '../../../data/current_user_data/current_user_Data.dart';
+import '../../../data/custom_widget/custom_media_query.dart';
 import 'buy_book_view.dart';
 import 'buy_sell_book_view.dart';
 

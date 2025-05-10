@@ -6,7 +6,7 @@ import 'package:pencilo/data/consts/images.dart';
 import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 import 'dart:io';
-import '../../model/sell_book_model.dart';
+import '../../../model/sell_book_model.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,7 +15,7 @@ import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/consts/images.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 import 'dart:io';
-import '../../model/sell_book_model.dart';
+import '../../../model/sell_book_model.dart';
 
 class BuyBookView extends StatelessWidget {
   final SellBookModel book;

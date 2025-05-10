@@ -9,8 +9,9 @@ import 'package:pencilo/model/subjects_model.dart';
 
 import '../data/consts/const_import.dart';
 import '../data/current_user_data/current_user_Data.dart';
+import '../view/home_view/teacher_home_cards_view/attendance_view/attendance_submit_view.dart';
 
-class HomeViewController extends GetxController {
+class StudentHomeViewController extends GetxController {
 
   @override
   void onInit() {
@@ -235,10 +236,12 @@ class HomeViewController extends GetxController {
         .snapshots(); // 🔄 Use snapshots() for real-time updates
   }
 
+  ///Attendance view methods
+  // Initialize with all present (true), or adjust as needed
+  RxList<bool> isPresentList = List.generate(10, (index) => false).obs;
 
-
-  //create static method to get chapters from firestore
-
-
+  void toggleStatus(int index) {
+    isPresentList[index] = !isPresentList[index];
+  }
 
 }

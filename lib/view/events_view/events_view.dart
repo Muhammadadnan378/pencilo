@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:pencilo/data/consts/images.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
-import 'package:pencilo/view/friend_view/upload_video.dart';
+import 'package:pencilo/view/events_view/upload_video.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../data/consts/const_import.dart';
 import '../../data/custom_widget/show_youtube_video.dart';

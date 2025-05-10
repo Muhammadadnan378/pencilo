@@ -15,7 +15,7 @@ class SubjectPartsView extends StatelessWidget {
 
   SubjectPartsView({super.key, this.subject, this.colors, this.bgColor});
 
-  HomeViewController controller = Get.put(HomeViewController());
+  StudentHomeViewController controller = Get.put(StudentHomeViewController());
 
   // Fetch the data from GitHub
   Future<Map<String, dynamic>> fetchData() async {
@@ -37,7 +37,7 @@ class SubjectPartsView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(),
       body: Center(
-        child: GetBuilder<HomeViewController>(builder: (controller) {
+        child: GetBuilder<StudentHomeViewController>(builder: (controller) {
           return Padding(
             padding: const EdgeInsets.only(left: 15.0, right: 15),
             child: ListView(

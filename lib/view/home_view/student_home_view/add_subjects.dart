@@ -8,7 +8,7 @@ import '../../../data/custom_widget/custom_media_query.dart';
 class AddSubjects extends StatelessWidget {
   AddSubjects({super.key});
 
-  final HomeViewController controller = Get.put(HomeViewController());
+  final StudentHomeViewController controller = Get.put(StudentHomeViewController());
 
   @override
   Widget build(BuildContext context) {

@@ -8,7 +8,7 @@ import 'add_subjects.dart';
 import 'notification_view.dart';
 
 class StudentHomeView extends StatelessWidget {
-  HomeViewController controller = Get.put(HomeViewController());
+  StudentHomeViewController controller = Get.put(StudentHomeViewController());
   StudentHomeView({super.key});
 
   // Updated Data structure to hold more random books for each class

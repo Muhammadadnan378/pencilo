@@ -5,9 +5,10 @@ import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';  // Import Firebase Storage
 import 'package:pencilo/db_helper/model_name.dart';
-import 'package:pencilo/view/buy_book_view/buy_sell_book_view.dart';
+import 'package:pencilo/view/buy_book_view/student_buy_book_view/buy_sell_book_view.dart';
 import '../data/consts/const_import.dart';
 import '../db_helper/network_check.dart';
+import '../db_helper/send_notification_service.dart';
 import '../model/sell_book_model.dart';
 
 class SellBookController extends GetxController {
@@ -371,6 +372,119 @@ class SellBookController extends GetxController {
       Get.snackbar('Already Purchased', 'You have already purchased this book.');
     }
   }
+
+  ///Notification view methods
+  ///
+  //send request
+  Future<void> acceptSellingRequest(List<dynamic> data,Map<String, dynamic> sellBook) async {
+    sellingRequest(true);
+    try {
+      // Create a copy of the buyBookUsersList
+      final docId = data[0].id; // assuming you're using data[0] always (change if needed)
+      final DocumentReference docRef = FirebaseFirestore.instance.collection(sellBookTableName).doc(docId);
+
+      DocumentSnapshot docSnap = await docRef.get();
+      List<dynamic> updatedList = List.from(docSnap['buyBookUsersList']);
+
+      // Find the matching user by some unique identifier
+      int targetIndex = updatedList.indexWhere((element) =>
+      element['userContact'] == sellBook['userContact']); // or another unique field
+
+      if (targetIndex != -1) {
+        updatedList[targetIndex]['sellingRequest'] = true;
+
+        await docRef.update({
+          'buyBookUsersList': updatedList,
+        });
+
+        sellingRequest.value = false;
+      } else {
+        sellingRequest.value = false;
+        Get.snackbar("Error", "User not found in buyBookUsersList");
+      }
+      String pushToken = "";
+
+      try {
+        // Query the Firestore collection based on the uid
+        QuerySnapshot snapshot = await FirebaseFirestore.instance
+            .collection(studentTableName)
+            .where("uid", isEqualTo: data[0]['uid'])
+            .get();
+
+        // Check if the document exists
+        if (snapshot.docs.isNotEmpty) {
+          // Retrieve the first document (assuming uid is unique and only one document matches)
+          DocumentSnapshot userDoc = snapshot.docs.first;
+
+          // Get the push token (FCM token) from the document
+          pushToken = userDoc['pushToken'];
+
+          // Do something with the push token
+          print("Push Token: $pushToken");
+
+          // You can now use this push token to send notifications via FCM
+        } else {
+          print("User not found");
+        }
+      } catch (e) {
+        print("Error retrieving push token: $e");
+      }
+
+      // Send the push notification using the push token
+      if (pushToken.isNotEmpty) {
+        await SendNotificationService.sendNotificationUsingApi(
+          token: pushToken,
+          title: "Your book ${data[0]['title']} buying request accepted",
+          body: "Tap to view the notification",
+          data: {
+            "screen": "NotificationView", // This is for navigation when tapped
+          },
+        );
+      }
+      // // Listen for notification tap and navigate to the screen
+      // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      //   if (message.data['screen'] == 'NotificationView') {
+      //     Get.to(() => NotificationView()); // Navigate to NotificationView screen
+      //   }
+      // });
+      sellingRequest(false);
+      Get.snackbar("Success", "Request sent successfully!",backgroundColor: blackColor,colorText: whiteColor);
+    } catch (e) {
+      sellingRequest(false);
+      Get.snackbar("Error", "$e");
+    }
+  }
+//Cancel send request
+  Future<void> rejectSellingRequest(List<dynamic> data,Map<String, dynamic> sellBook) async {
+    if(sellBook['sellingRequest'] == true){
+      try {
+        final docId = data[0].id; // assuming you're using data[0] always (change if needed)
+        final DocumentReference docRef = FirebaseFirestore.instance.collection(sellBookTableName).doc(docId);
+
+        DocumentSnapshot docSnap = await docRef.get();
+        List<dynamic> updatedList = List.from(docSnap['buyBookUsersList']);
+
+        // Find the matching user by some unique identifier
+        int targetIndex = updatedList.indexWhere((element) =>
+        element['userContact'] == sellBook['userContact']); // or another unique field
+
+        if (targetIndex != -1) {
+          updatedList[targetIndex]['sellingRequest'] = false;
+
+          await docRef.update({
+            'buyBookUsersList': updatedList,
+          });
+
+          Get.snackbar("Success", "Selling request canceled",backgroundColor: blackColor,colorText: whiteColor);
+        } else {
+          Get.snackbar("Error", "User not found in buyBookUsersList");
+        }
+      } catch (e) {
+        Get.snackbar("Error", e.toString());
+      }
+    }
+  }
+
 
 }
 
