@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:pencilo/data/consts/const_import.dart';
-import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 import '../../controller/profile_controller.dart';
 import '../../data/current_user_data/current_user_Data.dart'; // For Firebase integration
 
@@ -9,6 +6,8 @@ final _formKey = GlobalKey<FormState>();
 
 class EditProfilePage extends StatelessWidget {
   final ProfileController controller = Get.put(ProfileController());
+
+  EditProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -99,17 +98,21 @@ class EditProfilePage extends StatelessWidget {
               SizedBox(height: 20),
               Obx(() => controller.isLoading.value
                   ? Center(child: CircularProgressIndicator())
-                  : ElevatedButton(
-                onPressed: () {
+                  : CustomCard(
+                onTap: () {
                   if (_formKey.currentState!.validate()) {
                     controller.isLoading(true);
-                    controller.updateProfile(context).then((value) {
+                    controller.updateProfile().then((value) {
                       controller.isLoading(false);
                     });
                   }
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                child: Text('Update Profile'),
+                alignment: Alignment.center,
+                borderRadius: 11,
+                width: double.infinity,
+                height: 57,
+                color: blackColor,
+                child: CustomText(text: 'Update Profile'),
               )),
               SizedBox(height: 20),
             ],
@@ -128,8 +131,7 @@ class EditProfilePage extends StatelessWidget {
         bool isEmail = false,
         bool isPhoneNumber = false,
         bool isGurdianPhone = false,
-        String? errorMessage, // Add optional errorMessage parameter for validation
-        String isFieldEmpty = "",
+        String? errorMessage,
       }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10.0),
@@ -206,7 +208,7 @@ class EditProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildDatePickerField(String label, TextEditingController Textcontroller, BuildContext context) {
+  Widget _buildDatePickerField(String label, TextEditingController textController, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10.0),
       child: GestureDetector(
@@ -215,7 +217,7 @@ class EditProfilePage extends StatelessWidget {
         },
         child: AbsorbPointer(
           child: TextFormField(
-            controller: Textcontroller,
+            controller: textController,
             decoration: InputDecoration(
               labelText: label,
               border: OutlineInputBorder(),

@@ -2,24 +2,86 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:get/get.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pencilo/model/subjects_model.dart';
 
 import '../data/consts/const_import.dart';
 import '../data/current_user_data/current_user_Data.dart';
-import '../view/home_view/teacher_home_cards_view/attendance_view/attendance_submit_view.dart';
 
 class StudentHomeViewController extends GetxController {
 
-  @override
-  void onInit() {
-    super.onInit();
+  InterstitialAd? interstitialAd;
+  RewardedAd? rewardedAd;
+  AppOpenAd? appOpenAd;
+
+
+  // Show Interstitial Ad
+  void showInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: 'ca-app-pub-3940256099942544/1033173712', // test ID
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          interstitialAd = ad;
+          interstitialAd!.show();
+        },
+        onAdFailedToLoad: (error) {
+          debugPrint('Interstitial Ad failed to load: $error');
+        },
+      ),
+    );
   }
 
+  // Show Rewarded Ad
+  void showRewardedAd() {
+    RewardedAd.load(
+      adUnitId: 'ca-app-pub-3940256099942544/5224354917', // test ID
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          rewardedAd = ad;
+          rewardedAd!.show(
+            onUserEarnedReward: (ad, reward) {
+              debugPrint('User earned reward: ${reward.amount}');
+            },
+          );
+        },
+        onAdFailedToLoad: (error) {
+          debugPrint('Rewarded Ad failed to load: $error');
+        },
+      ),
+    );
+  }
+
+  // Show App Open Ad
+  void showAppOpenAd() {
+    AppOpenAd.load(
+      adUnitId: 'ca-app-pub-3940256099942544/3419835294', // test ID
+      request: const AdRequest(),
+      adLoadCallback: AppOpenAdLoadCallback(
+        onAdLoaded: (ad) {
+          appOpenAd = ad;
+          appOpenAd!.show();
+        },
+        onAdFailedToLoad: (error) {
+          debugPrint('App Open Ad failed to load: $error');
+        },
+      ),
+    );
+  }
+
+  @override
+  void onClose() {
+    interstitialAd?.dispose();
+    rewardedAd?.dispose();
+    appOpenAd = null;
+    super.onClose();
+  }
+
+
   ///Home view methods
-  var selectedValue = '4th'.obs; // Default value
+  var selectedValue = CurrentUserData.standard.obs; // Default value
 
   // Method to change the selected value
   void changeValue(String newValue) {
@@ -70,6 +132,7 @@ class StudentHomeViewController extends GetxController {
 
 
   /// Answer view methods
+  RxInt currentSelectedQuestion = 0.obs;
   String videoUrlUid = '123456';
   TextEditingController urlController = TextEditingController();
 
@@ -206,9 +269,9 @@ class StudentHomeViewController extends GetxController {
 
       await firestore.collection('subjects').doc(subjectName).collection(chapterPart).doc(chapterId).set(newChapter.toChapterMap());
 
-      showSnackbar(context, "Subject and chapter added successfully");
+      Get.snackbar("Success", "Subject and chapter added successfully");
     } catch (e) {
-      showSnackbar(context, "Error adding: $e");
+      Get.snackbar("Error", "Error adding: $e");
     } finally {
       isLoading(false);
       // ✅ Clear input fields
@@ -237,11 +300,6 @@ class StudentHomeViewController extends GetxController {
   }
 
   ///Attendance view methods
-  // Initialize with all present (true), or adjust as needed
-  RxList<bool> isPresentList = List.generate(10, (index) => false).obs;
 
-  void toggleStatus(int index) {
-    isPresentList[index] = !isPresentList[index];
-  }
 
 }

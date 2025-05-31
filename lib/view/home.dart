@@ -1,23 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:hive/hive.dart';
 import 'package:pencilo/data/consts/colors.dart';
-import 'package:pencilo/data/current_user_data/current_user_Data.dart';
-import 'package:pencilo/db_helper/model_name.dart';
-import 'package:pencilo/data/custom_widget/play_short_video.dart';
-import 'package:pencilo/view/profile_view/profile_view.dart';
-import 'package:pencilo/view/buy_book_view/student_buy_book_view/buy_sell_book_view.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../controller/home_controller.dart';
-import '../model/student_model.dart';
-import '../model/teacher_model.dart';
-import 'events_view/events_view.dart';
-import 'events_view/popular_games_view.dart';
-import 'home_view/teacher_home_cards_view/teacher_home_view.dart';
-import 'home_view/student_home_view/student_home_view.dart';
 
 class FcmService {
   static Future<String?> getPushToken() async {
@@ -28,35 +13,13 @@ class FcmService {
 
 class Home extends StatelessWidget {
   Home({super.key});
-
-  final List<Widget> _screens = [
-    PlayShortVideo(),
-    BuySellBookView(),
-    CurrentUserData.isTeacher == true ? TeacherHomeView() : StudentHomeView(),
-    CurrentUserData.isTeacher == true ? FriendsView() : PopularGamesView(),
-    ProfileView(),
-  ];
-
-  final List<IconData> _icons = const [
-    Icons.ondemand_video,
-    Icons.menu_book,
-    Icons.home,
-    Icons.people,
-    Icons.person,
-  ];
-
+  final HomeController controller = Get.put(HomeController());
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(HomeController());
-
-    // Start location stream to continuously update the location
-    _startLocationStream().then((value) {
-      controller.requestNotificationPermission();
-    },);
 
     return Obx(() {
       return Scaffold(
-        body: _screens[controller.selectedIndex.value],
+        body: controller.screens[controller.selectedIndex.value],
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           backgroundColor: blackColor,
@@ -67,7 +30,7 @@ class Home extends StatelessWidget {
           onTap: (index) => controller.selectedIndex.value = index,
           showSelectedLabels: false,
           showUnselectedLabels: false,
-          items: _icons.map((icon) => BottomNavigationBarItem(
+          items: controller.icons.map((icon) => BottomNavigationBarItem(
             icon: Icon(icon),
             label: '', // No label
           ))
@@ -75,70 +38,5 @@ class Home extends StatelessWidget {
         ),
       );
     });
-  }
-
-  Future<void> _startLocationStream()async {
-    if(!(await Permission.location.isGranted)){
-      await Geolocator.requestPermission();
-    }
-
-    if(CurrentUserData.currentLocation == ''){
-
-      // Create LocationSettings with desired accuracy and distance filter
-      LocationSettings locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high, // Set desired accuracy (best)
-        distanceFilter: 10, // Minimum distance in meters before update
-      );
-
-      // Start listening for location updates
-      Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-            (Position position) async {
-          String location = '${position.latitude}, ${position.longitude}';
-          print("Updated Location: $location");
-          print("Is Teacher:: ${CurrentUserData.isTeacher}");
-          print("Is Student: ${CurrentUserData.isStudent}");
-
-          // Store the updated location to Firestore for student or teacher
-          if (CurrentUserData.isTeacher == true) {
-            await FirebaseFirestore.instance.collection(teacherTableName).doc(CurrentUserData.uid).update({
-              'currentLocation': location, // Update the current location
-            });
-            // Here implement to update the teacher current location in hive
-            final teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
-            final newTeacher = TeacherModel(
-              uid: CurrentUserData.uid,
-              fullName: CurrentUserData.name,
-              schoolName: CurrentUserData.schoolName,
-              phoneNumber: CurrentUserData.phoneNumber,
-              currentLocation: location,
-              subject: CurrentUserData.subject,
-            );
-            await teacherBox.add(newTeacher);
-
-            CurrentUserData.currentLocation = location;
-
-          } else if(CurrentUserData.isStudent == true) {
-            await FirebaseFirestore.instance.collection(studentTableName).doc(CurrentUserData.uid).update({
-              'currentLocation': location, // Update the current location
-            });
-            // Here implement to update the student current location in hive
-
-            final studentBox = await Hive.openBox<StudentModel>(studentTableName);
-            final newStudent = StudentModel(
-              uid: CurrentUserData.uid,
-              fullName: CurrentUserData.name,
-              schoolName: CurrentUserData.schoolName,
-              standard: CurrentUserData.standard,
-              division: CurrentUserData.division,
-              phoneNumber: CurrentUserData.phoneNumber,
-              currentLocation: location,
-            );
-            await studentBox.add(newStudent);
-            CurrentUserData.currentLocation = location;
-
-          }
-        },
-      );
-    }
   }
 }

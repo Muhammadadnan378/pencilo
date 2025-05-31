@@ -1,6 +1,5 @@
 import '../../../../controller/sell_book_controller.dart';
 import '../../../../data/consts/const_import.dart';
-import '../buy_sell_book_view.dart';
 import 'my_order_view_tabs/im_buying_view.dart';
 import 'my_order_view_tabs/im_selling_view.dart';
 

@@ -17,7 +17,7 @@ class CustomCard extends StatelessWidget {
   final DecorationImage? bgImage;
 
   const CustomCard({
-    Key? key,
+    super.key,
     this.alignment,
     this.onTap,
     this.padding,
@@ -32,7 +32,7 @@ class CustomCard extends StatelessWidget {
     this.boxShadow,
     this.child,
     this.bgImage,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

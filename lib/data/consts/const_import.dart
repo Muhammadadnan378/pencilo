@@ -6,7 +6,6 @@ export '../../../data/custom_widget/custom_card.dart';
 export 'package:hive_flutter/adapters.dart';
 export '../../../data/custom_widget/snackbar_message.dart';
 export '../../data/custom_widget/custom_text_widget.dart';
-export '../../data/custom_widget/custom_text_widget.dart';
 
 // Export Flutter Packages
 export 'package:flutter/material.dart';

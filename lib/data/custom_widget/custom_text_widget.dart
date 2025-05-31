@@ -17,7 +17,7 @@ class CustomText extends StatelessWidget {
   final double? letterSpacing;
 
   const CustomText({
-    Key? key,
+    super.key,
     required this.text,
     this.size,
     this.height,
@@ -31,7 +31,7 @@ class CustomText extends StatelessWidget {
     this.maxLines,
     this.overflow,
     this.letterSpacing,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

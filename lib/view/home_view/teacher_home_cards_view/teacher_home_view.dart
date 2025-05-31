@@ -1,5 +1,6 @@
 import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'package:pencilo/view/home_view/teacher_home_cards_view/events_create_view.dart';
+import '../../../controller/home_controller.dart';
 import '../../../data/consts/const_import.dart';
 import '../../../data/consts/images.dart';
 import '../../../data/custom_widget/custom_media_query.dart';
@@ -10,6 +11,7 @@ class TeacherHomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    requestNotificationPermission();
     return Scaffold(
       body: ListView(
         padding: const EdgeInsets.only(left: 15.0,right: 15),
@@ -21,16 +23,6 @@ class TeacherHomeView extends StatelessWidget {
             size: 25,
             fontWeight: FontWeight.w700,
           ),
-          // CustomCard(
-          //   onTap: () {
-          //     CurrentUserData.logout();
-          //   },
-          //   alignment: Alignment.center,
-          //   borderRadius: 100,
-          //   color: Color(0xff57A8B8),
-          //   width: 41,
-          //   height: 41,
-          // ),
           SizedBox(height: 14,),
           buildCustomCard(
               onTap: () {

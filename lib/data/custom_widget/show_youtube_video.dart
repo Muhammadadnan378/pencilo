@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import '../consts/colors.dart';
 import '../consts/const_import.dart';
 
 class ShowYoutubeVideo extends StatelessWidget {
@@ -11,7 +9,7 @@ class ShowYoutubeVideo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Initialize the YouTube player controller
-    YoutubePlayerController _controller = YoutubePlayerController(
+    YoutubePlayerController controller = YoutubePlayerController(
       initialVideoId: YoutubePlayer.convertUrlToId(videoUrl) ?? '',
       flags: YoutubePlayerFlags(
         autoPlay: true,
@@ -44,7 +42,7 @@ class ShowYoutubeVideo extends StatelessWidget {
         children: [
           Expanded(
             child: YoutubePlayer(
-              controller: _controller,
+              controller: controller,
               liveUIColor: Colors.amber,
               aspectRatio: 16 / 9, // Aspect ratio for full-screen video
             ),

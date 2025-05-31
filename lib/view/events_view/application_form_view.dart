@@ -1,9 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pencilo/controller/friend_view_controller.dart';
-import 'package:pencilo/data/custom_widget/custom_media_query.dart';
-
 import '../../data/consts/colors.dart';
 import '../../data/consts/images.dart';
 import '../../data/custom_widget/custom_card.dart';
@@ -86,11 +83,11 @@ class ApplicationFormView extends StatelessWidget {
               SizedBox(height: 50),
               Obx(() => !controller.isLoading.value ? Center(
                 child: CustomCard(
-                  width: SizeConfig.screenWidth * 0.7,
-                  height: 45,
-                  borderRadius: 7,
-                  color: Color(0xff57A8B8),
                   alignment: Alignment.center,
+                  borderRadius: 11,
+                  width: double.infinity,
+                  height: 57,
+                  color: blackColor,
                   onTap: () {
                     controller.isLoading(true);
                     // Validate form before proceeding
@@ -135,7 +132,7 @@ class ApplicationFormView extends StatelessWidget {
         Expanded(
           child: CustomTextFormField(
             labelText: labelText,
-            textFieldControl: textFieldControl,
+            controller: textFieldControl,
             keyboardType: keyboardType,
             validator: validate,
             contentPadding: EdgeInsets.only(left: 10, bottom: 10, top: 10),

@@ -11,7 +11,7 @@ class SellBookModel {
   final String uid;
 
   @HiveField(2)
-  final String title;
+  final String bookName;
 
   @HiveField(3)
   final String amount;
@@ -38,24 +38,24 @@ class SellBookModel {
   bool? uploading = false;
 
   @HiveField(11)
-  List<Map<String, dynamic>>? buyBookUsersList;
+  List<String>? buyBookUsersList;
 
   @HiveField(12)
   final String? userName;
 
   @HiveField(13)
-  final String? userAddress;
-
-  @HiveField(14)
   final String? userContact;
 
-  @HiveField(15)
+  @HiveField(14)
   final List<String>? storageImagePath;
+
+  @HiveField(15)
+  final int? requestCount;
 
   SellBookModel({
     required this.bookUid,
     required this.uid,
-    required this.title,
+    required this.bookName,
     required this.amount,
     required this.contactNumber,
     required this.images,
@@ -66,9 +66,9 @@ class SellBookModel {
     this.uploaded,
     this.buyBookUsersList,
     this.userName,
-    this.userAddress,
     this.userContact,
     this.storageImagePath,
+    this.requestCount,
   });
 
   // Convert Firestore data to SellBookModel
@@ -76,7 +76,7 @@ class SellBookModel {
     return SellBookModel(
       bookUid: firestore['bookUid'],
       uid: firestore['uid'],
-      title: firestore['title'],
+      bookName: firestore['bookName'],
       amount: firestore['amount'],
       contactNumber: firestore['contactNumber'],
       images: List<String>.from(firestore['images']),
@@ -84,10 +84,10 @@ class SellBookModel {
       oldOrNewBook: firestore['oldOrNewBook'],
       currentLocation: firestore['currentLocation'],
       userName: firestore['userName'],
-      userAddress: firestore['userAddress'],
       userContact: firestore['userContact'],
+      requestCount: firestore['requestCount'],
       storageImagePath: List<String>.from(firestore['storageImagePath']),
-      buyBookUsersList: firestore['buyBookUsersList'] != null ? List<Map<String, dynamic>>.from(firestore['buyBookUsersList']) : null,
+      buyBookUsersList: List<String>.from(firestore['buyBookUsersList'] ?? []), // FIXED CAST
     );
   }
 
@@ -96,17 +96,16 @@ class SellBookModel {
     return {
       'bookUid': bookUid,
       'uid': uid,
-      'title': title,
+      'bookName': bookName,
       'amount': amount,
       'contactNumber': contactNumber,
       'images': images,
       'addedDate': addedDate,
       'oldOrNewBook': oldOrNewBook,
       'currentLocation': currentLocation,
-      'userName': userName,
-      'userAddress': userAddress,
-      'userContact': userContact,
       'storageImagePath': storageImagePath,
+      'buyBookUsersList': buyBookUsersList,
+      'requestCount': requestCount,
     };
   }
 }

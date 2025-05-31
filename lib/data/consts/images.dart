@@ -29,7 +29,26 @@ const historyCurvedImage = "assets/images/history_card_curved.png";
 const hindiCurvedImage = "assets/images/hindi_card_curved.png";
 const mathsCurvedImage = "assets/images/marathi_card_curved.png";
 const marathiCurvedImage = "assets/images/maths_card_curved.png";
+
 const basketBallImage = "assets/images/basketBalImage.png";
+const Run = "assets/images/Run.jpg";
+const Tennis = "assets/images/TableTennis.jpg";
+const Football = "assets/images/Football.jpg";
+const Cricket = "assets/images/Cricket.jpg";
+const BasketBall = "assets/images/BasketBall.jpg";
+const Volleyball = "assets/images/Volleyball.jpg";
+const Dance = "assets/images/Dance.jpg";
+const Drawing = "assets/images/Drawing.jpg";
+const PUBG = "assets/images/PUBG.jpg";
+const FreeFire = "assets/images/FreeFire.jpg";
+const Kabaddi = "assets/images/Kabaddi.jpg";
+const KhoKho = "assets/images/KhoKho.jpg";
+const Reels = "assets/images/Reels.jpg";
+const Singing = "assets/images/Singing.jpg";
+const Hockey = "assets/images/Hockey.jpg";
+const Badminton = "assets/images/Badminton.jpg";
+const TableTennis = "assets/images/TableTennis.jpg";
+
 
 
 //Videos Url

@@ -16,7 +16,7 @@ class ProfileTimeTableView extends StatelessWidget {
               tabs: timetable.map((day) => Tab(text: day['day'])).toList(),
               labelColor: Theme.of(context).colorScheme.primary,
               unselectedLabelColor:
-              Theme.of(context).colorScheme.onBackground.withOpacity(0.6),
+              Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
               indicatorColor: Theme.of(context).colorScheme.primary,
             ),
             Expanded( // ✅ This gives proper height to the tab content area
@@ -46,7 +46,7 @@ class ProfileTimeTableView extends StatelessWidget {
                                     color: Theme.of(context)
                                         .colorScheme
                                         .primary
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 0.5),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
@@ -76,8 +76,8 @@ class ProfileTimeTableView extends StatelessWidget {
                                         style: TextStyle(
                                           color: Theme.of(context)
                                               .colorScheme
-                                              .onBackground
-                                              .withOpacity(0.7),
+                                              .onSurface
+                                              .withValues(alpha: 0.5),
                                         ),
                                       ),
                                     ],

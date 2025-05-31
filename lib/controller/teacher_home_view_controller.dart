@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 
@@ -7,6 +6,8 @@ import '../data/consts/const_import.dart';
 import '../model/create_event_model.dart';
 
 class TeacherHomeViewController extends GetxController{
+
+  ///Events methods and variables
   RxBool isSelectEvent = true.obs;
   RxBool isLoading = false.obs;
   RxBool isSelectCityEmpty = false.obs;
@@ -21,7 +22,7 @@ class TeacherHomeViewController extends GetxController{
   RxString selectedEventType = ''.obs;
   RxString selectedCity = ''.obs;
   RxString selectedState = ''.obs;
-  final formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
 // Define controllers
@@ -33,74 +34,26 @@ class TeacherHomeViewController extends GetxController{
   final TextEditingController rulesController = TextEditingController();
   // List of event types (sports games)
   List<String> eventTypes = [
-    'Cricket', 'Football', 'Basketball', 'Badminton', 'Table Tennis',
-    'Tennis', 'Hockey', 'Volleyball', 'Kabaddi', 'Rugby','PUBG','BGMI','Run'
+    'Cricket', 'Football', 'Basketball', 'Baseball', // Already included
+    'Badminton', 'Table Tennis', 'Tennis', 'Hockey', 'Volleyball',
+    'Kabaddi', 'KhoKho', 'Dance', 'Drawing', 'Reels',
+    'Singing', 'PUBG', 'FreeFire', 'BGMI', 'Run',
   ];
-
   List<String> states = [
-    'Andhra Pradesh',
-    'Arunachal Pradesh',
-    'Assam',
-    'Bihar',
-    'Chhattisgarh',
-    'Goa',
-    'Gujarat',
-    'Haryana',
-    'Himachal Pradesh',
-    'Jharkhand',
-    'Karnataka',
-    'Kerala',
-    'Madhya Pradesh',
-    'Maharashtra',
-    'Manipur',
-    'Meghalaya',
-    'Mizoram',
-    'Nagaland',
-    'Odisha',
-    'Punjab',
-    'Rajasthan',
-    'Sikkim',
-    'Tamil Nadu',
-    'Telangana',
-    'Uttar Pradesh',
-    'Uttarakhand',
-    'West Bengal'
+    'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar',
+    'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
+    'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya',
+    'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim',
+    'Tamil Nadu', 'Telangana', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
   ];
 
   List<String> cities = [
-    'Delhi',
-    'Mumbai',
-    'Kolkata',
-    'Chennai',
-    'Bangalore',
-    'Hyderabad',
-    'Pune',
-    'Ahmedabad',
-    'Jaipur',
-    'Lucknow',
-    'Visakhapatnam',
-    'Vijayawada',
-    'Guntur',
-    'Mysore',
-    'Mangalore',
-    'Nagpur',
-    'Coimbatore',
-    'Madurai',
-    'Trichy',
-    'Kanpur',
-    'Agra',
-    'Noida',
-    'Vadodara',
-    'Rajkot',
-    'Udaipur',
-    'Jodhpur',
-    'Patna',
-    'Gaya',
-    'Bhagalpur',
-    'Muzaffarpur',
-    'Silchar',
-    'Durgapur',
-    'Asansol'
+    'Delhi', 'Mumbai',
+    'Kolkata', 'Chennai', 'Bangalore', 'Hyderabad', 'Pune', 'Ahmedabad',
+    'Jaipur', 'Lucknow', 'Visakhapatnam', 'Vijayawada', 'Guntur', 'Mysore',
+    'Mangalore', 'Nagpur', 'Coimbatore', 'Madurai', 'Trichy', 'Kanpur',
+    'Agra', 'Noida', 'Vadodara', 'Rajkot', 'Udaipur', 'Jodhpur', 'Patna',
+    'Gaya', 'Bhagalpur', 'Muzaffarpur', 'Silchar', 'Durgapur', 'Asansol'
   ];
 
   // Function to pick date of birth
@@ -139,7 +92,6 @@ class TeacherHomeViewController extends GetxController{
       return true;
     }
   }
-
 
   checkValidatFields(BuildContext context) {
     // Check if any of the required fields are empty
@@ -187,13 +139,13 @@ class TeacherHomeViewController extends GetxController{
       await _firestore.collection('events').doc(eventId).set(eventData);
 
       // Optionally, show a success message or handle post-creation actions
-      showSnackbar(context, "Event Created successfully!",);
-      print('Event created successfully!');
+      Get.snackbar("Success", "Event Created successfully!",);
+      debugPrint('Event created successfully!');
       clearValues();
     } catch (e) {
       // Handle errors, show an error message, or log the error
-      showSnackbar(context, "Error Update: $e",);
-      print('Error creating event: $e');
+      Get.snackbar("Error", "Update: $e",);
+      debugPrint('Error creating event: $e');
     }
   }
   Future<void> updateEvent(BuildContext context) async {
@@ -224,14 +176,14 @@ class TeacherHomeViewController extends GetxController{
       await _firestore.collection('events').doc(eventsModel!.eventId).update(eventData);
 
       // Optionally, show a success message or handle post-creation actions
-      showSnackbar(context, "Event update successfully!",);
-      print('Event update successfully!');
+      Get.snackbar("Success", "Event update successfully!",);
+      debugPrint('Event update successfully!');
       clearValues();
       eventsModel = null;
     } catch (e) {
       // Handle errors, show an error message, or log the error
-      showSnackbar(context, "Error Update:  $e",);
-      print('Error update event: $e');
+      Get.snackbar("Error", "Update:  $e",);
+      debugPrint('Error update event: $e');
     }
   }
   Future<void> deleteEvent(BuildContext context, String eventId) async {
@@ -240,8 +192,8 @@ class TeacherHomeViewController extends GetxController{
       await _firestore.collection('events').doc(eventId).delete();
     }on FirebaseException catch (e) {
       // Handle errors, show an error message, or log the error
-      showSnackbar(context, "Error Delete: $e",);
-      print('Error delete event: $e');
+      Get.snackbar("Error", "Delete: $e",);
+      debugPrint('Error delete event: $e');
     }
   }
 

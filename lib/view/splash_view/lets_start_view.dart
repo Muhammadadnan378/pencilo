@@ -1,24 +1,43 @@
-import 'package:flutter/material.dart';
+import 'package:pencilo/admin_views/admin_login.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 
+import '../../controller/login_controller.dart';
 import '../../data/consts/images.dart';
 import '../login_view/login_view.dart';
 
 class LetsStartView extends StatelessWidget {
-  const LetsStartView({super.key});
+  LetsStartView({super.key});
+
+  final LoginController controller = Get.put(LoginController());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
+          Positioned(
+            right: 20,
+            top: 40,
+            child: GestureDetector(
+              onTap: () {
+                controller.isStudent = false;
+                controller.isTeacher = false;
+                Get.to(AdminLogin());
+              },
+              child: Icon(
+                Icons.admin_panel_settings,
+                size: 30,
+                color: blackColor,
+              ),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Column(
               children: [
                 SizedBox(
-                  height: SizeConfig.screenHeight * 0.1,
+                  height: SizeConfig.screenHeight * 0.07,
                 ),
                 Align(
                   alignment: AlignmentDirectional.centerStart,
@@ -42,27 +61,30 @@ class LetsStartView extends StatelessWidget {
                 Spacer(),
                 CustomCard(
                   alignment: Alignment.center,
-                  borderRadius: 7,
-                  width: SizeConfig.screenWidth * 0.8,
-                  height: 42,
-                  color: Color(0xff9AC3FF),
-                  child: CustomText(
-                    text: "Start",
-                    fontWeight: FontWeight.w500,
-                    size: 15,
-                    color: blackColor,
-                    fontFamily: poppinsFontFamily,
-                  ),
+                  borderRadius: 11,
+                  width: double.infinity,
+                  height: 57,
+                  color: blackColor,
                   boxShadow: [
                     BoxShadow(color: grayColor,blurRadius: 5,offset: Offset(0, 3))
                   ],
                   onTap: () {
-                    Get.to(LoginView(isTeacher: false,));
+                    controller.isStudent = true;
+                    Get.to(LoginView());
                   },
+                  child: CustomText(
+                    text: "Start",
+                    fontWeight: FontWeight.w500,
+                    size: 15,
+                    fontFamily: poppinsFontFamily,
+                  ),
                 ),
                 SizedBox(height: 10,),
                 GestureDetector(
-                  onTap: () => Get.to(LoginView(isTeacher: true,)),
+                  onTap: () {
+                    controller.isTeacher = true;
+                    Get.to(LoginView());
+                  },
                   child: CustomText(
                     text: "I am a Teacher/Professor",
                     color: blackColor,

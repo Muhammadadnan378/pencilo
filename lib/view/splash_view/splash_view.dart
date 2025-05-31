@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:pencilo/admin_views/admin_home_view.dart';
 import 'package:pencilo/data/consts/images.dart';
 import 'package:pencilo/view/home.dart';
 import 'package:pencilo/view/splash_view/lets_start_view.dart';
@@ -17,15 +18,18 @@ class _SplashViewState extends State<SplashView> {
   @override
   void initState() {
     super.initState();
-
+    debugPrint("${CurrentUserData.isAdmin}");
     // Load user data from Hive
     CurrentUserData.loadUserDataFromHive().then((_) {
-      if (CurrentUserData.uid.isEmpty) {
-        Get.off(LetsStartView());
+      if (CurrentUserData.isAdmin) {
+        Get.offAll(AdminHomeView());
+      } else if (CurrentUserData.isTeacher || CurrentUserData.isStudent) {
+        Get.offAll(Home());
       } else {
-        Get.off(Home());
+        Get.offAll(LetsStartView());
       }
     });
+
 
     // Navigate after 2 seconds
     Timer(Duration(seconds: 2), () {

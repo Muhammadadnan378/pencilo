@@ -1,16 +1,12 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/model/sell_book_model.dart';
 import 'package:pencilo/data/custom_widget/show_images_view.dart';
 
+import '../../../data/consts/const_import.dart';
 import '../../../data/consts/images.dart';
 import '../../../data/current_user_data/current_user_Data.dart';
-import '../../../data/custom_widget/custom_media_query.dart';
 import 'buy_book_view.dart';
-import 'buy_sell_book_view.dart';
 
 class BookDetail extends StatelessWidget {
   final SellBookModel book;
@@ -19,6 +15,7 @@ class BookDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasBought = book.buyBookUsersList?.contains(CurrentUserData.uid) ?? false;
     return Scaffold(
       appBar: AppBar(title: Text("Book Detail")),
       body: Padding(
@@ -65,7 +62,7 @@ class BookDetail extends StatelessWidget {
 
             SizedBox(height: 15),
             CustomText(
-              text: book.title,
+              text: book.bookName,
               color: blackColor,
               fontFamily: poppinsFontFamily,
               size: 16,
@@ -90,8 +87,8 @@ class BookDetail extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
             Spacer(),
-            // if(book.uid != CurrentUserData.uid)
-            Padding(
+            if(book.uid != CurrentUserData.uid)
+              !hasBought ? Padding(
               padding: const EdgeInsets.only(left: 15.0,right: 15,bottom: 10),
               child: CustomCard(
                 onTap: () {
@@ -110,7 +107,7 @@ class BookDetail extends StatelessWidget {
                   fontFamily: poppinsFontFamily,
                 ),
               ),
-            ),
+            ) : Center(child: CustomText(text: "You have already bought this book",color: Colors.red,size: 18,)),
           ],
         ),
       ),

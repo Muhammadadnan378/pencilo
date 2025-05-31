@@ -1,16 +1,21 @@
-import 'package:flutter/cupertino.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pencilo/data/consts/const_import.dart';
+import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
+import 'package:pencilo/db_helper/model_name.dart';
 import 'package:pencilo/view/home_view/student_home_view/subject_parts_view.dart';
+import '../../../add_methods/add_methods_class.dart';
+import '../../../controller/home_controller.dart';
 import '../../../controller/student_home_view_controller.dart';
 import '../../../data/consts/images.dart';
-import 'add_subjects.dart';
 import 'notification_view.dart';
 
 class StudentHomeView extends StatelessWidget {
-  StudentHomeViewController controller = Get.put(StudentHomeViewController());
+  final StudentHomeViewController controller = Get.put(StudentHomeViewController());
   StudentHomeView({super.key});
-
+  final interstitialAdService = InterstitialAdService();
+  final rewardedAdService = RewardedAdService();
+  final appOpenAdService = AppOpenAdService(); // Optional if you plan to use it here
   // Updated Data structure to hold more random books for each class
   final Map<String, List<String>> classBooksMap = {
     '4th': [
@@ -38,184 +43,265 @@ class StudentHomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: whiteColor,
-      child: Padding(
-        padding: const EdgeInsets.only(left: 15.0, right: 15),
-        child: Column(
-          children: [
-            SizedBox(height: SizeConfig.screenHeight * 0.08),
-            Row(
-              children: [
-                // Display user's current location
-                Column(
-                  children: [
-                    CustomText(
-                      text: 'Aniket Ganesh',
-                      color: blackColor,
-                      fontFamily: interFontFamily,
-                      size: 8,
-                    ),
-                    SizedBox(height: 5),
-                    CustomCard(
-                      alignment: Alignment.center,
-                      borderRadius: 100,
-                      color: Color(0xff57A8B8),
-                      width: 41,
-                      height: 41,
-                      child: CustomText(
-                        text: "AG",
-                        size: 20,
-                        color: blackColor,
-                        fontFamily: nixinOneFontFamily,
+    requestNotificationPermission();
+    return Stack(
+      children: [
+        Container(
+          color: whiteColor,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 15.0, right: 15),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  SizedBox(height: SizeConfig.screenHeight * 0.08),
+                  Row(
+                    children: [
+                      // Display user's current location
+                      Column(
+                        children: [
+                          CustomText(
+                            text: 'Aniket Ganesh',
+                            color: blackColor,
+                            fontFamily: interFontFamily,
+                            size: 8,
+                          ),
+                          SizedBox(height: 5),
+                          CustomCard(
+                            alignment: Alignment.center,
+                            borderRadius: 100,
+                            color: Color(0xff57A8B8),
+                            width: 41,
+                            height: 41,
+                            child: CustomText(
+                              text: "AG",
+                              size: 20,
+                              color: blackColor,
+                              fontFamily: nixinOneFontFamily,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-                Spacer(),
-                IconButton(
-                  onPressed: () {
-                    Get.to(NotificationView());
-                  },
-                  icon: Icon(
-                    Icons.notifications_rounded,
-                    size: 25,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 14),
-            Row(
-              children: [
-                CustomText(
-                  text: 'Subjects',
-                  color: blackColor,
-                  fontFamily: interFontFamily,
-                  size: 22,
-                  fontWeight: FontWeight.w700,
-                ),
-                SizedBox(width: 14),
-                Obx(() {
-                  return CustomCard(
-                    height: 28,
-                    borderRadius: 9,
-                    border: Border.all(color: bgColor, width: 0.3),
-                    child: Row(
-                      children: [
-                        SizedBox(width: 14),
-                        // Dropdown button to select class
-                        DropdownButton<String>(
-                          value: controller.selectedValue.value,
-                          icon: Icon(Icons.arrow_drop_down),
-                          underline: SizedBox(),
-                          onChanged: (String? newValue) {
-                            if (newValue != null) {
-                              controller.changeValue(newValue);
-                            }
-                          },
-                          items: <String>[
-                            '4th',
-                            '5th',
-                            '6th',
-                            '7th',
-                            '8th',
-                            '9th',
-                            '10th',
-                          ].map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: CustomText(
-                                text: value,
-                                fontFamily: poppinsFontFamily,
-                                size: 16,
-                                color: bgColor,
-                                fontWeight: FontWeight.w600,
+                      Spacer(),
+                      StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance.collection(sellBookTableName).where("uid",isEqualTo: CurrentUserData.uid).snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return IconButton(
+                              onPressed: () {
+                                // Get.to(NotificationView(sellBookId: "",));
+                              },
+                              icon: Icon(
+                                Icons.notifications_rounded,
+                                size: 25,
                               ),
                             );
-                          }).toList(),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-              ],
-            ),
-            SizedBox(height: 10),
-            // Update the list view based on the selected class
-            SizedBox(
-              height: SizeConfig.screenHeight * 0.7,
-              child: Obx(() {
-                // Get books based on selected class
-                List<String> currentClassBooks = classBooksMap[controller.selectedValue.value] ?? [];
-                return ListView.builder(
-                  itemCount: currentClassBooks.length,
-                  padding: EdgeInsets.zero,
-                  shrinkWrap: true,
-                  physics: BouncingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10.0),
-                      child: CustomCard(
-                        onTap: () {
-                          Get.to(SubjectPartsView(
-                            subject: currentClassBooks[index],
-                            colors: controller.curvedCardColors[index],
-                            bgColor: controller.bGCardColors[index],
-                          ));
-                        },
-                        width: double.infinity,
-                        height: 147,
-                        borderRadius: 12,
-                        color: controller.curvedCardColors[index],
-                        child: Stack(
-                          children: [
-                            Align(
-                              alignment: Alignment.bottomCenter,
-                              child: ClipRRect(
-                                borderRadius: const BorderRadius.only(
-                                    bottomLeft: Radius.circular(10),
-                                    bottomRight: Radius.circular(10)),
-                                child: Image.asset(
-                                  controller.curvedImages[index],
-                                  width: double.infinity,
-                                  height: 80,
-                                  fit: BoxFit.cover,
-                                ),
+                          }
+
+                          if (snapshot.hasError) {
+                            return IconButton(
+                              onPressed: () {
+                                Get.to(NotificationView());
+                              },
+                              icon: Icon(
+                                Icons.notifications_rounded,
+                                size: 25,
                               ),
-                            ),
-                            // Subject Name and Parts
-                            Positioned(
-                              left: 12,
-                              top: 5,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  CustomText(
-                                    text: currentClassBooks[index],
-                                    fontWeight: FontWeight.w600,
-                                    size: 18,
-                                    color: whiteColor,
+                            );
+                          }
+
+                          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                            return IconButton(
+                              onPressed: () {
+                                Get.to(NotificationView());
+                              },
+                              icon: Icon(
+                                Icons.notifications_rounded,
+                                size: 25,
+                              ),
+                            );
+                          }
+                          var data = snapshot.data!.docs;
+                          var totalRequest = data[0]["requestCount"];
+                          return GestureDetector(
+                            onTap: () {
+                              Get.to(NotificationView());
+                            },
+                            child: Stack(
+                              children: [
+                                Icon(
+                                  Icons.notifications_rounded,
+                                  size: 35,
+                                ),
+                                if(totalRequest != 0)
+                                Positioned(
+                                  right: 2,
+                                  child: CustomCard(
+                                    width: 13,
+                                    height: 13,
+                                    alignment: Alignment.center,
+                                    color: Color(0xff9AC3FF),
+                                    borderRadius: 30,
+                                    child: CustomText(text: "$totalRequest",size: 8,),
                                   ),
-                                  CustomText(
-                                    text: 'Parts 1-4',
-                                    fontWeight: FontWeight.w400,
-                                    size: 12,
-                                    color: whiteColor,
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 14),
+                  Row(
+                    children: [
+                      CustomText(
+                        text: 'Subjects',
+                        color: blackColor,
+                        fontFamily: interFontFamily,
+                        size: 22,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      SizedBox(width: 14),
+                      Obx(() {
+                        return CustomCard(
+                          height: 28,
+                          borderRadius: 9,
+                          border: Border.all(color: bgColor, width: 0.3),
+                          child: Row(
+                            children: [
+                              SizedBox(width: 14),
+                              // Dropdown button to select class
+                              DropdownButton<String>(
+                                value: controller.selectedValue.value,
+                                icon: Icon(Icons.arrow_drop_down),
+                                underline: SizedBox(),
+                                onChanged: (String? newValue) {
+                                  if (newValue != null) {
+                                    controller.changeValue(newValue);
+                                  }
+                                },
+                                items: <String>[
+                                  '4th',
+                                  '5th',
+                                  '6th',
+                                  '7th',
+                                  '8th',
+                                  '9th',
+                                  '10th',
+                                ].map<DropdownMenuItem<String>>((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: CustomText(
+                                      text: value,
+                                      fontFamily: poppinsFontFamily,
+                                      size: 16,
+                                      color: bgColor,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  // Update the list view based on the selected class
+                  SizedBox(
+                    height: SizeConfig.screenHeight * 0.7,
+                    child: Obx(() {
+                      // Get books based on selected class
+                      List<String> currentClassBooks = classBooksMap[controller.selectedValue.value] ?? [];
+                      return ListView.builder(
+                        itemCount: currentClassBooks.length,
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        physics: BouncingScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10.0),
+                            child: CustomCard(
+                              onTap: () {
+                                Future.delayed(Duration.zero, () {
+                                  // controller.showInterstitialAd(); // Automatically show on view load
+                                  controller.showRewardedAd(); // Automatically show on view load
+                                });
+                                Get.to(SubjectPartsView(
+                                  subject: currentClassBooks[index],
+                                  colors: controller.curvedCardColors[index],
+                                  bgColor: controller.bGCardColors[index],
+                                ));
+                              },
+                              width: double.infinity,
+                              height: 147,
+                              borderRadius: 12,
+                              color: controller.curvedCardColors[index],
+                              child: Stack(
+                                children: [
+                                  Align(
+                                    alignment: Alignment.bottomCenter,
+                                    child: ClipRRect(
+                                      borderRadius: const BorderRadius.only(
+                                          bottomLeft: Radius.circular(10),
+                                          bottomRight: Radius.circular(10)),
+                                      child: Image.asset(
+                                        controller.curvedImages[index],
+                                        width: double.infinity,
+                                        height: 80,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  // Subject Name and Parts
+                                  Positioned(
+                                    left: 12,
+                                    top: 5,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        CustomText(
+                                          text: currentClassBooks[index],
+                                          fontWeight: FontWeight.w600,
+                                          size: 18,
+                                          color: whiteColor,
+                                        ),
+                                        CustomText(
+                                          text: 'Parts 1-4',
+                                          fontWeight: FontWeight.w400,
+                                          size: 12,
+                                          color: whiteColor,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                );
-              }),
+                          );
+                        },
+                      );
+                    }),
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
-      ),
+        // Positioned(
+        //   bottom: 0,
+        //     child: GoogleAdWidget(adType: AdType.interstitial)
+        // ),
+        // Positioned(
+        //   bottom: 0,
+        //   left: 0,
+        //   right: 0,
+        //   child: GoogleAddBannerWidget(
+        //     adSize: AdSize.banner,
+        //   ),
+        // ),
+      ],
     );
   }
 }

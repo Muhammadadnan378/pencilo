@@ -4,7 +4,7 @@ import '../consts/colors.dart';
 class CustomTextFormField extends StatelessWidget {
   final String? labelText;
   final String? hintText;
-  final TextEditingController? textFieldControl;
+  final TextEditingController? controller;
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
   final EdgeInsetsGeometry? contentPadding;
@@ -14,11 +14,13 @@ class CustomTextFormField extends StatelessWidget {
   final VoidCallback? onTap;  // Added onTap callback
   final TextStyle? lableStyle;
   final Widget? suffixIcon;
+  final Function(String)? onChanged;
+
 
   const CustomTextFormField({
     super.key,
     this.labelText,
-    this.textFieldControl,
+    this.controller,
     this.keyboardType,
     this.validator,
     this.contentPadding,
@@ -29,6 +31,7 @@ class CustomTextFormField extends StatelessWidget {
     this.onTap,
     this.lableStyle,
     this.suffixIcon,
+    this.onChanged,
   });
 
   @override
@@ -36,13 +39,14 @@ class CustomTextFormField extends StatelessWidget {
     return GestureDetector(
       onTap: isEditable! ? null : onTap,  // If the field is not editable, trigger onTap
       child: TextFormField(
-        controller: textFieldControl,
+        controller: controller,
         focusNode: focusNode,
         keyboardType: keyboardType,
         maxLines: maxLines,
         validator: validator,
         enabled: isEditable,  // Make the field non-editable if isEditable is false
         readOnly: !isEditable!,  // Also, make the field read-only when not editable
+        onChanged: onChanged,
         decoration: InputDecoration(
           contentPadding: contentPadding,
           labelText: labelText,

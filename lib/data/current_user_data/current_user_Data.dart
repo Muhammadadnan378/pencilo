@@ -1,5 +1,5 @@
 import 'package:pencilo/db_helper/model_name.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../model/admin_model.dart';
 import '../../model/student_model.dart';
 import '../../model/teacher_model.dart';
 import '../../view/splash_view/lets_start_view.dart';
@@ -32,19 +32,33 @@ class CurrentUserData {
   static String parentName = ''; // Parent's name for students only
   static String parentPhone = ''; // Parent's phone number for students only
   static String classSection = ''; // Parent's phone classSection for students only
+  static bool isAdmin = false; // Parent's phone classSection for students only
 
 // Method to load user data from Hive (either teacher or student)
   static Future<void> loadUserDataFromHive() async {
     try {
-      // Open the Hive boxes for teacher and student models
+      var adminBox = await Hive.openBox<AdminModel>(adminTableName);
       var teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
       var studentBox = await Hive.openBox<StudentModel>(studentTableName);
 
-      // Check for teacher data first
+      // Check for admin data first
+      if (adminBox.isNotEmpty) {
+        final admin = adminBox.getAt(0);
+        if (admin != null) {
+          uid = admin.uid;
+          name = admin.fullName;
+          phoneNumber = admin.phoneNumber;
+          isAdmin = true;
+          isTeacher = false;
+          isStudent = false;
+          return; // ✅ Exit once found
+        }
+      }
+
+      // Check for teacher data
       if (teacherBox.isNotEmpty) {
-        final teacher = teacherBox.getAt(0); // Assuming the teacher is at index 0
+        final teacher = teacherBox.getAt(0);
         if (teacher != null) {
-          // Load data into CurrentUserData
           uid = teacher.uid ?? '';
           name = teacher.fullName ?? '';
           schoolName = teacher.schoolName ?? '';
@@ -56,19 +70,20 @@ class CurrentUserData {
           aadharNumber = teacher.aadharNumber ?? '';
           email = teacher.email ?? '';
           residentialAddress = teacher.residentialAddress ?? '';
-          profileUrl = teacher.profileUrl ?? '';  // Assign profileUrl from Hive
+          profileUrl = teacher.profileUrl ?? '';
+          gender = teacher.gender ?? '';
+          pushToken = teacher.pushToken ?? '';
           isTeacher = true;
-          isStudent = false; // Ensure student flag is false
-          gender = teacher.gender ?? ''; // Ensure student flag is false
-          pushToken = teacher.pushToken ?? ''; // Ensure student flag is false
+          isStudent = false;
+          isAdmin = false;
+          return;
         }
       }
 
       // Check for student data
       if (studentBox.isNotEmpty) {
-        final student = studentBox.getAt(0); // Assuming the student is at index 0
+        final student = studentBox.getAt(0);
         if (student != null) {
-          // Load data into CurrentUserData
           uid = student.uid ?? '';
           name = student.fullName ?? '';
           schoolName = student.schoolName ?? '';
@@ -83,37 +98,70 @@ class CurrentUserData {
           residentialAddress = student.residentialAddress ?? '';
           parentName = student.parentName ?? '';
           parentPhone = student.parentPhone ?? '';
-          profileUrl = student.profileUrl ?? '';  // Assign profileUrl from Hive
+          profileUrl = student.profileUrl ?? '';
+          gender = student.gender ?? '';
+          pushToken = student.pushToken ?? '';
           isTeacher = false;
-          isStudent = true; // Ensure student flag is true
-          gender = student.gender ?? ''; // Ensure student flag is false
-          pushToken = student.pushToken ?? ''; // Ensure student flag is false
+          isStudent = true;
+          isAdmin = false;
+          return;
         }
       }
+
+      // If nothing is found
+      debugPrint('No user data found in Hive.');
+
     } catch (e) {
-      print('Error loading user data from Hive: $e');
+      debugPrint('Error loading user data from Hive: $e');
     }
   }
-
-
-
 
   static Future<void> logout() async {
     try {
       if (isTeacher) {
         var teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
         await teacherBox.clear();
-      } else {
+      } else if (isStudent) {
         var studentBox = await Hive.openBox<StudentModel>(studentTableName);
         await studentBox.clear();
+      } else {
+        var adminBox = await Hive.openBox<AdminModel>(adminTableName);
+        await adminBox.clear();
       }
 
-      // Navigate to the login screen (LetsStartView)
+      // Clear all static fields
+      uid = '';
+      name = '';
+      schoolName = '';
+      phoneNumber = '';
+      currentLocation = '';
+      standard = '';
+      gender = '';
+      division = '';
+      subject = '';
+      isTeacher = false;
+      isStudent = false;
+      isAdmin = false;
+      profileUrl = '';
+      pushToken = '';
+      rollNumber = '';
+      admissionNumber = '';
+      dob = '';
+      bloodGroup = '';
+      aadharNumber = '';
+      email = '';
+      residentialAddress = '';
+      parentName = '';
+      parentPhone = '';
+      classSection = '';
+
+      // Navigate to the login screen
       Get.to(LetsStartView());
     } catch (e) {
-      print('Error logging out: $e');
+      debugPrint('Error logging out: $e');
     }
   }
+
 
   // Check if the user has data in Hive (either student or teacher data)
   static Future<bool> hasUserData() async {
@@ -126,7 +174,7 @@ class CurrentUserData {
         return studentBox.isNotEmpty;
       }
     } catch (e) {
-      print('Error checking user data in Hive: $e');
+      debugPrint('Error checking user data in Hive: $e');
       return false;
     }
   }

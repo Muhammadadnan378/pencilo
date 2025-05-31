@@ -1,21 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:pencilo/controller/sell_book_controller.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/consts/images.dart';
-import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
-import 'dart:io';
+import '../../../controller/home_controller.dart';
 import '../../../model/sell_book_model.dart';
 
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:pencilo/controller/sell_book_controller.dart';
-import 'package:pencilo/data/consts/const_import.dart';
-import 'package:pencilo/data/consts/images.dart';
-import 'package:pencilo/data/custom_widget/custom_media_query.dart';
-import 'dart:io';
-import '../../../model/sell_book_model.dart';
 
 class BuyBookView extends StatelessWidget {
   final SellBookModel book;
@@ -25,6 +14,7 @@ class BuyBookView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    startLocationStream();
     controller.getFullAddress();
     return Scaffold(
       appBar: AppBar(),
@@ -200,9 +190,9 @@ class BuyBookView extends StatelessWidget {
                       controller.buyMethod(book).then((value) => controller.uploading(false),);
                     },
                     alignment: Alignment.center,
+                    borderRadius: 11,
                     width: double.infinity,
-                    height: 36,
-                    borderRadius: 6,
+                    height: 57,
                     color: blackColor,
                     child: CustomText(text: "Done", fontWeight: FontWeight.w700, size: 14),
                   ),

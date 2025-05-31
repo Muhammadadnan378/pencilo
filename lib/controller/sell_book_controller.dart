@@ -5,7 +5,7 @@ import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';  // Import Firebase Storage
 import 'package:pencilo/db_helper/model_name.dart';
-import 'package:pencilo/view/buy_book_view/student_buy_book_view/buy_sell_book_view.dart';
+import 'package:pencilo/model/buying_selling_model.dart';
 import '../data/consts/const_import.dart';
 import '../db_helper/network_check.dart';
 import '../db_helper/send_notification_service.dart';
@@ -20,7 +20,7 @@ class SellBookController extends GetxController {
   }
 
   void onDispose() {
-    print("object");
+    debugPrint("object");
     super.dispose();
   }
 
@@ -35,7 +35,6 @@ class SellBookController extends GetxController {
   var images = <File>[].obs;  // List to store selected images
   var updateImageList = [].obs;  // List to store selected images
   var uploading = false.obs;
-  RxBool sellingRequest = false.obs;
   var isSelectCashDelivery = true.obs;
   RxString currentLocation = ''.obs; // Observable to store the full address
   var books = <SellBookModel>[].obs;
@@ -53,11 +52,11 @@ class SellBookController extends GetxController {
   }
 
 // Validate the phone number for Pakistan and India
-  bool validatePhoneNumber(BuildContext context) {
+  bool validatePhoneNumber() {
     // India phone number validation with required +91 or 91 at the start
     final myPhoneNumber = RegExp(r'^[789]\d{9}$');
     if (!myPhoneNumber.hasMatch(contactNumberController.text)) {
-      showSnackbar(context, "Please enter a valid Indian phone number.");
+      Get.snackbar("Error", "Please enter a valid Indian phone number.");
       return false;
     }
 
@@ -80,14 +79,14 @@ class SellBookController extends GetxController {
     }
 
     // Validate phone number for students based on the country
-    if (!validatePhoneNumber(context)) {
+    if (!validatePhoneNumber()) {
       return false;
     }
 
     var newBook = SellBookModel(
       bookUid: DateTime.now().millisecondsSinceEpoch.toString(), // Unique ID based on the current timestamp
       uid: CurrentUserData.uid,  // You can replace this with actual user ID
-      title: title,
+      bookName: title,
       amount: amount,
       contactNumber: contactNumber,
       images: images.map((file) => file.path).toList(),  // Convert File list to paths
@@ -145,7 +144,7 @@ class SellBookController extends GetxController {
     }
 
     // Validate phone number for students based on the country
-    if (!validatePhoneNumber(context)) {
+    if (!validatePhoneNumber()) {
       return;
     }
 
@@ -168,6 +167,7 @@ class SellBookController extends GetxController {
         String downloadUrl = await uploadTaskSnapshot.ref.getDownloadURL();
         imageUrls.add(downloadUrl);
       }
+
 
       // Store the updated book data in Firestore
       await _firestore.collection(sellBookTableName).doc(book.bookUid).update({
@@ -192,7 +192,7 @@ class SellBookController extends GetxController {
     } on FirebaseException catch (e) {
       // Handle Firebase exceptions
       Get.snackbar("Error", "$e");
-      print('Failed to update book: $e');
+      debugPrint('Failed to update book: $e');
     }
   }
 
@@ -201,14 +201,10 @@ class SellBookController extends GetxController {
     try {
       final pickedFiles = await ImagePicker().pickMultiImage();
 
-      if (pickedFiles != null) {
-        for (var pickedFile in pickedFiles) {
-          images.add(File(pickedFile.path));
-        }
-      } else {
-        Get.snackbar('Error', 'No images selected.');
+      for (var pickedFile in pickedFiles) {
+        images.add(File(pickedFile.path));
       }
-    } catch (e) {
+        } catch (e) {
       Get.snackbar('Error', 'Failed to pick images: $e');
     }
   }
@@ -231,7 +227,7 @@ class SellBookController extends GetxController {
     box.put(book.bookUid, book);
 
     if (!await NetworkHelper.isInternetAvailable()) {
-      print("upload error ");
+      debugPrint("upload error ");
 
       // Set 'uploaded' to true before starting the upload
       book.uploading = false;
@@ -250,19 +246,25 @@ class SellBookController extends GetxController {
         imageUrls.add(downloadUrl);
       }
 
+      SellBookModel newBook = SellBookModel(
+        currentLocation: book.currentLocation,
+        uid: book.uid,
+        bookName: book.bookName,
+        addedDate: book.addedDate,
+        amount: book.amount,
+        contactNumber: book.contactNumber,
+        images: imageUrls,
+        oldOrNewBook: book.oldOrNewBook,
+        bookUid: book.bookUid,
+        storageImagePath: storageImagePath,
+        uploading: false,
+        uploaded: true,
+        buyBookUsersList: [],
+        requestCount: 0
+      );
+
       // Store the book data along with image URLs in Firestore
-      await _firestore.collection(sellBookTableName).doc(book.bookUid).set({
-        'bookUid': book.bookUid,
-        'uid': book.uid,
-        'title': book.title,
-        'amount': book.amount,
-        'contactNumber': book.contactNumber,
-        'images': imageUrls,
-        'addedDate': book.addedDate,
-        'currentLocation': book.currentLocation,
-        'oldOrNewBook': book.oldOrNewBook,
-        'storageImagePath' : storageImagePath
-      }).then((_) {
+      await _firestore.collection(sellBookTableName).doc(book.bookUid).set(newBook.toFirestore()).then((_) {
         // delete the book from hive
         var box = Hive.box<SellBookModel>(sellBookTableName);
         box.delete(book.bookUid);
@@ -270,7 +272,7 @@ class SellBookController extends GetxController {
     }on FirebaseException catch (e) {
       book.uploading = false;
       box.put(book.bookUid, book);
-      print('Failed to upload book: $e');
+      debugPrint('Failed to upload book: $e');
     }
   }
 
@@ -289,7 +291,7 @@ class SellBookController extends GetxController {
 
 // Method to extract latitude and longitude from the currentLocation string and get the full address
   Future<void> getFullAddress() async {
-    print("Location Hive ${CurrentUserData.currentLocation}");
+    debugPrint("Location Hive ${CurrentUserData.currentLocation}");
     try {
       // Extract latitude and longitude from currentLocation string
       String location = CurrentUserData.currentLocation; // Assuming this is the string you get from Firestore
@@ -310,7 +312,7 @@ class SellBookController extends GetxController {
         currentLocationController.text = address; // Update the text controller with the fetched address
       }
     } catch (e) {
-      print('Error getting address: $e');
+      debugPrint('Error getting address: $e');
       currentLocation.value = 'Unable to fetch address'; // Set an error message
     }
   }
@@ -320,39 +322,54 @@ class SellBookController extends GetxController {
     String userAddress = currentLocationController.text;
     String userContact = contactNumberController.text;
     String paymentMethod = isSelectCashDelivery.value ? "Cash on Delivery" : "Online Payment";
+    String time = DateTime.now().toString();
+    String sellId = DateTime.now().millisecondsSinceEpoch.toString();
 
     // Create user data to add to the buyBookUsersList
-    Map<String, dynamic> userData = {
-      'uid': CurrentUserData.uid, // Use the current user's UID
-      'userName': CurrentUserData.name,
-      'userAmount': userAmount,
-      'userAddress': userAddress,
-      'userContact': userContact,
-      'paymentMethod': paymentMethod,
-      'sellingRequest': false,
-    };
-
+    BuyingSellingModel userData = BuyingSellingModel(
+      buyerUid: CurrentUserData.uid, // Use the current user's UID
+      sellerUserName: "",
+      buyerUserAmount: userAmount,
+      sellerUserAmount: book.amount,
+      sellerUserContact: book.contactNumber,
+      paymentMethod: paymentMethod,
+      sellingRequest: false,
+      dateTime: time,
+      bookImage: book.images,
+      bookOldNew: book.oldOrNewBook,
+      bookName: book.bookName,
+      sellerCurrentLocation: book.currentLocation,
+      bookId: book.bookUid,
+      sellerUid: book.uid,
+      sellId: "",
+      buyId: sellId,
+      buyerCurrentLocation: userAddress,
+      buyerUserName: CurrentUserData.name,
+      buyerUserContact: userContact,
+    );
     // Check if the current user is already in the buyBookUsersList
     bool userExists = false;
-    if (book.buyBookUsersList != null) {
-      // Check if the current user's UID already exists in the list
-      for (var user in book.buyBookUsersList!) {
-        if (user['uid'] == CurrentUserData.uid) {
-          userExists = true;
-          uploading(false);
-          Get.snackbar('Already Purchased', 'You have already purchased this book.');
-          return;
-        }
-      }
-    }
 
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection(buyingRequestTableName)
+        .where("uid", isEqualTo: CurrentUserData.uid)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      userExists = true;
+    }
     // If the user doesn't exist, add their data to the list
     if (!userExists) {
       try {
         // Update the book data in Firestore by adding the new user data to buyBookUsersList
-        await FirebaseFirestore.instance.collection(sellBookTableName).doc(book.bookUid).update({
-          'buyBookUsersList': FieldValue.arrayUnion([userData]), // Use arrayUnion to add the userData without duplicating
-        }).then((value) {
+        await FirebaseFirestore.instance.collection(buyingRequestTableName).doc(sellId).set(
+            userData.toMap())
+            .then((value) {
+          amountController.clear();
+          currentLocationController.clear();
+          contactNumberController.clear();
+          isSelectCashDelivery.value = true;
+
           // After successful update, perform the UI updates
           isSelectBooksView(false);
           isSelectBuying(true);
@@ -367,48 +384,23 @@ class SellBookController extends GetxController {
         // Handle any errors that occur during the Firestore update
         Get.snackbar('Error', 'There was an issue processing your purchase.');
       }
-    } else {
-      // Notify the user that they are already in the list
-      Get.snackbar('Already Purchased', 'You have already purchased this book.');
-    }
-  }
 
-  ///Notification view methods
-  ///
-  //send request
-  Future<void> acceptSellingRequest(List<dynamic> data,Map<String, dynamic> sellBook) async {
-    sellingRequest(true);
-    try {
-      // Create a copy of the buyBookUsersList
-      final docId = data[0].id; // assuming you're using data[0] always (change if needed)
-      final DocumentReference docRef = FirebaseFirestore.instance.collection(sellBookTableName).doc(docId);
+      await FirebaseFirestore.instance
+          .collection(sellBookTableName)
+          .doc(book.bookUid)
+          .update({
+        'requestCount': FieldValue.increment(1),
+        'buyBookUsersList': FieldValue.arrayUnion([CurrentUserData.uid]),
+      });
 
-      DocumentSnapshot docSnap = await docRef.get();
-      List<dynamic> updatedList = List.from(docSnap['buyBookUsersList']);
 
-      // Find the matching user by some unique identifier
-      int targetIndex = updatedList.indexWhere((element) =>
-      element['userContact'] == sellBook['userContact']); // or another unique field
-
-      if (targetIndex != -1) {
-        updatedList[targetIndex]['sellingRequest'] = true;
-
-        await docRef.update({
-          'buyBookUsersList': updatedList,
-        });
-
-        sellingRequest.value = false;
-      } else {
-        sellingRequest.value = false;
-        Get.snackbar("Error", "User not found in buyBookUsersList");
-      }
       String pushToken = "";
 
       try {
         // Query the Firestore collection based on the uid
         QuerySnapshot snapshot = await FirebaseFirestore.instance
             .collection(studentTableName)
-            .where("uid", isEqualTo: data[0]['uid'])
+            .where("uid", isEqualTo: book.uid)
             .get();
 
         // Check if the document exists
@@ -420,70 +412,170 @@ class SellBookController extends GetxController {
           pushToken = userDoc['pushToken'];
 
           // Do something with the push token
-          print("Push Token: $pushToken");
+          debugPrint("Push Token: $pushToken");
 
           // You can now use this push token to send notifications via FCM
         } else {
-          print("User not found");
+          debugPrint("User not found");
         }
       } catch (e) {
-        print("Error retrieving push token: $e");
+        debugPrint("Error retrieving push token: $e");
       }
 
       // Send the push notification using the push token
       if (pushToken.isNotEmpty) {
         await SendNotificationService.sendNotificationUsingApi(
           token: pushToken,
-          title: "Your book ${data[0]['title']} buying request accepted",
+          title: "${CurrentUserData.name} want to buy your book",
           body: "Tap to view the notification",
           data: {
             "screen": "NotificationView", // This is for navigation when tapped
           },
         );
       }
+
+    } else {
+      // Notify the user that they are already in the list
+      Get.snackbar('Already Purchased', 'You have already purchased this book.');
+    }
+  }
+
+  ///Notification view methods
+  RxBool isBuyingLength = false.obs;
+  RxBool isSellingLength = false.obs;
+  RxMap<String, bool> isLoadingMap = <String, bool>{}.obs;
+
+  //send request
+  Future<void> acceptSellingRequest(List<dynamic> data,BuyingSellingModel sellBook) async {
+    isLoadingMap[sellBook.buyId] = true; // Start loading
+    try {
+      var sellId = DateTime.now().millisecondsSinceEpoch.toString();
+      var buyBookData = BuyingSellingModel(
+          buyerUid: CurrentUserData.uid,
+          bookId: sellBook.bookId,
+          dateTime: sellBook.dateTime,
+          sellerUserName: CurrentUserData.name,
+          paymentMethod: sellBook.paymentMethod,
+          sellingRequest: true,
+          buyerUserAmount: sellBook.buyerUserAmount,
+          sellerUserAmount: sellBook.sellerUserAmount,
+          sellerUserContact: CurrentUserData.phoneNumber,
+          bookImage: sellBook.bookImage,
+          bookOldNew: sellBook.bookOldNew,
+          bookName: sellBook.bookName,
+          sellerCurrentLocation: sellBook.sellerCurrentLocation,
+          sellerUid: CurrentUserData.uid,
+          sellId: sellId,
+          buyId: sellBook.buyId,
+          buyerUserName: sellBook.buyerUserName,
+          buyerUserContact: sellBook.buyerUserContact,
+          buyerCurrentLocation: sellBook.buyerCurrentLocation,
+      );
+
+
+      await FirebaseFirestore.instance.collection(sellingRequestTableName).doc(sellId).set(buyBookData.toMap());
+
+      await FirebaseFirestore.instance.collection(buyingRequestTableName).doc(sellBook.buyId).update({
+        'sellingRequest' : true,
+        'sellId' : sellId,
+        'sellerUid' : CurrentUserData.uid,
+      });
+
+      String pushToken = "";
+
+      try {
+        // Query the Firestore collection based on the uid
+        QuerySnapshot snapshot = await FirebaseFirestore.instance
+            .collection(studentTableName)
+            .where("uid", isEqualTo: sellBook.buyerUid)
+            .get();
+
+        // Check if the document exists
+        if (snapshot.docs.isNotEmpty) {
+          // Retrieve the first document (assuming uid is unique and only one document matches)
+          DocumentSnapshot userDoc = snapshot.docs.first;
+
+          // Get the push token (FCM token) from the document
+          pushToken = userDoc['pushToken'];
+
+          // Do something with the push token
+          debugPrint("Push Token: $pushToken");
+
+          // You can now use this push token to send notifications via FCM
+        } else {
+          debugPrint("User not found");
+        }
+        isLoadingMap[sellBook.buyId] = false; // Start loading
+      } catch (e) {
+        isLoadingMap[sellBook.buyId] = false;
+        debugPrint("Error retrieving push token: $e");
+      }
+
+      // Send the push notification using the push token
+      if (pushToken.isNotEmpty) {
+        await SendNotificationService.sendNotificationUsingApi(
+          token: pushToken,
+          title: "Your book ${sellBook.bookName} buying request accepted",
+          body: "Tap to view the notification",
+          data: {
+            "screen": "NotificationView", // This is for navigation when tapped
+          },
+        );
+      }
+
       // // Listen for notification tap and navigate to the screen
       // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       //   if (message.data['screen'] == 'NotificationView') {
       //     Get.to(() => NotificationView()); // Navigate to NotificationView screen
       //   }
       // });
-      sellingRequest(false);
-      Get.snackbar("Success", "Request sent successfully!",backgroundColor: blackColor,colorText: whiteColor);
+      isLoadingMap[sellBook.buyId] = false;
+      Get.snackbar("Success", "Request sent successfully!",backgroundColor: whiteColor,colorText: blackColor);
     } catch (e) {
-      sellingRequest(false);
+      isLoadingMap[sellBook.buyId] = false;
+      debugPrint("Error$e");
       Get.snackbar("Error", "$e");
     }
   }
 //Cancel send request
-  Future<void> rejectSellingRequest(List<dynamic> data,Map<String, dynamic> sellBook) async {
-    if(sellBook['sellingRequest'] == true){
+  Future<void> rejectSellingRequest(List<dynamic> data,BuyingSellingModel sellBook) async {
+    isLoadingMap[sellBook.buyId] = true;
+    if(sellBook.sellingRequest == true){
+
       try {
-        final docId = data[0].id; // assuming you're using data[0] always (change if needed)
-        final DocumentReference docRef = FirebaseFirestore.instance.collection(sellBookTableName).doc(docId);
+        await FirebaseFirestore.instance.collection(buyingRequestTableName).doc(sellBook.buyId).update({
+          'sellingRequest' : false
+        });
 
-        DocumentSnapshot docSnap = await docRef.get();
-        List<dynamic> updatedList = List.from(docSnap['buyBookUsersList']);
-
-        // Find the matching user by some unique identifier
-        int targetIndex = updatedList.indexWhere((element) =>
-        element['userContact'] == sellBook['userContact']); // or another unique field
-
-        if (targetIndex != -1) {
-          updatedList[targetIndex]['sellingRequest'] = false;
-
-          await docRef.update({
-            'buyBookUsersList': updatedList,
-          });
-
-          Get.snackbar("Success", "Selling request canceled",backgroundColor: blackColor,colorText: whiteColor);
-        } else {
-          Get.snackbar("Error", "User not found in buyBookUsersList");
-        }
-      } catch (e) {
+        await FirebaseFirestore.instance.collection(sellingRequestTableName).doc(sellBook.sellId).delete();
+        isLoadingMap[sellBook.buyId] = false;
+        Get.snackbar("Success", "Request canceled successfully!",backgroundColor: whiteColor,colorText: blackColor);
+      } on FirebaseFirestore catch (e) {
+        isLoadingMap[sellBook.buyId] = false;
         Get.snackbar("Error", e.toString());
       }
     }
   }
+
+  Future<void> updateRequestCount() async {
+    try {
+      debugPrint("object");
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection(sellBookTableName)
+          .where('uid', isEqualTo: CurrentUserData.uid) // Filter by current user UID
+          .get();
+
+      for (var doc in querySnapshot.docs) {
+        await FirebaseFirestore.instance
+            .collection(sellBookTableName)
+            .doc(doc.id)
+            .update({'requestCount': 0}); // or set to 0 if resetting
+      }
+    } catch (e) {
+      debugPrint("Error updating requestCount: $e");
+    }
+  }
+
 
 
 }

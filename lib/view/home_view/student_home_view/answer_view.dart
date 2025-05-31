@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:get/get.dart';
 import 'package:pencilo/data/custom_widget/show_images_view.dart';
 import 'package:pencilo/data/custom_widget/show_youtube_video.dart';
 import 'package:pencilo/model/subjects_model.dart';
@@ -8,9 +6,7 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../../controller/student_home_view_controller.dart';
 import '../../../data/consts/const_import.dart';
 import '../../../data/consts/images.dart';
-import '../../../data/custom_widget/custom_card.dart';
 import '../../../data/custom_widget/custom_media_query.dart';
-import '../../../data/custom_widget/custom_text_widget.dart';
 
 class AnswerView extends StatelessWidget {
   final SubjectModel myData;
@@ -19,7 +15,6 @@ class AnswerView extends StatelessWidget {
 
   final StudentHomeViewController controller = Get.put(StudentHomeViewController());
 
-  RxInt currentSelectedQuestion = 0.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -73,23 +68,20 @@ class AnswerView extends StatelessWidget {
                 physics: BouncingScrollPhysics(),
                 scrollDirection: Axis.horizontal,
                 itemBuilder: (context, index) {
-                  final questionData = SubjectModel.fromMap(
-                      myData.questions![index]);
                   final questionNumber = index + 1;
-                  final isLastQuestion = index == myData.questions!.length - 1;
                   return Row(
                     children: [
                       Obx(() {
-                        currentSelectedQuestion.value;
+                        controller.currentSelectedQuestion.value;
                         return CustomCard(
                           onTap: () {
-                            currentSelectedQuestion.value = index;
+                            controller.currentSelectedQuestion.value = index;
                           },
                           borderRadius: 30,
                           width: 60,
                           border: Border.all(color: grayColor),
                           alignment: Alignment.center,
-                          color: currentSelectedQuestion.value == index ? Color(
+                          color: controller.currentSelectedQuestion.value == index ? Color(
                               0xff57A8B8) : Colors.transparent,
                           child: CustomText(
                             text: "Q.$questionNumber",
@@ -117,7 +109,7 @@ class AnswerView extends StatelessWidget {
             SizedBox(height: 15,),
             Obx(() {
               final selectedQuestionData = SubjectModel.fromMap(
-                myData.questions![currentSelectedQuestion.value],
+                myData.questions![controller.currentSelectedQuestion.value],
               );
 
               return selectedQuestionData.questionsTitle != null ? Column(
@@ -165,9 +157,9 @@ class AnswerView extends StatelessWidget {
             }),
             // Display multiple questions and answers
             Obx(() {
-              currentSelectedQuestion.value;
+              controller.currentSelectedQuestion.value;
               final selectedQuestionData = SubjectModel.fromMap(
-                myData.questions![currentSelectedQuestion.value],
+                myData.questions![controller.currentSelectedQuestion.value],
               );
 
               final subQuestions = selectedQuestionData.subQuestion ?? [];

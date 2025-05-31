@@ -95,8 +95,8 @@ class ProfileNoticeView extends StatelessWidget {
                     child: ListTile(
                       leading: CircleAvatar(
                         backgroundColor: record['isPresent']
-                            ? Colors.green.withOpacity(0.2)
-                            : Colors.red.withOpacity(0.2),
+                            ? Colors.green.withValues(alpha: 0.5)
+                            : Colors.red.withValues(alpha: 0.5),
                         child: Icon(
                           record['isPresent'] ? Icons.check : Icons.close,
                           color: record['isPresent'] ? Colors.green : Colors.red,
@@ -141,7 +141,7 @@ class ProfileNoticeView extends StatelessWidget {
           height: 80,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: color.withOpacity(0.2),
+            color: color.withValues(alpha: 0.5),
             border: Border.all(color: color, width: 3),
           ),
           child: Center(

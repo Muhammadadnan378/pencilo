@@ -1,24 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:pencilo/controller/sell_book_controller.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/consts/images.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
-import 'dart:io';
+import 'package:pencilo/data/custom_widget/custom_text_field.dart';
+import '../../../controller/home_controller.dart';
 import '../../../data/current_user_data/current_user_Data.dart';
-import '../../../db_helper/model_name.dart';
 import '../../../model/sell_book_model.dart';
 
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:pencilo/controller/sell_book_controller.dart';
-import 'package:pencilo/data/consts/const_import.dart';
-import 'package:pencilo/data/consts/images.dart';
-import 'package:pencilo/data/custom_widget/custom_media_query.dart';
-import 'dart:io';
-import '../../../model/sell_book_model.dart';
 
 class SellBookView extends StatelessWidget {
   final SellBookModel? sellBook;
@@ -29,7 +17,7 @@ class SellBookView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (sellBook != null) {
-      controller.titleController.text = sellBook!.title;
+      controller.titleController.text = sellBook!.bookName;
       controller.amountController.text = sellBook!.amount.toString();
       controller.currentLocationController.text = sellBook!.currentLocation;
       controller.contactNumberController.text = sellBook!.contactNumber;
@@ -38,6 +26,8 @@ class SellBookView extends StatelessWidget {
       controller.updateImageList.value = sellBook!.images;
     }
     controller.getFullAddress();
+    controller.contactNumberController.text = CurrentUserData.phoneNumber;
+    debugPrint("Location ${CurrentUserData.currentLocation}");
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(onPressed: () {
@@ -131,7 +121,6 @@ class SellBookView extends StatelessWidget {
                             onTap: () async{
                               // Deleting the image from Firebase Storage and Firestore
                               if (isFromUpdateList) {
-                                print("object");
                                 controller.firestoreImageUrls.add(controller.updateImageList[index]);
                                 controller.firestoreStorageImagePath.add(sellBook!.storageImagePath![index]);
                                 controller.updateImageList.removeAt(index);
@@ -192,6 +181,25 @@ class SellBookView extends StatelessWidget {
                 title: 'Current location',
                 controller: controller.currentLocationController,
                 isMultiline: true,
+                suffixIcon: Padding(
+                  padding: const EdgeInsets.only(right: 6.0,top: 5),
+                  child: SizedBox(width: 30,
+                      child: Align(
+                          alignment: Alignment.topRight,
+                          child: GestureDetector(
+                            onTap: () async{
+                              await startLocationStream().then((value) {
+                                controller.getFullAddress();
+                              },);
+                            },
+                              child: Icon(
+                                Icons.location_on,
+                                color: Colors.blue,
+                              )
+                          )
+                      )
+                  ),
+                ),
               ),
               SellBookClassTextField(
                 keyboardType: TextInputType.phone,
@@ -215,9 +223,9 @@ class SellBookView extends StatelessWidget {
                   },
                   child: CustomCard(
                     alignment: Alignment.center,
-                    width: 140,
-                    height: 45,
-                    borderRadius: 6,
+                    borderRadius: 11,
+                    width: double.infinity,
+                    height: 57,
                     color: blackColor,
                     child: CustomText(text: sellBook != null ? "Update" : "Ok", fontWeight: FontWeight.w700, size: 16),
                   ),
@@ -256,7 +264,7 @@ class SellBookClassTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 13.0),
+      padding: const EdgeInsets.only(top: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -264,27 +272,14 @@ class SellBookClassTextField extends StatelessWidget {
           SizedBox(height: 7),
           SizedBox(
             height: isMultiline ? 100 : 45,
-            width: double.infinity,
-            child: TextField(
+            width: SizeConfig.screenWidth * 0.87,
+            child: CustomTextFormField(
               controller: controller,
               maxLines: isMultiline ? null : 1,
-              minLines: isMultiline ? 4 : 1,
               keyboardType: keyboardType,
-              decoration: InputDecoration(
-                suffixIcon: suffixIcon,
-                hintText: hintText,
-                hintStyle: TextStyle(fontFamily: poppinsFontFamily, fontWeight: FontWeight.w500, fontSize: 14),
-                contentPadding: contentPadding ?? EdgeInsets.only(left: 13, bottom: 2),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xff4C4C4C), width: 0.1),
-                ),
-                disabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xff4C4C4C), width: 0.1),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xff4C4C4C), width: 0.1),
-                ),
-              ),
+              hintText: hintText,
+              contentPadding: EdgeInsets.only(left: 14),
+              suffixIcon: suffixIcon,
             ),
           ),
         ],

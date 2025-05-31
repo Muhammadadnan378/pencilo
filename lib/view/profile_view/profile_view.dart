@@ -3,7 +3,6 @@ import 'package:pencilo/controller/profile_controller.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/consts/images.dart';
 import 'package:pencilo/data/current_user_data/current_user_Data.dart';
-import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 import 'package:pencilo/db_helper/model_name.dart';
 import 'package:pencilo/model/student_model.dart';
 import 'package:pencilo/model/teacher_model.dart';
@@ -17,20 +16,31 @@ import 'edit_profile_view.dart';
 class ProfileView extends StatelessWidget {
   final ProfileController controller = Get.put(ProfileController());
 
+  ProfileView({super.key});
+
   // Function to generate and print PDF report card
   @override
   Widget build(BuildContext context) {
+    controller.getCurrentUserAttendance();
     return Scaffold(
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
           SizedBox(height: 25),
-          Align(
-            alignment: Alignment.centerRight,
-            child: GestureDetector(
-              child: Icon(Icons.picture_as_pdf),
-              onTap: () => controller.generatePDF(),
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              GestureDetector(
+                child: Icon(Icons.picture_as_pdf),
+                onTap: () => controller.generatePDF(),
+              ),
+              SizedBox(width: 15,),
+              GestureDetector(
+                child: Icon(Icons.logout),
+                onTap: () => CurrentUserData.logout(),
+              ),
+            ],
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,19 +80,28 @@ class ProfileView extends StatelessWidget {
                   String? standard;
                   if (CurrentUserData.isTeacher) {
                     // Cast the object to TeacherModel to access profileUrl
-                    var teacher = value.getAt(0) as TeacherModel; // Cast to TeacherModel
-                    profileUrl = teacher.profileUrl; // Get the profile URL for the teacher
-                    name = teacher.fullName; // Get the profile URL for the teacher
-                    phoneNumber = teacher.phoneNumber; // Get the profile URL for the teacher
-                    dateOfBirth = teacher.dob; // Get the profile URL for the teacher
+                    var teacher = value.getAt(
+                        0) as TeacherModel; // Cast to TeacherModel
+                    profileUrl = teacher
+                        .profileUrl; // Get the profile URL for the teacher
+                    name =
+                        teacher.fullName; // Get the profile URL for the teacher
+                    phoneNumber = teacher
+                        .phoneNumber; // Get the profile URL for the teacher
+                    dateOfBirth =
+                        teacher.dob; // Get the profile URL for the teacher
                   } else if (CurrentUserData.isStudent) {
                     // Cast the object to StudentModel to access profileUrl
-                    var student = value.getAt(0) as StudentModel; // Cast to StudentModel
+                    var student = value.getAt(
+                        0) as StudentModel; // Cast to StudentModel
                     name = student.fullName;
                     phoneNumber = student.phoneNumber;
-                    profileUrl = student.profileUrl; // Get the profile URL for the student
-                    dateOfBirth = student.dob; // Get the profile URL for the teacher
-                    standard = student.standard; // Get the profile URL for the teacher
+                    profileUrl = student
+                        .profileUrl; // Get the profile URL for the student
+                    dateOfBirth =
+                        student.dob; // Get the profile URL for the teacher
+                    standard =
+                        student.standard; // Get the profile URL for the teacher
                   }
 
                   // Format the date of birth if it's available
@@ -90,11 +109,15 @@ class ProfileView extends StatelessWidget {
                   if (dateOfBirth != null && dateOfBirth.isNotEmpty) {
                     try {
                       // Use intl package to parse the date if it's in DD/MM/YYYY format
-                      DateFormat format = DateFormat("dd/MM/yyyy"); // Specify the custom format
-                      DateTime dobDate = format.parse(dateOfBirth); // Parse the date
-                      formattedDob = "${dobDate.day}-${dobDate.month.toString().padLeft(2, '0')}-${dobDate.year}";
+                      DateFormat format = DateFormat(
+                          "dd/MM/yyyy"); // Specify the custom format
+                      DateTime dobDate = format.parse(
+                          dateOfBirth); // Parse the date
+                      formattedDob =
+                      "${dobDate.day}-${dobDate.month.toString().padLeft(
+                          2, '0')}-${dobDate.year}";
                     } catch (e) {
-                      print("Error parsing date: $e");
+                      debugPrint("Error parsing date: $e");
                       formattedDob = 'Invalid Date Format';
                     }
                   }
@@ -228,13 +251,19 @@ class ProfileView extends StatelessWidget {
                 fontFamily: poppinsFontFamily,
               ),
               SizedBox(height: 10),
-              Row(
-                children: [
-                  _buildAttendanceCard('Present', 22, Colors.green),
-                  SizedBox(width: 10,),
-                  _buildAttendanceCard('Absent', 3, Colors.red),
-                ],
-              ),
+              Obx(() {
+                controller.presents.value;
+                controller.absents.value;
+                return Row(
+                  children: [
+                    _buildAttendanceCard(
+                        'Present', controller.presents.value, Colors.green),
+                    SizedBox(width: 10,),
+                    _buildAttendanceCard(
+                        'Absent', controller.absents.value, Colors.red),
+                  ],
+                );
+              }),
             ],
           ),
         ],
@@ -265,7 +294,6 @@ class ProfileView extends StatelessWidget {
                       text: title,
                       size: 19,
                       color: Colors.white,
-                      // Ensure whiteColor is defined or replace with Colors.white
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -289,11 +317,11 @@ class ProfileView extends StatelessWidget {
     );
   }
 
-  Widget _buildAttendanceCard(String label, int count, Color color) {
+  Widget _buildAttendanceCard(String label, String count, Color color) {
     return Expanded(
       child: CustomCard(
         height: 67,
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.5),
         borderRadius: 8,
         child: Stack(
           children: [
@@ -313,7 +341,7 @@ class ProfileView extends StatelessWidget {
               bottom: 4,
               right: 10,
               child: CustomText(
-                text: "$count",
+                text: count,
                 size: 20,
                 color: blackColor,
                 fontWeight: FontWeight.bold,

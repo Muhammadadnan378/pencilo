@@ -1,22 +1,13 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:pencilo/controller/profile_controller.dart';
 import 'package:pencilo/data/consts/images.dart';
-import 'package:pencilo/view/login_view/otp_view.dart';
 import '../../../data/consts/const_import.dart';
 import '../../controller/login_controller.dart';
-import '../../data/custom_widget/custom_media_query.dart';
 
 class LoginView extends StatelessWidget {
-  final bool isTeacher;
-  const LoginView({super.key, required this.isTeacher});
+  const LoginView({super.key,});
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(LoginController());
-    controller.setIsTeacher(isTeacher); // Set whether it's teacher or student login
-
     return Scaffold(
       body: Center(
         child: Padding(
@@ -40,7 +31,7 @@ class LoginView extends StatelessWidget {
                 onChanged: (value) => controller.schoolName.value = value,
               ),
               SizedBox(height: 12),
-              if (isTeacher)
+              if (controller.isTeacher)
                 Row(
                   children: [
                     CustomText(
@@ -59,7 +50,7 @@ class LoginView extends StatelessWidget {
                     ),
                   ],
                 ),
-              if (isTeacher) SizedBox(height: 12),
+              if (controller.isTeacher) SizedBox(height: 12),
               Obx((){
                 controller.selectedGender.value;
                 return _selectSubjectsDropdown(
@@ -69,7 +60,7 @@ class LoginView extends StatelessWidget {
                 );
               }),
               SizedBox(height: 10),
-              if (!isTeacher)
+              if (!controller.isTeacher)
                 Obx((){
                   controller.selectedStandard.value;
                   return _selectSubjectsDropdown(
@@ -78,8 +69,8 @@ class LoginView extends StatelessWidget {
                     dropdownTitle: "Select Standard",
                   );
                 }),
-              if (!isTeacher) SizedBox(height: 12),
-              if (!isTeacher)
+              if (!controller.isTeacher) SizedBox(height: 12),
+              if (!controller.isTeacher)
                 Obx((){
                   controller.selectedDivision.value;
                   return _selectSubjectsDropdown(
@@ -88,7 +79,7 @@ class LoginView extends StatelessWidget {
                     dropdownTitle: "Select Division",
                   );
                 }),
-              if (!isTeacher) SizedBox(height: 12),
+              if (!controller.isTeacher) SizedBox(height: 12),
               LoginClassTextField(
                 hintText: "Phone number",
                 keyboardType: TextInputType.phone,
@@ -119,10 +110,10 @@ class LoginView extends StatelessWidget {
           },
 
           alignment: Alignment.center,
-          borderRadius: 7,
-          width: SizeConfig.screenWidth * 0.8,
-          height: 42,
-          color: const Color(0xff9AC3FF),
+          borderRadius: 11,
+          width: double.infinity,
+          height: 57,
+          color: blackColor,
           boxShadow: [
             BoxShadow(
                 color: grayColor,
@@ -133,7 +124,6 @@ class LoginView extends StatelessWidget {
             text: "Start",
             fontWeight: FontWeight.w500,
             size: 15,
-            color: blackColor,
             fontFamily: poppinsFontFamily,
           ),
         ),

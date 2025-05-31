@@ -74,7 +74,6 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
         itemCount: _videoLinks.length,
         onPageChanged: _onPageChanged,
         itemBuilder: (context, index) {
-          final videoLink = _videoLinks[index];
           final controller = _controllers[index];
 
           return GestureDetector(
@@ -113,7 +112,7 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
                   ),
                 ),
                 Container(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1),
                   height: double.infinity,
                   width: double.infinity,
                 )

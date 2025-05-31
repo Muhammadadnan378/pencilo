@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/consts/images.dart';
@@ -392,12 +390,12 @@ class EventTab extends StatelessWidget {
 
                 // Validate form before proceeding
                 if (!controller.validate()) {
-                  print("Validation failed.");
+                  debugPrint("Validation failed.");
                   controller.isLoading(false); // Stop loading if validation fails
                   controller.checkValidatFields(context); // You can handle custom validation messages here
                   controller.formKey.currentState!.validate(); // Validate form manually if you need extra validation on fields
                 } else {
-                  print("Validation passed.");
+                  debugPrint("Validation passed.");
                   if (controller.eventsModel == null) {
                     controller.createEvent(context).then((value) {
                       controller.isLoading(false);
@@ -615,7 +613,7 @@ class EventTab extends StatelessWidget {
         Expanded(
           child: CustomTextFormField(
             labelText: labelText,
-            textFieldControl: textFieldControl,
+            controller: textFieldControl,
             keyboardType: keyboardType,
             validator: validate,
             contentPadding: EdgeInsets.only(left: 10, bottom: 10, top: 10),
@@ -862,7 +860,7 @@ class ApplicationTab extends StatelessWidget {
                                         ),
                                       ],
                                     );
-                                  }).toList(),
+                                  }),
                                 ],
                               ),
                             ],

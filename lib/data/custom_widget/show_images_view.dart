@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:pencilo/data/consts/colors.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 
 class ShowImagesView extends StatelessWidget {
@@ -9,10 +7,10 @@ class ShowImagesView extends StatelessWidget {
 
   // Constructor to accept image paths and display configurations
   const ShowImagesView({
-    Key? key,
+    super.key,
     required this.imagePaths,
     required this.initialIndex,  // Required initial index
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

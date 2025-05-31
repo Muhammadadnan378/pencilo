@@ -36,13 +36,14 @@ class StudentModelAdapter extends TypeAdapter<StudentModel> {
       isStudent: fields[17] as bool?,
       profileUrl: fields[18] as String?,
       gender: fields[19] as String?,
+      pushToken: fields[20] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, StudentModel obj) {
     writer
-      ..writeByte(19)
+      ..writeByte(20)
       ..writeByte(0)
       ..write(obj.uid)
       ..writeByte(1)
@@ -80,7 +81,9 @@ class StudentModelAdapter extends TypeAdapter<StudentModel> {
       ..writeByte(18)
       ..write(obj.profileUrl)
       ..writeByte(19)
-      ..write(obj.gender);
+      ..write(obj.gender)
+      ..writeByte(20)
+      ..write(obj.pushToken);
   }
 
   @override

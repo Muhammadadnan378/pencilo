@@ -6,7 +6,7 @@ import 'data/custom_widget/custom_media_query.dart';
 
 class PhoneOtpView extends StatefulWidget {
   final String otp;
-  PhoneOtpView({super.key, required this.otp});
+  const PhoneOtpView({super.key, required this.otp});
 
   @override
   State<PhoneOtpView> createState() => _PhoneOtpViewState();

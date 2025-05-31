@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../../controller/login_controller.dart';
 
 class OTPView extends StatelessWidget {
   final String verificationId;
@@ -9,7 +7,7 @@ class OTPView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _otpController = TextEditingController();
+    final otpController = TextEditingController();
     return Scaffold(
       body: Center(
         child: Column(
@@ -18,19 +16,19 @@ class OTPView extends StatelessWidget {
             Text("Enter OTP"),
             SizedBox(height: 20),
             TextField(
-              controller: _otpController,
+              controller: otpController,
               decoration: InputDecoration(hintText: "Enter OTP"),
             ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                String otp = _otpController.text.trim();
+                String otp = otpController.text.trim();
                 if (otp.isNotEmpty) {
                   // Create a PhoneAuthCredential using the verificationId and OTP
-                  PhoneAuthCredential credential = PhoneAuthProvider.credential(
-                    verificationId: verificationId,
-                    smsCode: otp,
-                  );
+                  // PhoneAuthCredential credential = PhoneAuthProvider.credential(
+                  //   verificationId: verificationId,
+                  //   smsCode: otp,
+                  // );
 
                   // Call the signInWithCredential method
                   // await Get.find<LoginController>().signInWithCredential(credential);

@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../../controller/sell_book_controller.dart';
 import '../../../../../data/consts/const_import.dart';
 import '../../../../../data/consts/images.dart';
+import '../../../../../data/current_user_data/current_user_Data.dart';
 import '../../../../../db_helper/model_name.dart';
 import '../../../../../model/sell_book_model.dart';
 import '../../sell_book_view.dart';
@@ -33,8 +34,7 @@ class ImSellingView extends StatelessWidget {
           return Center(child: Text('No data available.'));
         }
 
-        List<SellBookModel> sellBooks = snapshot.data!.docs
-            .map((doc) =>
+        List<SellBookModel> sellBooks = snapshot.data!.docs.map((doc) =>
             SellBookModel.fromFirestore(doc.data() as Map<String, dynamic>))
             .toList();
 
@@ -45,9 +45,8 @@ class ImSellingView extends StatelessWidget {
           physics: NeverScrollableScrollPhysics(),
           itemBuilder: (context, index) {
             final sellBook = sellBooks[index];
-            final buyBookUsersList = sellBook.buyBookUsersList;
 
-            return Padding(
+            return sellBook.uid == CurrentUserData.uid ? Padding(
               padding: const EdgeInsets.only(bottom: 20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,7 +99,7 @@ class ImSellingView extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(left: 8.0),
                           child: CustomText(
-                            text: sellBook.title,
+                            text: sellBook.bookName,
                             fontWeight: FontWeight.w600,
                             size: 14,
                             color: Colors.black,
@@ -191,128 +190,9 @@ class ImSellingView extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if(buyBookUsersList != null)
-                    SizedBox(height: 10),
-                  if(buyBookUsersList != null)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: CustomText(
-                        text: "Book Contact",
-                        size: 22,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  if(buyBookUsersList != null)
-                    SizedBox(height: 5),
-                  if(buyBookUsersList != null)
-                    Table(
-                      border: TableBorder.all(color: Colors.black, width: 1.0),
-                      children: [
-                        TableRow(
-                          children: [
-                            TableCell(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: CustomText(
-                                  text: 'Name',
-                                  fontWeight: FontWeight.bold,
-                                  size: 13,
-                                  maxLines: 1,
-                                  color: bgColor,
-                                ),
-                              ),
-                            ),
-                            TableCell(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: CustomText(
-                                  text: 'Amount',
-                                  fontWeight: FontWeight.bold,
-                                  size: 13,
-                                  maxLines: 1,
-                                  color: bgColor,
-                                ),
-                              ),
-                            ),
-                            TableCell(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: CustomText(
-                                  text: 'Contact',
-                                  fontWeight: FontWeight.bold,
-                                  size: 13,
-                                  maxLines: 1,
-                                  color: bgColor,
-                                ),
-                              ),
-                            ),
-                            TableCell(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: CustomText(
-                                  text: 'Address',
-                                  fontWeight: FontWeight.bold,
-                                  size: 13,
-                                  maxLines: 1,
-                                  color: bgColor,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (buyBookUsersList != null) ...[
-                          for (var user in buyBookUsersList)
-                            TableRow(
-                              children: [
-                                TableCell(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: CustomText(
-                                      text: user['userName'] ?? '',
-                                      color: Colors.black,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ),
-                                TableCell(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: CustomText(
-                                      text: user['userAmount'] ?? '',
-                                      color: Colors.black,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ),
-                                TableCell(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: CustomText(
-                                      text: user['userContact'] ?? '',
-                                      color: Colors.black,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ),
-                                TableCell(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: CustomText(
-                                      text: user['userAddress'] ?? '',
-                                      color: Colors.black,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                        ],
-                      ],
-                    ),
                 ],
               ),
-            );
+            ) : SizedBox();
           },
         );
       },
