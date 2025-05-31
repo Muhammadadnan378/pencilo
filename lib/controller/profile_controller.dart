@@ -11,17 +11,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
-import 'package:path/path.dart' as path;
-import '../data/consts/images.dart';
 import '../model/teacher_model.dart'; // For Firebase integration
 
 
 class ProfileController extends GetxController {
   Map<String, dynamic> get results {
-    int totalMarks =
-    subjectMarks.fold(0, (sum, item) => sum + (item['totalMarks'] as int));
-    int maxMarks =
-    subjectMarks.fold(0, (sum, item) => sum + (item['maxMarks'] as int));
+    int totalMarks = subjectMarks.fold(
+      0,
+          (total, item) => total + (item['totalMarks'] as int),
+    );
+
+    int maxMarks = subjectMarks.fold(
+      0,
+          (total, item) => total + (item['maxMarks'] as int),
+    );
+
     double percentage = (totalMarks / maxMarks) * 100;
 
     String overallGrade;
@@ -344,6 +348,8 @@ class ProfileController extends GetxController {
   ///Profile View methods
   var isProfileLoading = false.obs;
   var imageUrl = ''.obs; // To store image URL
+  var presents = "0".obs;
+  var absents = "0".obs;
 
   // Method to pick image from gallery
   Future<void> pickImage(BuildContext context) async {
@@ -354,11 +360,6 @@ class ProfileController extends GetxController {
       if (pickedFile != null) {
         File imageFile = File(pickedFile.path);
         isProfileLoading.value = true;
-
-        // Upload the image to Firebase Storage
-        // Create the file name using the CurrentUser.uid to ensure the image is unique to the user
-        String fileName = '${CurrentUserData.uid}_${path.basename(imageFile.path)}';
-
         // Reference the Firebase Storage location using CurrentUser.uid as the folder name
         Reference storageReference =
         FirebaseStorage.instance.ref().child('profileUrl/${CurrentUserData.uid}');
@@ -368,17 +369,15 @@ class ProfileController extends GetxController {
         await uploadTask.whenComplete(() async {
           String downloadUrl = await storageReference.getDownloadURL();
           imageUrl.value = downloadUrl;
-          await updateProfileImage(downloadUrl,context);
+          await updateProfileImage(downloadUrl);
         });
       }
-    } catch (e) {
     } finally {
       isProfileLoading.value = false;
     }
   }
-
   // Method to update the profile image in Firestore, Hive, and CurrentUserData
-  Future<void> updateProfileImage(String newImageUrl, BuildContext context) async {
+  Future<void> updateProfileImage(String newImageUrl) async {
     try {
       // Update in Firestore
       if (CurrentUserData.isTeacher) {
@@ -401,7 +400,7 @@ class ProfileController extends GetxController {
           teacherModel.profileUrl = newImageUrl;
           await teacherBox.putAt(0, teacherModel);
         } on Exception catch (e) {
-          print("Failed to update profileUrl in Hive for teacher: $e");
+          debugPrint("Failed to update profileUrl in Hive for teacher: $e");
         }
       } else if (CurrentUserData.isStudent) {
         // Update student profileUrl in Hive
@@ -410,7 +409,7 @@ class ProfileController extends GetxController {
           studentModel.profileUrl = newImageUrl;
           await studentBox.putAt(0, studentModel);
         } on Exception catch (e) {
-          print("Failed to update profileUrl in Hive for student: $e");
+          debugPrint("Failed to update profileUrl in Hive for student: $e");
         }
       }
 
@@ -418,10 +417,30 @@ class ProfileController extends GetxController {
       CurrentUserData.profileUrl = newImageUrl;
 
       // Show success message
-      showSnackbar(context, "Profile image updated successfully.");
+      Get.snackbar("success", "Profile image updated successfully.");
     } catch (e) {
-      showSnackbar(context, "Failed to update profile image: $e");
-      print("Error in updateProfileImage: $e");
+      Get.snackbar("Error", "Failed to update profile image: $e");
+      debugPrint("Error in updateProfileImage: $e");
+    }
+  }
+  //get current user presents absents
+  Future<void> getCurrentUserAttendance() async {
+    presents.value = "0";
+    absents.value = "0";
+    QuerySnapshot recordSnapshot = await FirebaseFirestore.instance.collection(attendanceRecordsTableName).get();
+    for(var record in recordSnapshot.docs){
+      final recordData = record.data() as Map<String, dynamic>;
+      QuerySnapshot recordSnapshot = await FirebaseFirestore.instance.collection(attendanceRecordsTableName).doc("${recordData['createdDateTime']}").collection("students").where("studentId", isEqualTo: CurrentUserData.uid).get();
+      for(var record in recordSnapshot.docs){
+        final recordData = record.data() as Map<String, dynamic>;
+        if(recordData['isPresent']){
+          presents.value = (int.parse(presents.value) + 1).toString();
+        }else{
+          absents.value = (int.parse(absents.value) + 1).toString();
+        }
+        debugPrint("presents: ${presents.value}");
+        debugPrint("absents: ${absents.value}");
+      }
     }
   }
 
@@ -509,12 +528,12 @@ class ProfileController extends GetxController {
   }
 
   // Function to save data to Firestore
-  Future<void> updateProfile(BuildContext context) async {
+  Future<void> updateProfile() async {
     if(!await NetworkHelper.isInternetAvailable()){
       isLoading(false);
-      showSnackbar(context, "No internet connection");
+      Get.snackbar("Error", "No internet connection");
       return ;
-    };
+    }
 
     // Set loading state
     isLoading.value = true;
@@ -587,7 +606,7 @@ class ProfileController extends GetxController {
           CurrentUserData.residentialAddress = teacherModel.residentialAddress ?? CurrentUserData.residentialAddress;
 
         } on FirebaseFirestore catch (e) {
-          showSnackbar(context, "$e");
+          Get.snackbar("Error", "$e");
         }
       } else if (CurrentUserData.isStudent) {
         try {
@@ -601,7 +620,7 @@ class ProfileController extends GetxController {
           try {
             await studentBox.putAt(0, studentModel);
           } on Exception catch (e) {
-            showSnackbar(context, "$e");
+            Get.snackbar("Error", "$e");
           }
 
           // Update static data in CurrentUserData
@@ -619,18 +638,18 @@ class ProfileController extends GetxController {
           CurrentUserData.schoolName = studentModel.schoolName ?? CurrentUserData.schoolName;
 
         } on FirebaseException catch (e) {
-          showSnackbar(context, "$e");
+          Get.snackbar("Error", "$e");
         }
       }
 
       // Show success message and clear fields
-      showSnackbar(context, "Profile data updated successfully.");
+      Get.snackbar("Success", "Profile data updated successfully.");
       isLoading(false);
       Get.back(); // Go back to the previous screen after successful data save
     } catch (e) {
       // Handle any other exceptions
       isLoading(false);
-      showSnackbar(context, "Error: $e");
+      Get.snackbar("Error", "Failed to update profile: $e");
     } finally {
       // Hide loading state
       isLoading(false);

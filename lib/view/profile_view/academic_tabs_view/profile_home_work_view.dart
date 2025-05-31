@@ -83,7 +83,7 @@ class ProfileHomeWorkView extends StatelessWidget {
                       contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       leading: CircleAvatar(
-                        backgroundColor: Colors.indigo.withOpacity(0.2),
+                        backgroundColor: Colors.indigo.withValues(alpha: 0.5),
                         child: Icon(homework['icon'], color: Colors.indigo),
                       ),
                       title: Text(
@@ -182,7 +182,7 @@ class ProfileHomeWorkView extends StatelessWidget {
           height: 60,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: color.withOpacity(0.2),
+            color: color.withValues(alpha: 0.5),
           ),
           child: Center(
             child: Column(
