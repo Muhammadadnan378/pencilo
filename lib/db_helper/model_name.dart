@@ -5,5 +5,5 @@ String adminTableName = "admin";
 String buyingRequestTableName = "buyingRequests";
 String sellingRequestTableName = "sellingRequests";
 String classesTableName = "classes";
-String attendanceTableName = "attendance";
-String attendanceRecordsTableName = "attendance_records";
+String studentAttendanceTableName = "studentAttendance";
+String attendanceRecordsTableName = "attendanceRecords";

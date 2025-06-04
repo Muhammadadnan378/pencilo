@@ -26,10 +26,18 @@ class LoginView extends StatelessWidget {
                 onChanged: (value) => controller.name.value = value,
               ),
               SizedBox(height: 12),
-              LoginClassTextField(
-                hintText: "School Name",
-                onChanged: (value) => controller.schoolName.value = value,
-              ),
+              Obx((){
+                controller.selectedSchoolName.value;
+                return _selectSubjectsDropdown(
+                  subjects: controller.schoolNameList,
+                  selectedValue: controller.selectedSchoolName,
+                  dropdownTitle: "Select School",
+                );
+              }),
+              // LoginClassTextField(
+              //   hintText: "School Name",
+              //   onChanged: (value) => controller.schoolName.value = value,
+              // ),
               SizedBox(height: 12),
               if (controller.isTeacher)
                 Row(
@@ -54,7 +62,7 @@ class LoginView extends StatelessWidget {
               Obx((){
                 controller.selectedGender.value;
                 return _selectSubjectsDropdown(
-                  subjects: controller.gender,
+                  subjects: controller.genderList,
                   selectedValue: controller.selectedGender,
                   dropdownTitle: "Select Gender",
                 );
@@ -64,7 +72,7 @@ class LoginView extends StatelessWidget {
                 Obx((){
                   controller.selectedStandard.value;
                   return _selectSubjectsDropdown(
-                    subjects: controller.standards,
+                    subjects: controller.standardsList,
                     selectedValue: controller.selectedStandard,
                     dropdownTitle: "Select Standard",
                   );
@@ -74,7 +82,7 @@ class LoginView extends StatelessWidget {
                 Obx((){
                   controller.selectedDivision.value;
                   return _selectSubjectsDropdown(
-                    subjects: controller.divisions,
+                    subjects: controller.divisionsList,
                     selectedValue: controller.selectedDivision,
                     dropdownTitle: "Select Division",
                   );

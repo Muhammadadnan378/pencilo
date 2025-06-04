@@ -1,40 +1,61 @@
 
 class AttendanceModel {
-  final String classId;
-  final String userId;
-  final String name;
-  final String division;
-  final String standard;
-  final String? timestamp;
+  final String? studentUid;
+  final String? studentName;
+  final String? division;
+  final String? standard;
+  final String? dateTime;
+  final String? startDateTime;
+  final String? rollNo;
+  final String? schoolName;
+  final bool? isPresent;
 
   AttendanceModel({
-    required this.classId,
-    required this.userId,
-    required this.name,
-    required this.division,
-    required this.standard,
-    this.timestamp,
+    this.studentUid,
+    this.studentName,
+    this.division,
+    this.standard,
+    this.dateTime,
+    this.startDateTime,
+    this.rollNo,
+    this.schoolName,
+    this.isPresent,
   });
 
   factory AttendanceModel.fromMap(Map<String, dynamic> map) {
     return AttendanceModel(
-      classId: map['classId'] ?? '',
-      userId: map['userId'] ?? '',
-      name: map['name'] ?? '',
+      studentUid: map['studentUid'] ?? '',
+      studentName: map['studentName'] ?? '',
       division: map['division'] ?? '',
       standard: map['standard'] ?? '',
-      timestamp: map['createdDateTime'] ?? '',
+      dateTime: map['dateTime'] ?? '',
+      startDateTime: map['startDateTime'] ?? '',
+      rollNo: map['rollNo'] ?? '',
+      schoolName: map['schoolName'] ?? '',
+      isPresent: map['isPresent'] ?? false,
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> addStudent() {
     return {
-      'classId': classId,
-      'userId': userId,
-      'name': name,
+      'studentUid': studentUid,
+      'studentName': studentName,
       'division': division,
       'standard': standard,
-      'createdDateTime': DateTime.now().millisecondsSinceEpoch.toString(),
+      'rollNo': rollNo,
+      'schoolName': schoolName,
+      'dateTime': dateTime,
+    };
+  }
+
+  Map<String, dynamic> submitAttendance() {
+    return {
+      'studentUid': studentUid,
+      'rollNo': rollNo,
+      'dateTime': dateTime,
+      'isPresent': isPresent,
+      'division': division,
+      'standard': standard,
     };
   }
 }

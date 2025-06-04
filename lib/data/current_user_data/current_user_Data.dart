@@ -156,7 +156,7 @@ class CurrentUserData {
       classSection = '';
 
       // Navigate to the login screen
-      Get.to(LetsStartView());
+      Get.offAll(LetsStartView());
     } catch (e) {
       debugPrint('Error logging out: $e');
     }

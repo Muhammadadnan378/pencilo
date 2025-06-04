@@ -5,121 +5,93 @@ import 'package:pencilo/controller/attendance_controller.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 import 'package:pencilo/db_helper/model_name.dart';
+import '../../../../data/current_user_data/current_user_Data.dart';
+import '../../../../model/attendance_model.dart';
 
 class AttendanceSubmitView extends StatelessWidget {
-  final String classes;
-  final String subjects;
+  final String division;
+  final String standard;
 
   AttendanceSubmitView(
-      {super.key, required this.classes, required this.subjects});
+      {super.key, required this.division, required this.standard});
 
-  final AttendanceController controller = Get.put(AttendanceController());
+  final AttendanceController controller = Get.put(
+      AttendanceController());
 
   @override
   Widget build(BuildContext context) {
-    // controller.storeAttendanceManually();
-    debugPrint("attendanceDocs: ${controller.attendanceDocs.length}");
-    controller.std = classes;
-    controller.div = subjects;
-    debugPrint("${controller.std} ${controller.div}");
-    controller.createNewAttendance();
     debugPrint("startDate: ${controller.startDate.value}");
-    debugPrint("endDate: ${controller.endDate.value}");
-    return Obx(() {
-      final DateTime currentDate = controller.selectedDate.value;
-      final String dateLabel = DateFormat('d MMMM y').format(currentDate);
-      final String dateKey = "${currentDate.year}-${currentDate.month}-${currentDate.day}";
-      // Helper function to format the date string
-      String _formatDate(String date) {
-        final parts = date.split('-');
-        if (parts.length == 3) {
-          final year = parts[0];
-          final month = parts[1].padLeft(2, '0'); // Pad month
-          final day = parts[2].padLeft(2, '0'); // Pad day
-          return '$year-$month-$day';
-        }
-        return date; // Return original if format is unexpected
-      }
-      debugPrint("dateKey: $dateKey");
-      return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: Color(0xff9AC3FF),
-          title: Padding(
-            padding: const EdgeInsets.only(left: 40.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTap: () async {
-                    debugPrint("🟢 startDate: ${controller.startDate.value}");
-                    debugPrint("🟢 endDate: ${controller.endDate.value}");
-                    final DateTime today = DateTime.now();
-
-                    DateTime? startDate;
-                    DateTime? endDate;
-
-                    if (controller.startDate.value.isNotEmpty) {
-                      startDate = DateTime.tryParse(_formatDate(controller.startDate.value));
-                    }
-
-                    if (controller.endDate.value.isNotEmpty) {
-                      endDate = DateTime.tryParse(_formatDate(controller.endDate.value));
-                    }
-
-                    DateTime? pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: controller.selectedDate.value,
-                      firstDate: startDate ?? today,
-                      lastDate: endDate ?? today.add(Duration(days: 30)), // Set a default last date if endDate is null
-                    );
-
-                    if (pickedDate != null) {
-                      controller.selectedDate.value = pickedDate;
-                      controller.loadAttendanceData(); // clear
-                      controller.isBeforePresentList.clear();
-                      controller.loadAttendanceData(); // reload
-                      controller.getBeforeCurrentDayData();
-                    }
-                  },
-                  child: Row(
-                    // mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CustomText(
-                        text: "$classes $dateLabel",
+    controller.showPreviousAfterAttendance();
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: Color(0xff9AC3FF),
+        title: Padding(
+          padding: const EdgeInsets.only(left: 40.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                onTap: () async {
+                  DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: controller.selectedDate.value,
+                    firstDate: DateTime(2000), // Fallback to a safe default
+                    lastDate: DateTime
+                        .now(), // Limits selection to today and before
+                  );
+                  if (pickedDate != null) {
+                    controller.selectedDate.value = pickedDate;
+                    controller.showPreviousAfterAttendance();
+                  }
+                },
+                child: Row(
+                  children: [
+                    Obx(() {
+                      controller.selectedDate.value;
+                      return CustomText(
+                        text: controller.formatDateWithSuffix(
+                            controller.selectedDate.value),
                         size: 14,
                         fontWeight: FontWeight.w300,
                         color: blackColor,
-                      ),
-                      SizedBox(width: 5,),
-                      Icon(Icons.keyboard_arrow_down_sharp, color: blackColor,size: 25,),
-                    ],
-                  ),
+                      );
+                    }),
+                    SizedBox(width: 5,),
+                    Icon(Icons.keyboard_arrow_down_sharp, color: blackColor,
+                      size: 25,),
+                  ],
                 ),
-                CustomText(
-                  text: "Attendance of $classes $subjects",
-                  size: 16,
-                  fontWeight: FontWeight.w700,
-                  color: blackColor,
-                ),
-              ],
-            ),
+              ),
+              CustomText(
+                text: "Attendance of $standard '$division'",
+                size: 16,
+                fontWeight: FontWeight.w700,
+                color: blackColor,
+              ),
+            ],
           ),
         ),
-        body: ListView(
+      ),
+      body: Obx(() {
+        String date = DateFormat('dd-MM-yyyy').format(
+            controller.selectedDate.value);
+        // final String dateKey = "${currentDate.year}-${currentDate.month}-${currentDate.day}";
+        return ListView(
           physics: NeverScrollableScrollPhysics(),
           children: [
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection(attendanceRecordsTableName)
-                  .doc(dateKey)
-                  .collection("students").where("div", isEqualTo: classes).where("std", isEqualTo: subjects)
+                  .doc(CurrentUserData.schoolName)
+                  .collection("students")
+                  .doc(date)
+                  .collection("studentsAttendance")
+                  .where("division", isEqualTo: division)
+                  .where("standard", isEqualTo: standard)
                   .snapshots(),
               builder: (context, snapshot) {
-
-                if (!snapshot.hasData ||
-                    snapshot.hasError ||
-                    snapshot.connectionState == ConnectionState.waiting) {
+                if (!snapshot.hasData) {
                   return presentAbsentCards();
                 }
                 final docs = snapshot.data!.docs;
@@ -143,7 +115,6 @@ class AttendanceSubmitView extends StatelessWidget {
                 return presentAbsentCards();
               },
             ),
-
             SizedBox(height: 15,),
             Center(child: CustomText(text: "Review or edit Attendance",
               size: 16,
@@ -273,199 +244,207 @@ class AttendanceSubmitView extends StatelessWidget {
             ),
             SizedBox(height: 10,),
             CustomCard(
-              height: SizeConfig.screenHeight,
+              height: SizeConfig.screenHeight * 0.7,
               child: ListView(
                 physics: BouncingScrollPhysics(),
                 children: [
                   StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection(attendanceRecordsTableName)
-                        .doc(dateKey)
-                        .collection("students").where("div", isEqualTo: classes).where("std", isEqualTo: subjects)
-                        .snapshots(),
-                    builder: (context, attendanceSnapshot) {
-                      if (!attendanceSnapshot.hasData) {
-                        return Center(child: CircularProgressIndicator(),);
-                      }
-                      if (attendanceSnapshot.hasError) {
-                        return Center(child: CustomText(
-                            text: "${attendanceSnapshot.error}"),);
-                      }
-                      if (attendanceSnapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator(),);
-                      }
-                      if (attendanceSnapshot.data!.docs.isEmpty) {
-                        return Center(child: CustomText(
-                          text: "No data found", color: blackColor,),);
-                      }
-                      var attendanceDocs = attendanceSnapshot.data!.docs;
-                      for(var doc in attendanceDocs){
-                        controller.isPresentList.add(doc['isPresent'] ?? false);
-                      }
+                      stream: FirebaseFirestore.instance.collection(
+                          studentAttendanceTableName).doc(CurrentUserData
+                          .schoolName).collection("students").where(
+                          "division", isEqualTo: division).where(
+                          "standard", isEqualTo: standard).snapshots(),
+                      builder: (context, studentSnapshot) {
+                        if (studentSnapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator(),);
+                        }
+                        if (studentSnapshot.hasError) {
+                          return Center(child: CustomText(
+                            text: "Error something went is wrong!!",
+                            color: blackColor,));
+                        }
+                        if (studentSnapshot.data!.docs.isEmpty) {
+                          return Center(child: CustomText(
+                            text: "No students found!!", color: blackColor,));
+                        }
+                        var studentData = studentSnapshot.data!.docs;
 
-                      return StreamBuilder<QuerySnapshot>(
-                          stream: FirebaseFirestore.instance.collection(attendanceTableName).where("div", isEqualTo: classes).where("std", isEqualTo: subjects).snapshots(),
-                          builder: (context, snapshot) {
-                            if (!snapshot.hasData) {
-                              return Center(child: CircularProgressIndicator(),);
-                            }
-                            if (snapshot.hasError) {
-                              return Center(child: CustomText(
-                                text: "${snapshot.error}"),);
-                            }
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return Center(child: CircularProgressIndicator(),);
-                            }
-                            if (snapshot.data!.docs.isEmpty) {
-                              return Center(child: CustomText(
-                                text: "No data found", color: blackColor,),);
-                            }
-                            final docs = snapshot.data!.docs;
-                            controller.studentDocs = docs;
 
-                            docs.sort((a, b) {
-                              final aData = a.data() as Map<String, dynamic>;
-                              final bData = b.data() as Map<String, dynamic>;
+                        // Get and sort data by rollNo
+                        studentData.sort((a, b) {
+                          int rollA = int.tryParse(a['rollNo'].toString()) ?? 0;
+                          int rollB = int.tryParse(b['rollNo'].toString()) ?? 0;
+                          return rollA.compareTo(rollB);
+                        });
 
-                              final aRoll = int.tryParse(aData['roll'].toString()) ?? 0;
-                              final bRoll = int.tryParse(bData['roll'].toString()) ?? 0;
-
-                              return aRoll.compareTo(bRoll);
-                            });
-
-                            return ListView.builder(
-                              itemCount: controller.attendanceDocs.length,
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemBuilder: (context, index) {
-                                final data = docs[index].data() as Map<String, dynamic>;
-
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 10.0),
-                                  child: Column(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 10.0, right: 15),
-                                          child: Column(
-                                            children: [
-                                              Row(
-                                                  children: [
-                                                    SizedBox(width: 10,),
-                                                    CustomCard(
-                                                        alignment: Alignment.centerLeft,
-                                                        width: SizeConfig.screenWidth * 0.27,
+                        controller.studentDocs = studentData;
+                        return ListView.builder(
+                          itemCount: studentData.length,
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            var student = AttendanceModel.fromMap(
+                                studentData[index].data() as Map<String,
+                                    dynamic>);
+                            debugPrint("Roll No: ${student.rollNo}");
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10.0),
+                              child: Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 10.0, right: 15),
+                                      child: Column(
+                                        children: [
+                                          Row(
+                                              children: [
+                                                SizedBox(width: 10,),
+                                                CustomCard(
+                                                    alignment: Alignment
+                                                        .centerLeft,
+                                                    width: SizeConfig
+                                                        .screenWidth * 0.27,
+                                                    child: CustomText(
+                                                      text: student
+                                                          .studentName ?? "",
+                                                      size: 14,
+                                                      fontWeight: FontWeight
+                                                          .w700,
+                                                      color: blackColor,
+                                                    )
+                                                ),
+                                                Obx(() {
+                                                  controller.beforeIsPresentList;
+                                                  return CustomCard(
+                                                    alignment: Alignment.center,
+                                                    width: SizeConfig.screenWidth * 0.3,
+                                                    child: CustomCard(
+                                                      borderRadius: 5,
+                                                      color: controller.beforeIsPresentList.isNotEmpty && controller.beforeIsPresentList[index] == false
+                                                          ? Color(0xffFF9500)
+                                                          : Color(0xffD9D9D9),
+                                                      child: Padding(
+                                                        padding: const EdgeInsets.all(2.0),
                                                         child: CustomText(
-                                                          text: data['name'],
+                                                          text: student.rollNo ?? "",
                                                           size: 14,
                                                           fontWeight: FontWeight.w700,
                                                           color: blackColor,
-                                                        )
-                                                    ),
-                                                    CustomCard(
-                                                      alignment: Alignment.center,
-                                                      width: SizeConfig.screenWidth * 0.3,
-                                                      child: CustomCard(
-                                                        borderRadius: 5,
-                                                        color: (index < controller.isBeforePresentList.length)
-                                                            ? (!controller.isBeforePresentList[index]
-                                                            ? Color(0xffFF9500)
-                                                            : Color(0xffD9D9D9))
-                                                            : Color(0xffD9D9D9),
-                                                        child: Padding(
-                                                          padding: const EdgeInsets.all(2.0),
-                                                          child: CustomText(
-                                                            text: data['roll'].toString(),
-                                                            size: 14,
-                                                            fontWeight: FontWeight.w700,
-                                                            color: blackColor,
-                                                          ),
                                                         ),
                                                       ),
                                                     ),
-                                                    Spacer(),
-                                                    Obx(() {
-                                                      debugPrint("object: $index");
-                                                      bool present = index < controller.isPresentList.length ? controller.isPresentList[index] : false;
 
-                                                      Color activeColor = present ? Colors.green : Color(0xffAC4444);
+                                                  );
+                                                }),
+                                                Spacer(),
+                                                Obx(() {
+                                                  controller.isPresentList;
+                                                  bool present = controller
+                                                      .isPresentList
+                                                      .isNotEmpty &&
+                                                      controller.isPresentList
+                                                          .length ==
+                                                          studentData.length
+                                                      ? controller
+                                                      .isPresentList[index]
+                                                      : false;
+                                                  Color activeColor = present
+                                                      ? Colors.green
+                                                      : Color(0xffAC4444);
 
-                                                      return GestureDetector(
-                                                        onTap: () async{
-                                                          controller.isPresentList[index] = !present;
-                                                        },
-                                                        child: AnimatedContainer(
-                                                          duration: Duration(milliseconds: 300),
-                                                          curve: Curves.easeInOut,
-                                                          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                                                          decoration: BoxDecoration(
-                                                            color: Colors.white,
-                                                            border: Border.all(color: activeColor, width: 2),
-                                                            borderRadius: BorderRadius.circular(15),
-                                                          ),
-                                                          child: Row(
-                                                            mainAxisSize: MainAxisSize.min,
-                                                            children: [
-                                                              if (!present)
-                                                                AnimatedContainer(
-                                                                  duration: Duration(milliseconds: 300),
-                                                                  width: 20,
-                                                                  height: 20,
-                                                                  decoration: BoxDecoration(
-                                                                    color: activeColor,
-                                                                    shape: BoxShape.circle,
-                                                                  ),
-                                                                ),
-                                                              if (!present)
-                                                                SizedBox(width: 10),
-                                                              AnimatedSwitcher(
-                                                                duration: Duration(milliseconds: 300),
-                                                                child: Text(
-                                                                  !present ?  "Absent" : "Present",
-                                                                  key: ValueKey(present),
-                                                                  style: TextStyle(
-                                                                    color: activeColor,
-                                                                    fontSize: 12,
-                                                                    fontWeight: FontWeight.w500,
-                                                                  ),
-                                                                ),
+                                                  return GestureDetector(
+                                                    onTap: () async {
+                                                      controller
+                                                          .isPresentList[index] =
+                                                      !present;
+                                                    },
+                                                    child: AnimatedContainer(
+                                                      duration: Duration(
+                                                          milliseconds: 300),
+                                                      curve: Curves.easeInOut,
+                                                      padding: EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 4,
+                                                          vertical: 4),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white,
+                                                        border: Border.all(
+                                                            color: activeColor,
+                                                            width: 2),
+                                                        borderRadius: BorderRadius
+                                                            .circular(15),
+                                                      ),
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize
+                                                            .min,
+                                                        children: [
+                                                          if (!present)
+                                                            AnimatedContainer(
+                                                              duration: Duration(
+                                                                  milliseconds: 300),
+                                                              width: 20,
+                                                              height: 20,
+                                                              decoration: BoxDecoration(
+                                                                color: activeColor,
+                                                                shape: BoxShape
+                                                                    .circle,
                                                               ),
-                                                              if (present)
-                                                                SizedBox(width: 10),
-                                                              if (present)
-                                                                AnimatedContainer(
-                                                                  duration: Duration(
-                                                                      milliseconds: 300),
-                                                                  width: 20,
-                                                                  height: 20,
-                                                                  decoration: BoxDecoration(
-                                                                    color: activeColor,
-                                                                    shape: BoxShape.circle,
-                                                                  ),
-                                                                ),
-                                                            ],
+                                                            ),
+                                                          if (!present)
+                                                            SizedBox(width: 10),
+                                                          AnimatedSwitcher(
+                                                            duration: Duration(
+                                                                milliseconds: 300),
+                                                            child: Text(
+                                                              !present
+                                                                  ? "Absent"
+                                                                  : "Present",
+                                                              key: ValueKey(
+                                                                  present),
+                                                              style: TextStyle(
+                                                                color: activeColor,
+                                                                fontSize: 12,
+                                                                fontWeight: FontWeight
+                                                                    .w500,
+                                                              ),
+                                                            ),
                                                           ),
-                                                        ),
-                                                      );
-                                                    }),
-                                                  ]
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 20.0, right: 20, top: 2),
-                                                child: Divider(),
-                                              )
-                                            ],
+                                                          if (present)
+                                                            SizedBox(width: 10),
+                                                          if (present)
+                                                            AnimatedContainer(
+                                                              duration: Duration(
+                                                                  milliseconds: 300),
+                                                              width: 20,
+                                                              height: 20,
+                                                              decoration: BoxDecoration(
+                                                                color: activeColor,
+                                                                shape: BoxShape
+                                                                    .circle,
+                                                              ),
+                                                            ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  );
+                                                }),
+                                              ]
                                           ),
-                                        ),
-                                      ]
-                                  ),
-                                );
-                              },
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 20.0, right: 20, top: 2),
+                                            child: Divider(),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ]
+                              ),
                             );
-                          }
-                      );
-                    }
+                          },
+                        );
+                      }
                   ),
                   SizedBox(height: 30,),
                   Padding(
@@ -480,9 +459,8 @@ class AttendanceSubmitView extends StatelessWidget {
                         showDialog(
                           context: context,
                           builder: (BuildContext context) {
-                            final div = classes; // e.g. "6th"
-                            final std = subjects; // You can extract this from class string if needed
-
+                            final div = division; // e.g. "6th"
+                            final std = standard; // You can extract this from class string if needed
                             return AlertDialog(
                               title: Text("Add Student"),
                               content: Column(
@@ -507,44 +485,11 @@ class AttendanceSubmitView extends StatelessWidget {
                               ),
                               actions: [
                                 Obx(() =>
-                                controller.isAddMode.value
-                                    ? TextButton(
+                                controller.isAddMode.value ? TextButton(
                                   onPressed: () async {
-                                    final name = controller.nameController.text.trim();
-                                    final roll = controller.rollNoController.text.trim();
-                                    final studentId = DateTime.now().millisecondsSinceEpoch.toString();
-                                    if (name.isNotEmpty && roll.isNotEmpty) {
-                                      try {
-                                        Map<String,dynamic> data = {
-                                          "name": name,
-                                          "roll": roll,
-                                          "std": std,
-                                          "div": div,
-                                          "isPresent": false,
-                                          "createdDateTime": DateTime.now().toString(),
-                                          "studentId": studentId,
-                                        };
-                                        await FirebaseFirestore.instance.collection("attendance_records")
-                                            .doc(dateKey).collection("students").doc(studentId).set({
-                                          "std": std,
-                                          "div": div,
-                                          "isPresent": false,
-                                          "createdDateTime": studentId,
-                                        });
-                                        await FirebaseFirestore.instance.collection("attendance_records")
-                                            .doc(dateKey).set({
-                                          "createdDateTime": dateKey,
-                                        });
-                                        await FirebaseFirestore.instance.collection(attendanceTableName).doc(studentId).set(data).then((value) {
-                                          Get.back();
-                                          Get.snackbar("Success", "Student added successfully");
-                                          controller.nameController.clear();
-                                          controller.rollNoController.clear();
-                                        },);
-                                      } on FirebaseFirestore catch (e) {
-                                        Get.snackbar("Error", "$e");
-                                      }
-                                    }
+                                    controller.addStudent().then((value) {
+                                      controller.showPreviousAfterAttendance();
+                                    },);
                                   },
                                   child: Text("Add"),
                                 )
@@ -570,7 +515,8 @@ class AttendanceSubmitView extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 10,),
-                  Obx(() => !controller.isSubmitMode.value ? Padding(
+                  Obx(() =>
+                  !controller.isSubmitMode.value ? Padding(
                     padding: const EdgeInsets.only(left: 35.0, right: 35),
                     child: CustomCard(
                       alignment: Alignment.center,
@@ -582,7 +528,7 @@ class AttendanceSubmitView extends StatelessWidget {
                         controller.isSubmitMode(true);
                         controller.submitAttendance().then((value) {
                           controller.isSubmitMode(false);
-                        });
+                        },);
                       },
                       child: CustomText(
                         text: "Confirm & Submit attendance",
@@ -594,14 +540,14 @@ class AttendanceSubmitView extends StatelessWidget {
                       ),
                     ),
                   ) : Center(child: CircularProgressIndicator())),
-                  SizedBox(height: 25,),
+                  SizedBox(height: 100,)
                 ],
               ),
             ),
           ],
-        ),
-      );
-    });
+        );
+      },),
+    );
   }
 
   Stack presentAbsentCards() {

@@ -427,22 +427,49 @@ class ProfileController extends GetxController {
   Future<void> getCurrentUserAttendance() async {
     presents.value = "0";
     absents.value = "0";
-    QuerySnapshot recordSnapshot = await FirebaseFirestore.instance.collection(attendanceRecordsTableName).get();
-    for(var record in recordSnapshot.docs){
-      final recordData = record.data() as Map<String, dynamic>;
-      QuerySnapshot recordSnapshot = await FirebaseFirestore.instance.collection(attendanceRecordsTableName).doc("${recordData['createdDateTime']}").collection("students").where("studentId", isEqualTo: CurrentUserData.uid).get();
-      for(var record in recordSnapshot.docs){
-        final recordData = record.data() as Map<String, dynamic>;
-        if(recordData['isPresent']){
-          presents.value = (int.parse(presents.value) + 1).toString();
-        }else{
-          absents.value = (int.parse(absents.value) + 1).toString();
+
+    try {
+      // Get all dated attendance records under the current school
+      QuerySnapshot datesSnapshot = await FirebaseFirestore.instance
+          .collection(attendanceRecordsTableName)
+          .doc(CurrentUserData.schoolName)
+          .collection("students")
+          .get();
+
+      for (var dateDoc in datesSnapshot.docs) {
+        final date = dateDoc.id;
+
+        try {
+          DocumentSnapshot studentAttendanceSnapshot = await FirebaseFirestore.instance
+              .collection(attendanceRecordsTableName)
+              .doc(CurrentUserData.schoolName)
+              .collection("students")
+              .doc(date)
+              .collection("studentsAttendance")
+              .doc(CurrentUserData.uid)
+              .get();
+
+          if (studentAttendanceSnapshot.exists) {
+            final data = studentAttendanceSnapshot.data() as Map<String, dynamic>;
+            if (data['isPresent'] == true) {
+              presents.value = (int.parse(presents.value) + 1).toString();
+            } else {
+              absents.value = (int.parse(absents.value) + 1).toString();
+            }
+          }
+        } catch (e) {
+          debugPrint("⚠️ Failed to read attendance on $date: $e");
         }
-        debugPrint("presents: ${presents.value}");
-        debugPrint("absents: ${absents.value}");
       }
+
+      debugPrint("✅ Total Presents: ${presents.value}");
+      debugPrint("✅ Total Absents: ${absents.value}");
+
+    } catch (e) {
+      Get.snackbar("Error", "$e", backgroundColor: Colors.white, colorText: Colors.red);
     }
   }
+
 
   ///Edit Profile View methods
 // Define controller variables to store text field values

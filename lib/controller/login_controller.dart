@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:pencilo/admin_views/admin_home_view.dart';
 import 'package:pencilo/db_helper/model_name.dart';
 import 'package:pencilo/db_helper/network_check.dart';
@@ -11,15 +12,17 @@ import '../model/student_model.dart';
 import '../model/teacher_model.dart';
 
 class LoginController extends GetxController {
-  final standards = ['4th', '5th', '6th', '7th', '8th', '9th', '10th'];
-  final divisions = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-  final gender = ['Male', 'Female'];
+  final standardsList = ['4th', '5th', '6th', '7th', '8th', '9th', '10th'];
+  final divisionsList = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+  final schoolNameList = ['Bright Academy','Greenfield School','Sunrise Public School'];
+  final genderList = ['Male', 'Female'];
   var selectedStandard = ''.obs;
   var selectedGender = ''.obs;
   var selectedDivision = ''.obs;
+  var selectedSchoolName = ''.obs;
   var name = ''.obs;
   var currentLocation = ''.obs;
-  var schoolName = ''.obs;
+  // var schoolName = ''.obs;
   var phoneNumber = ''.obs;
   var subject = ''.obs;
   var isLoginUser = false.obs;
@@ -37,7 +40,7 @@ class LoginController extends GetxController {
   Future<bool> validateForm(BuildContext context) async {
     // Check if the required fields are filled
     if (name.value.isEmpty ||
-        schoolName.value.isEmpty ||
+        selectedSchoolName.value.isEmpty ||
         phoneNumber.value.isEmpty ||
         selectedGender.value.isEmpty ||
         (isTeacher && subject.value.isEmpty) ||
@@ -291,7 +294,7 @@ class LoginController extends GetxController {
       final newTeacher = TeacherModel(
           uid: uid,
           fullName: name.value,
-          schoolName: schoolName.value,
+          schoolName: selectedSchoolName.value,
           subject: subject.value,
           phoneNumber: phoneNumber.value.trim(),
           currentLocation: currentLocation.value,
@@ -313,7 +316,7 @@ class LoginController extends GetxController {
         // Update static data in CurrentUserData class
         CurrentUserData.uid = uid;
         CurrentUserData.name = name.value;
-        CurrentUserData.schoolName = schoolName.value;
+        CurrentUserData.schoolName = selectedSchoolName.value;
         CurrentUserData.phoneNumber = phoneNumber.value.trim();
         CurrentUserData.currentLocation = currentLocation.value;
         CurrentUserData.subject = subject.value;
@@ -334,7 +337,7 @@ class LoginController extends GetxController {
       final newStudent = StudentModel(
           uid: uid,
           fullName: name.value,
-          schoolName: schoolName.value,
+          schoolName: selectedSchoolName.value,
           standard: selectedStandard.value,
           division: selectedDivision.value,
           phoneNumber: phoneNumber.value.trim(),
@@ -353,14 +356,14 @@ class LoginController extends GetxController {
           gender: selectedGender.value,
           pushToken: pushToken,
       );
-      await createClassManually(uid);
+      await addStudentAttendance(uid);
       // Store the student data in Firestore using the toMap method
       await FirebaseFirestore.instance.collection(studentTableName).doc(uid).set(newStudent.toMap()).then((_) {
 
         // Update static data in CurrentUserData class
         CurrentUserData.uid = uid;
         CurrentUserData.name = name.value;
-        CurrentUserData.schoolName = schoolName.value;
+        CurrentUserData.schoolName = selectedSchoolName.value;
         CurrentUserData.phoneNumber = phoneNumber.value.trim();
         CurrentUserData.currentLocation = currentLocation.value;
         CurrentUserData.standard = selectedStandard.value;
@@ -373,6 +376,7 @@ class LoginController extends GetxController {
         addStudentData(newStudent);
       });
     } catch (e) {
+      debugPrint("Error: $e");
       Get.snackbar('Error', 'Failed to store student data: $e');
     }
   }
@@ -402,65 +406,48 @@ class LoginController extends GetxController {
   }
 
   ///Add student in attendance
-  Future<void> createClassManually(String id) async {
-    QuerySnapshot studentSnapshot = await FirebaseFirestore.instance.collection(studentTableName).get();
+  Future<void> addStudentAttendance(String uid) async {
+    String date = DateFormat('dd-MM-yyyy').format(DateTime.now());
+
+    QuerySnapshot studentSnapshot = await FirebaseFirestore.instance
+        .collection(studentAttendanceTableName)
+        .doc(selectedSchoolName.value)
+        .collection("students")
+        .where("schoolName", isEqualTo: selectedSchoolName.value).where(
+        "division", isEqualTo: selectedDivision.value).where(
+        "standard", isEqualTo: selectedStandard.value)
+        .get();
+
+    // Find the highest rollNo
+    int maxRollNo = 0;
     for (var doc in studentSnapshot.docs) {
-      final data = doc.data() as Map<String, dynamic>;
-      QuerySnapshot classSnapshot = await FirebaseFirestore.instance.collection(classesTableName).where("division", isEqualTo: data['division']).where("standard", isEqualTo: data['standard']).get();
-      if (classSnapshot.docs.isEmpty) {
-        AttendanceModel newStudent = AttendanceModel(
-          classId: DateTime.now().millisecondsSinceEpoch.toString(),
-          userId: id,
-          name:  name.value,
-          division: selectedDivision.value,
-          standard: selectedStandard.value,
-        );
-        await FirebaseFirestore.instance.collection(classesTableName).doc(doc.id).set(newStudent.toMap());
+      String? rollNoStr = doc['rollNo'];
+      int? roll = int.tryParse(rollNoStr ?? '');
+      if (roll != null && roll > maxRollNo) {
+        maxRollNo = roll;
       }
     }
+
+    // New rollNo is highest + 1
+    String rollNo = (maxRollNo + 1).toString();
+
+    AttendanceModel attendanceModel = AttendanceModel(
+      studentUid: uid,
+      studentName: name.value,
+      rollNo: rollNo,
+      dateTime: date,
+      division: selectedDivision.value,
+      standard: selectedStandard.value,
+      schoolName: CurrentUserData.schoolName,
+    );
+
+    // Save to Firestore
+    await FirebaseFirestore.instance
+        .collection(studentAttendanceTableName)
+        .doc(selectedSchoolName.value)
+        .collection("students")
+        .doc(uid)
+        .set(attendanceModel.addStudent()); // Ensure your model has `toMap()` method
   }
-  // Future<void> storeAttendanceManually() async {
-  //   final now = DateTime.now();
-  //   final String dateKey = "${now.year}-${now.month}-${now.day}";
-  //
-  //   QuerySnapshot classSnapshot = await FirebaseFirestore.instance.collection(attendanceTableName).get();
-  //   QuerySnapshot studentSnapshot = await FirebaseFirestore.instance.collection(studentTableName).get();
-  //
-  //
-  //   int maxRoll = -1;
-  //
-  //   for (var doc in classSnapshot.docs) {
-  //     final data = doc.data() as Map<String, dynamic>;
-  //
-  //     // Convert roll to int, handle if null or not convertible
-  //     int? roll = int.tryParse(data['roll'].toString());
-  //     if (roll != null && roll > maxRoll) {
-  //       maxRoll = roll;
-  //     }
-  //   }
-  //   print("Sabse bada roll number: $maxRoll");
-  //
-  //   for (var doc in studentSnapshot.docs) {
-  //     final data = doc.data() as Map<String, dynamic>;
-  //     Map<String, dynamic> attendanceData = {
-  //       "createdDateTime": DateTime.now().toString(),
-  //       "studentId": doc.id,
-  //       "name": name.value,
-  //       "div": selectedDivision.value,
-  //       "std": selectedStandard.value,
-  //       "roll": maxRoll + 1,
-  //       "isPresent": false,
-  //     };
-  //     Map<String, dynamic> attendanceRecordData = {
-  //       "createdDateTime": DateTime.now().toString(),
-  //       "studentId": doc.id,
-  //       "div": selectedDivision.value,
-  //       "std": selectedStandard.value,
-  //       "roll": maxRoll + 1,
-  //       "isPresent": false,
-  //     };
-  //     await FirebaseFirestore.instance.collection(attendanceTableName).doc(doc.id).set(attendanceData);
-  //     await FirebaseFirestore.instance.collection(attendanceRecordsTableName).doc(dateKey).collection("students").doc(doc.id).set(attendanceRecordData);
-  //   }
-  // }
+
 }
