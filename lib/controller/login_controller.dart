@@ -12,9 +12,16 @@ import '../model/student_model.dart';
 import '../model/teacher_model.dart';
 
 class LoginController extends GetxController {
+
+  @override
+  void onInit() {
+    getSchoolName();
+    super.onInit();
+  }
+
   final standardsList = ['4th', '5th', '6th', '7th', '8th', '9th', '10th'];
   final divisionsList = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-  final schoolNameList = ['Bright Academy','Greenfield School','Sunrise Public School'];
+  List<String> schoolNameList = [];
   final genderList = ['Male', 'Female'];
   var selectedStandard = ''.obs;
   var selectedGender = ''.obs;
@@ -30,10 +37,33 @@ class LoginController extends GetxController {
   var isTeacher = false; // Tracks whether the user is a teacher
   var isStudent = false; // Tracks whether the user is a teacher
   String pushToken = "";
+  TextEditingController schoolNameController = TextEditingController();
 
-  void getPushToken() async {
+
+  Future<void> getPushToken() async {
     String? token = await FcmService.getPushToken();
     pushToken = token!;
+  }
+
+  Future<void> getSchoolName ()async{
+    schoolNameList.clear();
+    QuerySnapshot schoolSnapshot = await FirebaseFirestore.instance.collection("schools_name").get();
+    if (schoolSnapshot.docs.isNotEmpty) {
+      for(var doc in schoolSnapshot.docs){
+        schoolNameList.add(doc['schoolName']);
+      }
+    }
+  }
+
+  Future<void> storeSchoolName () async{
+    QuerySnapshot schoolSnapshot = await FirebaseFirestore.instance.collection("schools_name").where("schoolName",isEqualTo: schoolNameController.text).get();
+    if(schoolSnapshot.docs.isNotEmpty){
+      return;
+    }else{
+      await FirebaseFirestore.instance.collection("schools_name").add({"schoolName":schoolNameController.text}).then((value) {
+        getSchoolName ();
+      });
+    }
   }
 
 // Validate the form fields and phone number format for Pakistan and India
@@ -99,6 +129,9 @@ class LoginController extends GetxController {
 
       existId = data['uid'];
 
+      debugPrint("$isStudent");
+      debugPrint("$isTeacher");
+      debugPrint("pushToken $pushToken");
       // Update push token
       await FirebaseFirestore.instance
           .collection(isTeacher ? teacherTableName : isStudent ? studentTableName : 'admin')
@@ -165,34 +198,17 @@ class LoginController extends GetxController {
 
 
   // Check if the phone number already exists in Firestore
-  Future<bool> isPhoneNumberExist() async {
-    try {
-      final teacherDoc = await FirebaseFirestore.instance
-          .collection(teacherTableName)
-          .where('phoneNumber', isEqualTo: phoneNumber.value)
-          .get();
-      final studentDoc = await FirebaseFirestore.instance
-          .collection(studentTableName)
-          .where('phoneNumber', isEqualTo: phoneNumber.value)
-          .get();
-
-      // If a document exists in either collection, the number exists
-      return teacherDoc.docs.isNotEmpty || studentDoc.docs.isNotEmpty;
-    } catch (e) {
-      Get.snackbar('Error', 'Failed to check phone number: $e');
-      return false;
-    }
-  }
-  // Store user data in Firestore (with DateTime as UID)
   Future<void> storeUserData() async {
 
     if(!await NetworkHelper.isInternetAvailable()){
       Get.snackbar('Error', 'No Internet Connection');
       return;
     }
-    getPushToken();
+    await getPushToken();
 
     try {
+      debugPrint("$isStudent");
+      debugPrint("$isTeacher");
       QuerySnapshot userDoc;
 
       if (isTeacher) {
@@ -201,6 +217,7 @@ class LoginController extends GetxController {
             .where('phoneNumber', isEqualTo: phoneNumber.value)
             .get();
       } else if (isStudent) {
+        debugPrint("Student");
         userDoc = await FirebaseFirestore.instance
             .collection(studentTableName)
             .where('phoneNumber', isEqualTo: phoneNumber.value)
@@ -223,6 +240,7 @@ class LoginController extends GetxController {
         } else {
           await storeStudentData(uid);
         }
+        storeSchoolName();
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to store data: $e');

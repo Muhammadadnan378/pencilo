@@ -6,15 +6,17 @@ import 'package:pencilo/controller/student_home_view_controller.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import '../../../add_methods/add_methods_class.dart';
 import '../../../data/consts/images.dart';
+import '../../../data/custom_widget/custom_media_query.dart';
 import '../../../model/subjects_model.dart';
 import 'answer_view.dart';
 
 class SubjectPartsView extends StatelessWidget {
   final String? subject;
+  final String? subjectName;
   final Color? colors;
   final Color? bgColor;
 
-  SubjectPartsView({super.key, this.subject, this.colors, this.bgColor});
+  SubjectPartsView({super.key, this.subject, this.colors, this.bgColor, this.subjectName});
   final interstitialAdService = InterstitialAdService();
   final rewardedAdService = RewardedAdService();
   final appOpenAdService = AppOpenAdService(); // Optional if you plan to use it here
@@ -36,7 +38,7 @@ class SubjectPartsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // interstitialAdService.loadInterstitialAd();
-    rewardedAdService.loadRewardedAd();
+    /// rewardedAdService.loadRewardedAd();
     // appOpenAdService.loadAppOpenAd();
     if (subject == null) {
       return Center(child: Text("No subject selected"));
@@ -50,6 +52,7 @@ class SubjectPartsView extends StatelessWidget {
             child: ListView(
               children: [
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CustomText(text: 'Aniket Ganesh',
                       color: blackColor,
@@ -71,7 +74,7 @@ class SubjectPartsView extends StatelessWidget {
                 ),
                 SizedBox(height: 15,),
                 CustomText(
-                  text: '$subject Answer',
+                  text: '$subjectName Answer',
                   color: blackColor,
                   fontWeight: FontWeight.bold,
                   fontFamily: interFontFamily,
@@ -212,6 +215,7 @@ class SubjectPartsView extends StatelessWidget {
                                         final chapter = SubjectModel.fromMap(chapters[index]);
                                         return GestureDetector(
                                           onTap: () {
+                                            controller.currentSelectedQuestion.value = 0;
                                             // Use your navigation logic or AnswerView here
                                             Get.to(AnswerView(myData: chapter,));
                                           },
@@ -225,10 +229,14 @@ class SubjectPartsView extends StatelessWidget {
                                                     fontWeight: FontWeight.w500,
                                                   ),
                                                   SizedBox(width: 20),
-                                                  CustomText(
-                                                    text: chapter.chapterName ?? '',
-                                                    size: 14,
-                                                    fontWeight: FontWeight.w500,
+                                                  SizedBox(
+                                                    width: SizeConfig.screenWidth * 0.6,
+                                                    child: CustomText(
+                                                      text: chapter.chapterName ?? '',
+                                                      size: 14,
+                                                      fontWeight: FontWeight.w500,
+                                                      maxLines: 1,
+                                                    ),
                                                   )
                                                 ],
                                               ),

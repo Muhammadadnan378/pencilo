@@ -15,8 +15,7 @@ class AttendanceSubmitView extends StatelessWidget {
   AttendanceSubmitView(
       {super.key, required this.division, required this.standard});
 
-  final AttendanceController controller = Get.put(
-      AttendanceController());
+  final AttendanceController controller = Get.put(AttendanceController());
 
   @override
   Widget build(BuildContext context) {
@@ -163,10 +162,14 @@ class AttendanceSubmitView extends StatelessWidget {
                     );
 
                     if (selected == 'present') {
-                      controller.markAll(true);
+                      controller.markAll(true).then((value) {
+                        controller.submitAttendance();
+                      });
                       // Optional: trigger next step
                     } else if (selected == 'absent') {
-                      controller.markAll(false);
+                      controller.markAll(false).then((value) {
+                        controller.submitAttendance();
+                      });;
                       // Optional: trigger next step
                     }
                   },
@@ -293,24 +296,29 @@ class AttendanceSubmitView extends StatelessWidget {
                               child: Column(
                                   children: [
                                     Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 10.0, right: 15),
+                                      padding: const EdgeInsets.only(left: 10.0, right: 15),
                                       child: Column(
                                         children: [
                                           Row(
                                               children: [
                                                 SizedBox(width: 10,),
                                                 CustomCard(
-                                                    alignment: Alignment
-                                                        .centerLeft,
-                                                    width: SizeConfig
-                                                        .screenWidth * 0.27,
+                                                    onTap: () {
+                                                      showStudentDialog(
+                                                        context,
+                                                        isUpdate: true,
+                                                        studentUid: student.studentUid,
+                                                        initialName: student.studentName,
+                                                        initialRollNo: student.rollNo,
+                                                      );
+                                                    },
+
+                                                    alignment: Alignment.centerLeft,
+                                                    width: SizeConfig.screenWidth * 0.27,
                                                     child: CustomText(
-                                                      text: student
-                                                          .studentName ?? "",
+                                                      text: student.studentName ?? "",
                                                       size: 14,
-                                                      fontWeight: FontWeight
-                                                          .w700,
+                                                      fontWeight: FontWeight.w700,
                                                       color: blackColor,
                                                     )
                                                 ),
@@ -340,73 +348,81 @@ class AttendanceSubmitView extends StatelessWidget {
                                                 Spacer(),
                                                 Obx(() {
                                                   controller.isPresentList;
-                                                  bool present = controller
-                                                      .isPresentList
-                                                      .isNotEmpty &&
-                                                      controller.isPresentList
-                                                          .length ==
-                                                          studentData.length
-                                                      ? controller
-                                                      .isPresentList[index]
-                                                      : false;
-                                                  Color activeColor = present
-                                                      ? Colors.green
-                                                      : Color(0xffAC4444);
+                                                  bool present = controller.isPresentList.isNotEmpty && controller.isPresentList.length == studentData.length ? controller.isPresentList[index] : false;
+                                                  Color activeColor = present ? Colors.green : Color(0xffAC4444);
 
                                                   return GestureDetector(
                                                     onTap: () async {
-                                                      controller
-                                                          .isPresentList[index] =
-                                                      !present;
+                                                      controller.isPresentList[index] = !present;
+                                                      // Update present absent in fireStore
+                                                      final docRef = FirebaseFirestore.instance
+                                                          .collection(attendanceRecordsTableName)
+                                                          .doc(CurrentUserData.schoolName)
+                                                          .collection("students")
+                                                          .doc(date)
+                                                          .collection("studentsAttendance")
+                                                          .doc(studentData[index].id);
+
+                                                      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection(attendanceRecordsTableName).doc(CurrentUserData.schoolName).collection("students").where("studentUid", isEqualTo: studentData[index].id).get();
+
+                                                      try {
+                                                        DocumentSnapshot snapshot = await docRef.get();
+
+                                                        if (snapshot.exists) {
+                                                          await docRef.update({"isPresent": !present});
+                                                        } else {
+
+                                                          if (querySnapshot.docs.isNotEmpty) {
+                                                            AttendanceModel attendanceModel = AttendanceModel(
+                                                              studentUid: studentData[index].id,
+                                                              rollNo: student.rollNo,
+                                                              dateTime: date,
+                                                              isPresent: !present,
+                                                              division: division,
+                                                              standard: standard,
+                                                            );
+                                                            await docRef.set(attendanceModel.submitAttendance());
+                                                          }else{
+                                                            controller.submitAttendance();
+                                                          }
+                                                        }
+                                                      } catch (e) {
+                                                        Get.snackbar("Error", "$e", backgroundColor: whiteColor, colorText: Colors.red);
+                                                      }
                                                     },
                                                     child: AnimatedContainer(
-                                                      duration: Duration(
-                                                          milliseconds: 300),
+                                                      duration: Duration(milliseconds: 300),
                                                       curve: Curves.easeInOut,
-                                                      padding: EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 4,
-                                                          vertical: 4),
+                                                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                                                       decoration: BoxDecoration(
                                                         color: Colors.white,
-                                                        border: Border.all(
-                                                            color: activeColor,
-                                                            width: 2),
-                                                        borderRadius: BorderRadius
-                                                            .circular(15),
+                                                        border: Border.all(color: activeColor, width: 2),
+                                                        borderRadius: BorderRadius.circular(15),
                                                       ),
                                                       child: Row(
-                                                        mainAxisSize: MainAxisSize
-                                                            .min,
+                                                        mainAxisSize: MainAxisSize.min,
                                                         children: [
                                                           if (!present)
                                                             AnimatedContainer(
-                                                              duration: Duration(
-                                                                  milliseconds: 300),
+                                                              duration: Duration(milliseconds: 300),
                                                               width: 20,
                                                               height: 20,
                                                               decoration: BoxDecoration(
                                                                 color: activeColor,
-                                                                shape: BoxShape
-                                                                    .circle,
+                                                                shape: BoxShape.circle,
                                                               ),
                                                             ),
                                                           if (!present)
                                                             SizedBox(width: 10),
                                                           AnimatedSwitcher(
-                                                            duration: Duration(
-                                                                milliseconds: 300),
+                                                            duration: Duration(milliseconds: 300),
                                                             child: Text(
-                                                              !present
-                                                                  ? "Absent"
-                                                                  : "Present",
-                                                              key: ValueKey(
-                                                                  present),
+                                                              !present ? "Absent" : "Present",
+                                                              key: ValueKey(present),
                                                               style: TextStyle(
                                                                 color: activeColor,
                                                                 fontSize: 12,
-                                                                fontWeight: FontWeight
-                                                                    .w500,
+                                                                fontWeight: FontWeight.w500,
                                                               ),
                                                             ),
                                                           ),
@@ -414,14 +430,12 @@ class AttendanceSubmitView extends StatelessWidget {
                                                             SizedBox(width: 10),
                                                           if (present)
                                                             AnimatedContainer(
-                                                              duration: Duration(
-                                                                  milliseconds: 300),
+                                                              duration: Duration(milliseconds: 300),
                                                               width: 20,
                                                               height: 20,
                                                               decoration: BoxDecoration(
                                                                 color: activeColor,
-                                                                shape: BoxShape
-                                                                    .circle,
+                                                                shape: BoxShape.circle,
                                                               ),
                                                             ),
                                                         ],
@@ -432,8 +446,7 @@ class AttendanceSubmitView extends StatelessWidget {
                                               ]
                                           ),
                                           Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 20.0, right: 20, top: 2),
+                                            padding: const EdgeInsets.only(left: 20.0, right: 20, top: 2),
                                             child: Divider(),
                                           )
                                         ],
@@ -456,53 +469,7 @@ class AttendanceSubmitView extends StatelessWidget {
                       height: 38,
                       color: blackColor,
                       onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            final div = division; // e.g. "6th"
-                            final std = standard; // You can extract this from class string if needed
-                            return AlertDialog(
-                              title: Text("Add Student"),
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  TextField(
-                                    controller: controller.nameController,
-                                    decoration: InputDecoration(
-                                        labelText: "Student Name"),
-                                  ),
-                                  TextField(
-                                    controller: controller.rollNoController,
-                                    decoration: InputDecoration(
-                                        labelText: "Roll Number"),
-                                    keyboardType: TextInputType.number,
-                                  ),
-                                  CustomText(text: "STD: $std, DIV: $div",
-                                    color: blackColor,
-                                    size: 16,
-                                    fontWeight: FontWeight.bold,),
-                                ],
-                              ),
-                              actions: [
-                                Obx(() =>
-                                controller.isAddMode.value ? TextButton(
-                                  onPressed: () async {
-                                    controller.addStudent().then((value) {
-                                      controller.showPreviousAfterAttendance();
-                                    },);
-                                  },
-                                  child: Text("Add"),
-                                )
-                                    : const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2),
-                                ))
-                              ],
-                            );
-                          },
-                        );
+                        showStudentDialog(context, isUpdate: false); // For adding
                       },
                       child: CustomText(
                         text: "Add Students",
@@ -514,32 +481,6 @@ class AttendanceSubmitView extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SizedBox(height: 10,),
-                  Obx(() =>
-                  !controller.isSubmitMode.value ? Padding(
-                    padding: const EdgeInsets.only(left: 35.0, right: 35),
-                    child: CustomCard(
-                      alignment: Alignment.center,
-                      borderRadius: 11,
-                      width: double.infinity,
-                      height: 38,
-                      color: blackColor,
-                      onTap: () {
-                        controller.isSubmitMode(true);
-                        controller.submitAttendance().then((value) {
-                          controller.isSubmitMode(false);
-                        },);
-                      },
-                      child: CustomText(
-                        text: "Confirm & Submit attendance",
-                        size: 14,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: GoogleFonts
-                            .spaceGrotesk()
-                            .fontFamily,
-                      ),
-                    ),
-                  ) : Center(child: CircularProgressIndicator())),
                   SizedBox(height: 100,)
                 ],
               ),
@@ -549,6 +490,101 @@ class AttendanceSubmitView extends StatelessWidget {
       },),
     );
   }
+
+  void showStudentDialog(BuildContext context, {
+    required bool isUpdate,
+    String? studentUid, // Required for update
+    String? initialName,
+    String? initialRollNo,
+  }) {
+    final controller = Get.find<AttendanceController>(); // replace with your controller
+
+    // Pre-fill values if updating
+    controller.nameController.text = initialName ?? '';
+    controller.rollNoController.text = initialRollNo ?? '';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final div = division;
+        final std = standard;
+
+        return AlertDialog(
+          backgroundColor: whiteColor,
+          title: Text(isUpdate ? "Update Student" : "Add Student"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: controller.nameController,
+                decoration: const InputDecoration(labelText: "Student Name"),
+              ),
+              TextField(
+                controller: controller.rollNoController,
+                decoration: const InputDecoration(labelText: "Roll Number"),
+                keyboardType: TextInputType.number,
+              ),
+              CustomText(
+                text: "STD: $std, DIV: $div",
+                color: blackColor,
+                size: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ],
+          ),
+          actions: [
+            GestureDetector(
+              onTap: () {
+                Get.back();
+                controller.nameController.clear();
+                controller.rollNoController.clear();
+              },
+              child: CustomText(
+                text: "Cancel",
+                color: blackColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Obx(() => controller.isAddMode.value
+                ? TextButton(
+              style: TextButton.styleFrom(foregroundColor: blackColor),
+              onPressed: () async {
+                if (controller.nameController.text.isEmpty ||
+                    controller.rollNoController.text.isEmpty) {
+                  Get.snackbar("Error", "All fields are required",
+                      backgroundColor: whiteColor, colorText: Colors.red);
+                  return;
+                } else if (int.parse(controller.rollNoController.text) <= 0) {
+                  Get.snackbar("Invalid Roll No", "Must be greater than 0.",
+                      backgroundColor: whiteColor, colorText: Colors.red);
+                  return;
+                }
+
+                if (isUpdate && studentUid != null) {
+                  controller.updateStudent(
+                    studentUid: studentUid,
+                    newName: controller.nameController.text.trim(),
+                    newRollNo: controller.rollNoController.text.trim(),
+                  );
+                } else {
+                  controller.addStudent().then((value) {
+                    controller.showPreviousAfterAttendance();
+                  });
+                }
+              },
+              child: Text(isUpdate ? "Update" : "Add"),
+            )
+                : const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )),
+          ],
+        );
+      },
+    );
+  }
+
 
   Stack presentAbsentCards() {
     return Stack(

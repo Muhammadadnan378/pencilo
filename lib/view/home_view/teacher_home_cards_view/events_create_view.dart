@@ -621,7 +621,7 @@ class EventTab extends StatelessWidget {
             maxLines: maxLines,
             isEditable: isEditable,
             onTap: onTap,
-            lableStyle: labelStyle,
+            labelStyle: labelStyle,
           ),
         ),
       ],

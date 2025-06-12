@@ -136,7 +136,7 @@ class AnswerView extends StatelessWidget {
                       ),
                     ),
                   SizedBox(height: 10),
-                  if (selectedQuestionData.questionsImage != null)
+                  if (selectedQuestionData.questionsImage != null && selectedQuestionData.questionsImage != "")
                     GestureDetector(
                       onTap: () {
                         Get.to(ShowImagesView(
@@ -172,7 +172,6 @@ class AnswerView extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final subQuestion = SubjectModel.fromMap(subQuestions[index]);
                   final isLastQuestion = index == subQuestions.length - 1;
-
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -184,7 +183,9 @@ class AnswerView extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
 
+                      if(subQuestion.ans != null && subQuestion.ans!.isNotEmpty)
                       SizedBox(height: 10),
+                      if(subQuestion.ans != null && subQuestion.ans!.isNotEmpty)
                       RichText(
                         text: TextSpan(
                           style: TextStyle(
@@ -205,7 +206,7 @@ class AnswerView extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 20),
-                      if (subQuestion.imgUrl != null)
+                      if (subQuestion.imgUrl != null && selectedQuestionData.questionsImage != "")
                         GestureDetector(
                           onTap: () {
                             Get.to(ShowImagesView(
@@ -220,47 +221,106 @@ class AnswerView extends StatelessWidget {
                             const Icon(Icons.broken_image),
                           ),
                         ),
-                      SizedBox(height: 12),
-                      CustomText(
-                        text: 'Tutorial Video',
-                        color: blackColor,
-                        fontFamily: poppinsFontFamily,
-                        size: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      SizedBox(height: 12),
-                      if (subQuestion.youtubeVideoPath != null)
-                        GestureDetector(
-                          onTap: () {
-                            Get.to(ShowYoutubeVideo(
-                              videoUrl: subQuestion.youtubeVideoPath!,
-                            ));
-                          },
-                          child: CustomCard(
-                            alignment: Alignment.center,
-                            width: SizeConfig.screenWidth * 0.8,
-                            height: SizeConfig.screenHeight * 0.3,
-                            color: Color(0xffD9D9D9),
-                            child: Stack(
+                      if (subQuestion.subAns != null && subQuestion.subAns!.isNotEmpty)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CustomText(
+                              text: "Matched Columns:",
+                              fontFamily: poppinsFontFamily,
+                              size: 16,
+                              fontWeight: FontWeight.w700,
+                              color: blackColor,
+                            ),
+                            SizedBox(height: 10),
+                            Table(
+                              border: TableBorder.all(color: Colors.black, width: 1.0),
+                              columnWidths: const {
+                                0: FlexColumnWidth(3),
+                                1: FlexColumnWidth(3),
+                                2: FlexColumnWidth(3),
+                                3: FlexColumnWidth(3),
+                                4: FlexColumnWidth(3),
+                              },
                               children: [
-                                Image.network(
-                                  "https://img.youtube.com/vi/${YoutubePlayer.convertUrlToId(subQuestion.youtubeVideoPath!)}/0.jpg",
-                                  height: SizeConfig.screenHeight * 0.3,
-                                  width: SizeConfig.screenWidth * 0.8,
-                                  fit: BoxFit.cover,
+                                TableRow(
+                                  children: [
+                                    tableHeader('Column I'),
+                                    tableHeader('Column II'),
+                                    if (subQuestion.subAns != null && subQuestion.subAns!.any((item) => item.containsKey("Column III")))
+                                      tableHeader('Column III'),
+                                    if (subQuestion.subAns != null && subQuestion.subAns!.any((item) => item.containsKey("Column IV")))
+                                      tableHeader('Column IV'),
+                                    if (subQuestion.subAns != null && subQuestion.subAns!.any((item) => item.containsKey("Column V")))
+                                      tableHeader('Column V'),
+                                  ],
                                 ),
-                                Positioned.fill(
-                                  child: Icon(
-                                    Icons.play_circle,
-                                    size: 40,
-                                    color: whiteColor,
-                                  ),
-                                )
+                                if (subQuestion.subAns != null)
+                                  for (var item in subQuestion.subAns!)
+                                    TableRow(
+                                      children: [
+                                        tableCell(item["Column I"] ?? ""),
+                                        tableCell(item["Column II"] ?? ""),
+                                        if (item.containsKey("Column III"))
+                                          tableCell(item["Column III"] ?? ""),
+                                        if (item.containsKey("Column IV"))
+                                          tableCell(item["Column IV"] ?? ""),
+                                        if (item.containsKey("Column V"))
+                                          tableCell(item["Column V"] ?? ""),
+                                      ],
+                                    ),
                               ],
                             ),
-                          ),
+                            SizedBox(height: 20),
+                          ],
                         ),
-                      SizedBox(height: 10),
+
+                      if (subQuestion.youtubeVideoPath != null && subQuestion.youtubeVideoPath != "")
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 12),
+                          CustomText(
+                            text: 'Tutorial Video',
+                            color: blackColor,
+                            fontFamily: poppinsFontFamily,
+                            size: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          SizedBox(height: 12),
+                          GestureDetector(
+                              onTap: () {
+                                Get.to(ShowYoutubeVideo(
+                                  videoUrl: subQuestion.youtubeVideoPath!,
+                                ));
+                              },
+                              child: CustomCard(
+                                alignment: Alignment.center,
+                                width: SizeConfig.screenWidth * 0.8,
+                                height: SizeConfig.screenHeight * 0.3,
+                                color: Color(0xffD9D9D9),
+                                child: Stack(
+                                  children: [
+                                    Image.network(
+                                      "https://img.youtube.com/vi/${YoutubePlayer.convertUrlToId(subQuestion.youtubeVideoPath!)}/0.jpg",
+                                      height: SizeConfig.screenHeight * 0.3,
+                                      width: SizeConfig.screenWidth * 0.8,
+                                      fit: BoxFit.cover,
+                                    ),
+                                    Positioned.fill(
+                                      child: Icon(
+                                        Icons.play_circle,
+                                        size: 40,
+                                        color: whiteColor,
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          SizedBox(height: 10),
+                        ],
+                      ),
                       if(!isLastQuestion)
                       Divider(color: blackColor, thickness: 1),
                       SizedBox(height: 10),
@@ -281,6 +341,28 @@ class AnswerView extends StatelessWidget {
 
           ],
         ),
+      ),
+    );
+  }
+
+  Widget tableHeader(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4.0,bottom: 4,left: 3,right: 3),
+      child: CustomText(
+        text: text,
+        fontWeight: FontWeight.bold,
+        size: 17,
+        color: bgColor,
+      ),
+    );
+  }
+
+  Widget tableCell(String? text) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: CustomText(
+        text: text ?? '',
+        color: Colors.black,
       ),
     );
   }

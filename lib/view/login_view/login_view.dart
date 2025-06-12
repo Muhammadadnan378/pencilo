@@ -1,13 +1,18 @@
 import 'package:pencilo/data/consts/images.dart';
 import '../../../data/consts/const_import.dart';
 import '../../controller/login_controller.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class LoginView extends StatelessWidget {
-  const LoginView({super.key,});
+  final bool isTeacher;
+  final bool isStudent;
+  LoginView({super.key,required this.isTeacher, required this.isStudent,});
+  final controller = Get.put(LoginController());
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(LoginController());
+    controller.isTeacher = isTeacher;
+    controller.isStudent = isStudent;
     return Scaffold(
       body: Center(
         child: Padding(
@@ -26,19 +31,41 @@ class LoginView extends StatelessWidget {
                 onChanged: (value) => controller.name.value = value,
               ),
               SizedBox(height: 12),
-              Obx((){
-                controller.selectedSchoolName.value;
-                return _selectSubjectsDropdown(
-                  subjects: controller.schoolNameList,
-                  selectedValue: controller.selectedSchoolName,
-                  dropdownTitle: "Select School",
-                );
-              }),
-              // LoginClassTextField(
-              //   hintText: "School Name",
-              //   onChanged: (value) => controller.schoolName.value = value,
-              // ),
-              SizedBox(height: 12),
+            Obx(() {
+              controller.selectedSchoolName.value;
+              return TypeAheadField<String>(
+                autoFlipDirection: true,
+                suggestionsCallback: (pattern) {
+                  return controller.schoolNameList
+                      .where((item) => item.toLowerCase().contains(pattern.toLowerCase()))
+                      .toList();
+                },
+                itemBuilder: (context, String suggestion) {
+                  return ListTile(title: CustomText(text: suggestion,size: 16, color: blackColor));
+                },
+                onSelected: (String suggestion) {
+                  controller.schoolNameController.text = suggestion;
+                  controller.selectedSchoolName.value = suggestion;
+                },
+                builder: (context, textEditingController, focusNode) {
+                  // Keep controller in sync (especially needed for rebuilds)
+                  textEditingController.text = controller.schoolNameController.text;
+
+                  return LoginClassTextField(
+                    hintText: "School Name",
+                    controller: controller.schoolNameController,
+                    focusNode: focusNode,
+                    onChanged: (value) {
+                      controller.selectedSchoolName.value = value;
+                      controller.schoolNameController.text = value;
+                    },
+                  );
+                },
+              );
+            }),
+
+
+        SizedBox(height: 12),
               if (controller.isTeacher)
                 Row(
                   children: [
@@ -153,7 +180,7 @@ class LoginView extends StatelessWidget {
       child: PopupMenuButton<String>(
         color: whiteColor,
         onSelected: (String value) {
-          FocusManager.instance.primaryFocus?.unfocus();
+          FocusScope.of(Get.context!).unfocus();
           selectedValue.value = value;
         },
         itemBuilder: (BuildContext context) {
@@ -195,9 +222,11 @@ class LoginClassTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final TextInputType? keyboardType;
   final void Function(String)? onChanged;
+  final FocusNode? focusNode;
+  final TextEditingController? controller;
 
   const LoginClassTextField({
-    super.key, required this.hintText, this.suffixIcon, this.onChanged, this.keyboardType,
+    super.key, required this.hintText, this.suffixIcon, this.onChanged, this.keyboardType, this.focusNode, this.controller
   });
 
   @override
@@ -207,9 +236,12 @@ class LoginClassTextField extends StatelessWidget {
       child: TextField(
         onChanged: onChanged,
         keyboardType: keyboardType,
+        focusNode: focusNode,
+        controller: controller,
         decoration: InputDecoration(
             suffixIcon: suffixIcon,
             hintText: hintText,
+
             hintStyle: TextStyle(
                 fontFamily: poppinsFontFamily,
                 fontWeight: FontWeight.w400,

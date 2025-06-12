@@ -155,6 +155,31 @@ class CurrentUserData {
       parentPhone = '';
       classSection = '';
 
+      if (isTeacher) {
+        var teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
+        debugPrint("🧑‍🏫 Hive TeacherModel values:");
+        for (var teacher in teacherBox.values) {
+          debugPrint(teacher.toString()); // Or access individual fields if needed
+        }
+        await teacherBox.clear();
+
+      } else if (isStudent) {
+        var studentBox = await Hive.openBox<StudentModel>(studentTableName);
+        debugPrint("🎓 Hive StudentModel values:");
+        for (var student in studentBox.values) {
+          debugPrint(student.toString());
+        }
+        await studentBox.clear();
+
+      } else {
+        var adminBox = await Hive.openBox<AdminModel>(adminTableName);
+        debugPrint("🛡️ Hive AdminModel values:");
+        for (var admin in adminBox.values) {
+          debugPrint(admin.toString());
+        }
+        await adminBox.clear();
+      }
+
       // Navigate to the login screen
       Get.offAll(LetsStartView());
     } catch (e) {

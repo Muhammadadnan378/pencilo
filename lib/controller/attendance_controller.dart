@@ -52,7 +52,7 @@ class AttendanceController extends GetxController {
   }
 
 
-  void markAll(bool value) {
+  Future<void> markAll(bool value)async {
     for (int i = 0; i < isPresentList.length; i++) {
       isPresentList[i] = value;
     }
@@ -69,26 +69,24 @@ class AttendanceController extends GetxController {
 
   //Add student in attendance
   Future<void> addStudent() async {
-    //Add new student in fireStore
     String name = nameController.text.trim();
     String rollNo = rollNoController.text.trim();
     String date = DateFormat('dd-MM-yyyy').format(selectedDate.value);
-    String uid = DateTime
-        .now()
-        .millisecondsSinceEpoch
-        .toString();
+    String uid = DateTime.now().millisecondsSinceEpoch.toString();
 
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection(
-        studentAttendanceTableName).doc(CurrentUserData.schoolName).collection(
-        "students").where(
-        "schoolName", isEqualTo: CurrentUserData.schoolName).where(
-        "rollNo", isEqualTo: rollNo).get();
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection(studentAttendanceTableName)
+        .doc(CurrentUserData.schoolName)
+        .collection("students")
+        .where("schoolName", isEqualTo: CurrentUserData.schoolName)
+        .where("rollNo", isEqualTo: rollNo)
+        .where("division", isEqualTo: div)
+        .where("standard", isEqualTo: std)
+        .get();
 
     if (querySnapshot.docs.isNotEmpty) {
       Get.back();
-      Get.snackbar(
-          "Error", "Roll No. already exist", backgroundColor: blackColor,
-          colorText: whiteColor);
+      Get.snackbar("Error", "Roll No. already exist", backgroundColor: blackColor, colorText: whiteColor);
       return;
     }
 
@@ -101,6 +99,7 @@ class AttendanceController extends GetxController {
       standard: std,
       schoolName: CurrentUserData.schoolName,
     );
+
     try {
       await FirebaseFirestore.instance
           .collection(studentAttendanceTableName)
@@ -108,16 +107,60 @@ class AttendanceController extends GetxController {
           .collection("students")
           .doc(uid)
           .set(attendanceModel.addStudent());
+
+      // ✅ Clear input fields and reset values
+      nameController.clear();
+      rollNoController.clear();
+      selectedDate.value = DateTime.now(); // or any default
+
+      Get.back();
     } catch (e) {
       Get.back();
-      Get.snackbar(
-          "Error", "$e", backgroundColor: whiteColor, colorText: Colors.red);
+      Get.snackbar("Error", "$e", backgroundColor: whiteColor, colorText: Colors.red);
     }
-    Get.back();
-    Get.snackbar(
-        "Success", "Student Successfully Added", backgroundColor: blackColor,
-        colorText: whiteColor);
   }
+  // Update student
+  Future<void> updateStudent({
+    required String studentUid,
+    required String newName,
+    required String newRollNo,
+  }) async {
+    try {
+      // Check if the new rollNo already exists (excluding the current student)
+      QuerySnapshot existingStudent = await FirebaseFirestore.instance
+          .collection(studentAttendanceTableName)
+          .doc(CurrentUserData.schoolName)
+          .collection("students")
+          .where("rollNo", isEqualTo: newRollNo)
+          .where("division", isEqualTo: div)
+          .where("standard", isEqualTo: std)
+          .get();
+
+      bool rollExists = existingStudent.docs.any((doc) => doc.id != studentUid);
+
+      if (rollExists) {
+        Get.snackbar("Error", "Roll No. already exists", backgroundColor: blackColor, colorText: whiteColor);
+        return;
+      }
+
+      // Perform update
+      await FirebaseFirestore.instance
+          .collection(studentAttendanceTableName)
+          .doc(CurrentUserData.schoolName)
+          .collection("students")
+          .doc(studentUid)
+          .update({
+        "studentName": newName,
+        "rollNo": newRollNo,
+      });
+
+      Get.back();
+      Get.snackbar("Success", "Student updated successfully", backgroundColor: Colors.green, colorText: whiteColor);
+    } catch (e) {
+      Get.snackbar("Error", "$e", backgroundColor: whiteColor, colorText: Colors.red);
+    }
+  }
+
 
   Future<void> showPreviousAfterAttendance() async {
     isPresentList.clear();
@@ -231,11 +274,8 @@ class AttendanceController extends GetxController {
               colorText: Colors.red);
         }
       }
-
-      Get.snackbar("Success", "Attendance Successfully Submitted", backgroundColor: blackColor, colorText: whiteColor);
     } catch (e) {
-      Get.snackbar(
-          "Error", "$e", backgroundColor: whiteColor, colorText: Colors.red);
+      Get.snackbar("Error", "$e", backgroundColor: whiteColor, colorText: Colors.red);
     } finally {
       isSubmitMode(false); // ✅ Always stop loading/spinner
     }

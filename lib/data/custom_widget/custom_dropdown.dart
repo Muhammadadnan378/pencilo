@@ -23,6 +23,7 @@ class CustomDropdown extends StatelessWidget {
         child: PopupMenuButton<String>(
           color: whiteColor,
           onSelected: (String value) {
+            FocusScope.of(Get.context!).unfocus();
             selectedValue.value = value;
           },
           itemBuilder: (BuildContext context) {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pencilo/data/consts/colors.dart';
 import '../controller/home_controller.dart';
+import '../data/current_user_data/current_user_Data.dart';
 
 class FcmService {
   static Future<String?> getPushToken() async {
@@ -16,7 +17,8 @@ class Home extends StatelessWidget {
   final HomeController controller = Get.put(HomeController());
   @override
   Widget build(BuildContext context) {
-
+    debugPrint("is teacher ${CurrentUserData.isTeacher}");
+    debugPrint(" is student ${CurrentUserData.isStudent}");
     return Obx(() {
       return Scaffold(
         body: controller.screens[controller.selectedIndex.value],

@@ -14,6 +14,7 @@ class SubjectModel {
   String? questionsImage;
   List<Map<String, dynamic>>? questions; // List to hold multiple questions
   List<Map<String, dynamic>>? subQuestion; // List to hold multiple subQuestion
+  List<Map<String, dynamic>>? subAns; // List to hold multiple subQuestion
 
 
   SubjectModel({
@@ -26,6 +27,7 @@ class SubjectModel {
     this.chapterPart,
     this.question,
     this.subQuestion,
+    this.subAns,
     this.chapterId,
     this.questionsTitle,
     this.questionsImage,
@@ -84,6 +86,7 @@ class SubjectModel {
       imgUrl: json['imgUrl'],
       questions: json['questions'] != null ? List<Map<String, dynamic>>.from(json['questions']) : null,
       subQuestion: json['subQuestion'] != null ? List<Map<String, dynamic>>.from(json['subQuestion']) : null,
+      subAns: json['subAns'] != null ? List<Map<String, dynamic>>.from(json['subAns']) : null,
     );
   }
 }

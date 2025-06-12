@@ -7,3 +7,5 @@ String sellingRequestTableName = "sellingRequests";
 String classesTableName = "classes";
 String studentAttendanceTableName = "studentAttendance";
 String attendanceRecordsTableName = "attendanceRecords";
+String noticeTableName = "student_notice";
+String homeWorkTableName = "student_homeWork";

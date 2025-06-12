@@ -1,4 +1,5 @@
 import 'package:pencilo/data/consts/const_import.dart';
+import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 import '../../../../controller/attendance_controller.dart';
 import '../../../../data/consts/images.dart';
 import '../../../../data/current_user_data/current_user_Data.dart';
@@ -55,12 +56,7 @@ class StudentHomeAttendanceView extends StatelessWidget {
                             child: CustomCard(
                               color: controller.bgColors[index % controller.bgColors.length],
                               onTap: () {
-                                controller.std = controller.standardsList[index];
-                                controller.div = controller.divisionsList[index];
-                                Get.to(AttendanceSubmitView(
-                                  standard: controller.standardsList[index],
-                                  division: controller.divisionsList[index],
-                                ));
+                                _showAddClassDialog(context,controller,controller.standardsList[index]);
                               },
                               alignment: Alignment.center,
                               borderRadius: 5,
@@ -69,7 +65,6 @@ class StudentHomeAttendanceView extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   CustomText(text: controller.standardsList[index], color: whiteColor, size: 18),
-                                  CustomText(text: controller.divisionsList[index], color: whiteColor, size: 18),
                                 ],
                               ),
                             ),
@@ -100,97 +95,51 @@ class StudentHomeAttendanceView extends StatelessWidget {
     );
   }
 
-  // void _showAddClassDialog(BuildContext context,AttendanceController controller) {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) {
-  //       return Dialog(
-  //         shape: RoundedRectangleBorder(
-  //           borderRadius: BorderRadius.circular(5), // Custom radius
-  //         ),
-  //         backgroundColor: Colors.white, // Background color
-  //         child: Container(
-  //           width: SizeConfig.screenWidth * 1,
-  //           height: SizeConfig.screenHeight * 0.4,
-  //           padding: const EdgeInsets.all(20),
-  //           child: Column(
-  //             crossAxisAlignment: CrossAxisAlignment.start,
-  //             children: [
-  //               Text(
-  //                 "ADD new classes",
-  //                 style: TextStyle(
-  //                   color: blackColor,
-  //                   fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
-  //                   fontWeight: FontWeight.w700,
-  //                   fontSize: 26,
-  //                 ),
-  //               ),
-  //               SizedBox(height: 15),
-  //               CustomText(
-  //                 text: "Grade/Class (e.g., 5th, 6th)",
-  //                 color: blackColor,
-  //                 fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
-  //                 size: 18,
-  //                 fontWeight: FontWeight.w500,
-  //               ),
-  //               SizedBox(height: 3),
-  //               SizedBox(
-  //                 height: 37,
-  //                 child: CustomTextFormField(
-  //                   controller: controller.classController,
-  //                   contentPadding: EdgeInsets.only(left: 10),
-  //                 ),
-  //               ),
-  //               SizedBox(height: 10),
-  //               CustomText(
-  //                 text: "Section (e.g., A, B)",
-  //                 color: blackColor,
-  //                 size: 18,
-  //                 fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
-  //                 fontWeight: FontWeight.w500,
-  //               ),
-  //               SizedBox(height: 3),
-  //               SizedBox(
-  //                 height: 37,
-  //                 child: CustomTextFormField(
-  //                   controller: controller.sectionController,
-  //                   contentPadding: EdgeInsets.only(left: 10),
-  //                 ),
-  //               ),
-  //               const Spacer(),
-  //               Row(
-  //                 mainAxisAlignment: MainAxisAlignment.center,
-  //                 children: [
-  //                   CustomCard(
-  //                     color: Color(0xff505050),
-  //                     borderRadius: 5,
-  //                     width: 110,
-  //                     height: 37,
-  //                     alignment: Alignment.center,
-  //                     onTap: () => Navigator.of(context).pop(),
-  //                     child: CustomText(text: "Cancel",color: whiteColor, size: 18, fontWeight: FontWeight.w400,fontFamily: GoogleFonts.spaceGrotesk().fontFamily,),
-  //                   ),
-  //                   SizedBox(width: 10),
-  //                   CustomCard(
-  //                     color: Color(0xffFF6060),
-  //                     borderRadius: 5,
-  //                     width: 110,
-  //                     height: 37,
-  //                     alignment: Alignment.center,
-  //                     onTap: () async {
-  //                       await controller.addClass();
-  //                     },
-  //                     child: CustomText(text: "OK", color: whiteColor, size: 18, fontWeight: FontWeight.w400,fontFamily: GoogleFonts.spaceGrotesk().fontFamily,),
-  //                   ),
-  //                 ],
-  //               )
-  //             ],
-  //           ),
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
+  void _showAddClassDialog(BuildContext context,AttendanceController controller,String standard) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(5), // Custom radius
+          ),
+          backgroundColor: Colors.white, // Background color
+          child: SizedBox(
+            height: SizeConfig.screenHeight * 0.3,
+            child: GridView.builder(
+              padding: EdgeInsets.all(10),
+              itemCount: controller.standardsList.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                crossAxisSpacing: 5,
+                mainAxisSpacing: 5,
+                childAspectRatio: 1.0,
+              ),
+              itemBuilder: (context, index) {
+                return CustomCard(
+                  onTap: () {
+                    controller.std = standard;
+                    controller.div = controller.divisionsList[index];
+                    Get.back();
+                    Get.to(AttendanceSubmitView(
+                      standard: standard,
+                      division: controller.divisionsList[index],
+                    ));
+                  },
+                  alignment: Alignment.center,
+                  borderRadius: 5,
+                  color: controller.bgColors[index % controller.bgColors.length],
+                  width: 30,
+                  height: 30,
+                  child: CustomText(text: controller.divisionsList[index],size: 20,color: blackColor,),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
 // Menu icon
 // Positioned(
 //   top: 5,

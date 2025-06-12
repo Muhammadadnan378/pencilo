@@ -12,9 +12,11 @@ class CustomTextFormField extends StatelessWidget {
   final FocusNode? focusNode;
   final bool? isEditable;  // Added this field to control if the field is editable
   final VoidCallback? onTap;  // Added onTap callback
-  final TextStyle? lableStyle;
+  final TextStyle? labelStyle;
+  final TextStyle? hintStyle;
   final Widget? suffixIcon;
   final Function(String)? onChanged;
+  final Color? borderColor;
 
 
   const CustomTextFormField({
@@ -29,9 +31,11 @@ class CustomTextFormField extends StatelessWidget {
     this.focusNode,
     this.isEditable = true,  // Default to true, meaning the text field is editable
     this.onTap,
-    this.lableStyle,
+    this.labelStyle,
+    this.hintStyle,
     this.suffixIcon,
     this.onChanged,
+    this.borderColor,
   });
 
   @override
@@ -52,22 +56,25 @@ class CustomTextFormField extends StatelessWidget {
           labelText: labelText,
           hintText: hintText,
           suffixIcon: suffixIcon ?? SizedBox(),
-          hintStyle: TextStyle(color: grayColor),
-          labelStyle: lableStyle ?? TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: grayColor),
+          hintStyle: hintStyle ?? TextStyle(color: grayColor),
+          labelStyle: labelStyle ?? TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: grayColor),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: borderColor ?? blackColor),  // Always set border color to black
+          ),
           border: OutlineInputBorder(
-            borderSide: BorderSide(color: blackColor),  // Always set border color to black
+            borderSide: BorderSide(color: borderColor ?? blackColor),  // Always set border color to black
           ),
           disabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: blackColor),  // Always set border color to black
+            borderSide: BorderSide(color: borderColor ?? blackColor),  // Always set border color to black
           ),
           errorBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.red),  // Always set border color to black
+            borderSide: BorderSide(color: borderColor ?? Colors.red),  // Always set border color to black
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: blackColor),  // Always set border color to black
+            borderSide: BorderSide(color: borderColor ?? blackColor),  // Always set border color to black
           ),
           focusedErrorBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: blackColor),  // Always set border color to black
+            borderSide: BorderSide(color: borderColor ?? blackColor),  // Always set border color to black
           )
         ),
       ),

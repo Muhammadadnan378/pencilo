@@ -11,10 +11,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
+import '../model/notice_&_homework_model.dart';
 import '../model/teacher_model.dart'; // For Firebase integration
 
 
 class ProfileController extends GetxController {
+  @override
+  void onInit() {
+    getNotice();
+    super.onInit();
+  }
+
   Map<String, dynamic> get results {
     int totalMarks = subjectMarks.fold(
       0,
@@ -704,5 +711,56 @@ class ProfileController extends GetxController {
       dobController.text = DateFormat('dd/MM/yyyy').format(pickedDate);
     }
   }
+
+  ///Notice Methods
+  final RxList<NoticeHomeWorkModel> showData = <NoticeHomeWorkModel>[].obs;
+  RxInt totalNotice = 0.obs;
+
+  Future<void> getNotice() async {
+    QuerySnapshot noticeSnapshot = await FirebaseFirestore.instance
+        .collection(noticeTableName)
+        .where("division", isEqualTo: CurrentUserData.division)
+        .where("standard", isEqualTo: CurrentUserData.standard)
+        .get();
+
+    int count = 0;
+    for (var noticeDoc in noticeSnapshot.docs) {
+      NoticeHomeWorkModel noticeModel = NoticeHomeWorkModel.fromMap(noticeDoc.data() as Map<String, dynamic>);
+
+      // ✅ Count only if CurrentUserData.uid is NOT in noticeIsWatched
+      if (!noticeModel.noticeIsWatched.contains(CurrentUserData.uid)) {
+        count++;
+      }
+    }
+
+    totalNotice.value = count; // Set final value after loop
+  }
+
+  Future<void> markNoticeAsWatched() async {
+    QuerySnapshot noticeSnapshot = await FirebaseFirestore.instance
+        .collection(noticeTableName)
+        .where("division", isEqualTo: CurrentUserData.division)
+        .where("standard", isEqualTo: CurrentUserData.standard)
+        .get();
+
+    for (var noticeDoc in noticeSnapshot.docs) {
+      NoticeHomeWorkModel noticeModel =
+      NoticeHomeWorkModel.fromMap(noticeDoc.data() as Map<String, dynamic>);
+
+      // If UID is not already in the list, add it
+      if (!noticeModel.noticeIsWatched.contains(CurrentUserData.uid)) {
+        await FirebaseFirestore.instance
+            .collection(noticeTableName)
+            .doc(noticeDoc.id)
+            .update({
+          "noticeIsWatched": FieldValue.arrayUnion([CurrentUserData.uid])
+        });
+        totalNotice.value = 0;
+      }
+    }
+  }
+
+
+
 
 }

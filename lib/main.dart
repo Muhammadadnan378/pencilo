@@ -9,6 +9,7 @@ import 'package:pencilo/model/teacher_model.dart';
 import 'package:pencilo/view/home_view/student_home_view/notification_view.dart';
 import 'package:pencilo/view/splash_view/splash_view.dart';
 import 'data/custom_widget/custom_media_query.dart';
+import 'local_notification_practice/notifiaction_practice_view.dart';
 import 'model/admin_model.dart';
 // @pragma("vm:entry-point")
 // Future<void> onActionReceivedMethod(ReceivedAction action) async {
@@ -27,45 +28,11 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
-  // // Initialize Awesome Notifications globally
-  // AwesomeNotifications().initialize(
-  //   null,
-  //   [
-  //     NotificationChannel(
-  //       channelKey: 'basic_channel',
-  //       channelName: 'Basic notifications',
-  //       channelDescription: 'Notification channel for basic tests',
-  //       defaultColor: Color(0xFF9D50DD),
-  //       ledColor: Colors.white,
-  //     )
-  //   ],
-  // );
-
-  // // Register notification tap listeners
-  // AwesomeNotifications().setListeners(
-  //   onActionReceivedMethod: onActionReceivedMethod,
-  // );
-
   // 🔔 Foreground notification display
-  // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-  //   debugPrint("🔔 Foreground message received: ${message.notification?.title}");
-  //
-  //   if (message.notification != null) {
-  //     AwesomeNotifications().createNotification(
-  //       content: NotificationContent(
-  //         id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
-  //         channelKey: 'basic_channel',
-  //         title: message.notification?.title ?? 'No Title',
-  //         body: message.notification?.body ?? 'No Body',
-  //         payload: {
-  //           'screen': 'NotificationView', // Required for navigation
-  //         },
-  //       ),
-  //     );
-  //   }
-  // });
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    debugPrint("🔔 Foreground message received: ${message.notification?.title}");
 
+  });
   // 🔗 Handle tap from system notification (Firebase default notification tap)
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
     final screen = message.data['screen'];

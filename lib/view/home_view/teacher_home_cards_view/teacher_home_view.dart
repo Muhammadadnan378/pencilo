@@ -1,4 +1,5 @@
 import 'package:pencilo/data/current_user_data/current_user_Data.dart';
+import 'package:pencilo/view/home_view/teacher_home_cards_view/notes_view/create_notes_view.dart';
 import 'package:pencilo/view/home_view/teacher_home_cards_view/events_create_view.dart';
 import '../../../controller/home_controller.dart';
 import '../../../data/consts/const_import.dart';
@@ -41,10 +42,27 @@ class TeacherHomeView extends StatelessWidget {
                 Get.to(CreateEventView());
               }
           ),
-          buildCustomCard(title: "Upload",subtitle: "Upload educational video like reels and monetized your self ",image: homeUpload),
+          buildCustomCard(title: "Upload",
+              subtitle: "Upload educational video like reels and monetized your self ",
+              image: homeUpload,
+
+          ),
           buildCustomCard(title: "Assignment",subtitle: "Give a assignments to students to check their understanding",image: homeAssignment),
           buildCustomCard(title: "Results",subtitle: "upload student result so that their parents can see the results.",image: homeResult),
-          buildCustomCard(title: "Notice",subtitle: "Send a notice to specific class ",image: homeResult),
+          buildCustomCard(title: "Notice",
+              subtitle: "Send a notice to specific class ",
+              image: homeResult,
+              onTap: () {
+                Get.to(CreateNotesAndHomeWorkView(isHomeWork: false,));
+              }
+          ),
+          buildCustomCard(title: "Home Work",
+              subtitle: "Send a home work to specific class ",
+              image: homeResult,
+              onTap: () {
+                Get.to(CreateNotesAndHomeWorkView(isHomeWork: true,));
+              }
+          ),
         ],
       ),
     );

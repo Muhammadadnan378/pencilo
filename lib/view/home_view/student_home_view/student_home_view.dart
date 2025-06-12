@@ -5,9 +5,11 @@ import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 import 'package:pencilo/db_helper/model_name.dart';
 import 'package:pencilo/view/home_view/student_home_view/subject_parts_view.dart';
 import '../../../add_methods/add_methods_class.dart';
+import '../../../admin_views/add_short_video.dart';
 import '../../../controller/home_controller.dart';
 import '../../../controller/student_home_view_controller.dart';
 import '../../../data/consts/images.dart';
+import '../../../local_notification_practice/notifiaction_practice_view.dart';
 import 'notification_view.dart';
 
 class StudentHomeView extends StatelessWidget {
@@ -34,7 +36,39 @@ class StudentHomeView extends StatelessWidget {
       "Maths",
     ],
     '9th': [
-      "Geography"
+      "Geography",
+      "History_9th",
+      "Science_9th",
+      "Political_science_9th",
+      "Mathematics_2_9th",
+    ],
+    '10th': [
+      "Marathi",
+    ]
+  };
+
+  final Map<String, List<String>> classBooksMapName = {
+    '4th': [
+      "Hindi",
+    ],
+    '5th': [
+      "English",
+    ],
+    '6th': [
+      "History",
+    ],
+    '7th': [
+      "Science",
+    ],
+    '8th': [
+      "Maths",
+    ],
+    '9th': [
+      "Geography",
+      "History",
+      "Science",
+      "Political Science",
+      "Mathematics-2",
     ],
     '10th': [
       "Marathi",
@@ -214,6 +248,7 @@ class StudentHomeView extends StatelessWidget {
                     child: Obx(() {
                       // Get books based on selected class
                       List<String> currentClassBooks = classBooksMap[controller.selectedValue.value] ?? [];
+                      List<String> booksName = classBooksMapName[controller.selectedValue.value] ?? [];
                       return ListView.builder(
                         itemCount: currentClassBooks.length,
                         padding: EdgeInsets.zero,
@@ -226,12 +261,13 @@ class StudentHomeView extends StatelessWidget {
                               onTap: () {
                                 Future.delayed(Duration.zero, () {
                                   // controller.showInterstitialAd(); // Automatically show on view load
-                                  controller.showRewardedAd(); // Automatically show on view load
+                                  /// controller.showRewardedAd(); // Automatically show on view load
                                 });
                                 Get.to(SubjectPartsView(
                                   subject: currentClassBooks[index],
                                   colors: controller.curvedCardColors[index],
                                   bgColor: controller.bGCardColors[index],
+                                  subjectName: booksName[index],
                                 ));
                               },
                               width: double.infinity,
@@ -262,7 +298,7 @@ class StudentHomeView extends StatelessWidget {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         CustomText(
-                                          text: currentClassBooks[index],
+                                          text: booksName[index],
                                           fontWeight: FontWeight.w600,
                                           size: 18,
                                           color: whiteColor,

@@ -4,7 +4,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../data/consts/const_import.dart';
 import '../data/current_user_data/current_user_Data.dart';
-import '../data/custom_widget/play_short_video.dart';
+import '../view/play_short_video/play_short_video.dart';
 import '../db_helper/model_name.dart';
 import '../model/student_model.dart';
 import '../model/teacher_model.dart';
@@ -30,13 +30,14 @@ class HomeController extends GetxController {
   RxInt selectedIndex = 2.obs; // Default is HomeView at center
 
 
-  final List<Widget> screens = [
+  List<Widget> get screens => [
     PlayShortVideo(),
     BuySellBookView(),
     CurrentUserData.isTeacher == true ? TeacherHomeView() : StudentHomeView(),
     CurrentUserData.isTeacher == true ? FriendsView() : PopularGamesView(),
     ProfileView(),
   ];
+
 
   final List<IconData> icons = const [
     Icons.ondemand_video,

@@ -9,6 +9,7 @@ import 'package:pencilo/model/buying_selling_model.dart';
 import '../data/consts/const_import.dart';
 import '../db_helper/network_check.dart';
 import '../db_helper/send_notification_service.dart';
+import '../model/notice_&_homework_model.dart';
 import '../model/sell_book_model.dart';
 
 class SellBookController extends GetxController {
@@ -444,6 +445,7 @@ class SellBookController extends GetxController {
   RxBool isBuyingLength = false.obs;
   RxBool isSellingLength = false.obs;
   RxMap<String, bool> isLoadingMap = <String, bool>{}.obs;
+
 
   //send request
   Future<void> acceptSellingRequest(List<dynamic> data,BuyingSellingModel sellBook) async {
