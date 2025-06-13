@@ -54,7 +54,7 @@ class _AdminHomeViewState extends State<AdminHomeView> {
                   borderRadius: 10,
                   color: Colors.green,
                   onTap: () {
-                    Get.to(AddShortVideo());
+                    Get.to(AdminSellBookDataView());
                   },
                   child: CustomText(text: "Data",size: 30,color: blackColor,fontWeight: FontWeight.bold,),
                 ),
@@ -63,7 +63,7 @@ class _AdminHomeViewState extends State<AdminHomeView> {
                   borderRadius: 10,
                   color: Colors.green,
                   onTap: () {
-                    Get.to(AdminSellBookDataView());
+                    Get.to(AddShortVideo());
                   },
                   child: CustomText(text: "Short Video",size: 30,color: blackColor,fontWeight: FontWeight.bold,),
                 ),

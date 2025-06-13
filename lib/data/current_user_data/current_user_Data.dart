@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pencilo/db_helper/model_name.dart';
 import '../../model/admin_model.dart';
 import '../../model/student_model.dart';
@@ -20,6 +21,7 @@ class CurrentUserData {
   static bool isStudent = false; // Flag to distinguish teacher and student
   static String profileUrl = ''; // URL for profile picture
   static String pushToken = ''; // URL for profile picture
+  static List<String> schoolList = []; // URL for profile picture
 
   // Fields for students
   static String rollNumber = ''; // Only for students
@@ -33,6 +35,17 @@ class CurrentUserData {
   static String parentPhone = ''; // Parent's phone number for students only
   static String classSection = ''; // Parent's phone classSection for students only
   static bool isAdmin = false; // Parent's phone classSection for students only
+
+  //Get current user
+  static Future<void> getSchoolName ()async{
+    CurrentUserData.schoolList.clear();
+    QuerySnapshot schoolSnapshot = await FirebaseFirestore.instance.collection("schools_name").get();
+    if (schoolSnapshot.docs.isNotEmpty) {
+      for(var doc in schoolSnapshot.docs){
+        CurrentUserData.schoolList.add(doc['schoolName']);
+      }
+    }
+  }
 
 // Method to load user data from Hive (either teacher or student)
   static Future<void> loadUserDataFromHive() async {

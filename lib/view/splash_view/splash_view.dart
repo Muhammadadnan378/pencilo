@@ -28,6 +28,7 @@ class _SplashViewState extends State<SplashView> {
       } else {
         Get.offAll(LetsStartView());
       }
+      CurrentUserData.getSchoolName();
     });
 
 

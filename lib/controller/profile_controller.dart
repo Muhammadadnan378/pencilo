@@ -4,6 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'package:pencilo/db_helper/model_name.dart';
 import 'package:pencilo/db_helper/network_check.dart';
+import 'package:pencilo/model/attendance_model.dart';
 import 'package:pencilo/model/student_model.dart';
 import 'package:printing/printing.dart';
 import 'package:intl/intl.dart'; // For date format
@@ -500,6 +501,7 @@ class ProfileController extends GetxController {
   final divisions = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
   var selectedStandard = CurrentUserData.standard.obs;
   var selectedDivision = CurrentUserData.division.obs;
+  var selectedSchoolName = "".obs;
 
   // List of available blood groups
   var bloodGroups = [
@@ -569,6 +571,12 @@ class ProfileController extends GetxController {
       return ;
     }
 
+    if(selectedSchoolName.value.isEmpty){
+      isLoading(false);
+      Get.snackbar("Error", "School name is required");
+      return ;
+    }
+
     // Set loading state
     isLoading.value = true;
 
@@ -585,7 +593,7 @@ class ProfileController extends GetxController {
         subject: subjectController.text.isNotEmpty ? subjectController.text : CurrentUserData.subject,
         profileUrl: CurrentUserData.profileUrl,
         currentLocation: CurrentUserData.currentLocation,
-        schoolName: CurrentUserData.schoolName,
+        schoolName:  CurrentUserData.schoolName,
         isTeacher: true,
       );
 
@@ -606,7 +614,7 @@ class ProfileController extends GetxController {
         standard: selectedStandard.value.isNotEmpty ? selectedStandard.value : CurrentUserData.standard,
         division: selectedDivision.value.isNotEmpty ? selectedDivision.value : CurrentUserData.division,
         isStudent: true,
-        schoolName: schoolNameController.text.isNotEmpty ? schoolNameController.text : CurrentUserData.schoolName,
+        schoolName: selectedSchoolName.value.isNotEmpty ? selectedSchoolName.value : CurrentUserData.schoolName,
         currentLocation: CurrentUserData.currentLocation,
         profileUrl: CurrentUserData.profileUrl,
       );
@@ -615,6 +623,10 @@ class ProfileController extends GetxController {
       // Open Hive boxes
       var teacherBox = await Hive.openBox<TeacherModel>(teacherTableName);
       var studentBox = await Hive.openBox<StudentModel>(studentTableName);
+
+      if(selectedSchoolName.value != CurrentUserData.schoolName && selectedSchoolName.value.isNotEmpty){
+        await FirebaseFirestore.instance.collection("schools_name").add({"schoolName":schoolNameController.text});
+      }
 
       // Update current user data in Firestore and Hive
       if (CurrentUserData.isTeacher) {
@@ -649,6 +661,24 @@ class ProfileController extends GetxController {
               .collection(studentTableName)
               .doc(CurrentUserData.uid)
               .update(studentModel.toMap());
+          
+          //Update user division and standard in attendance
+          if(CurrentUserData.division != selectedDivision.value || CurrentUserData.standard != selectedStandard.value || CurrentUserData.name != fullNameController.text || CurrentUserData.schoolName != selectedSchoolName.value) {
+            AttendanceModel newData = AttendanceModel(
+              studentName: fullNameController.text,
+              standard: selectedStandard.value,
+              division: selectedDivision.value,
+              schoolName: selectedSchoolName.value,
+            );
+
+            FirebaseFirestore.instance
+                .collection(studentAttendanceTableName)
+                .doc(CurrentUserData.schoolName)
+                .collection("students")
+                .doc(CurrentUserData.uid)
+                .update(newData.updateAttendance());
+          }
+          
 
           // Update student data in Hive
           try {
@@ -676,10 +706,11 @@ class ProfileController extends GetxController {
         }
       }
 
-      // Show success message and clear fields
-      Get.snackbar("Success", "Profile data updated successfully.");
       isLoading(false);
       Get.back(); // Go back to the previous screen after successful data save
+      // Show success message and clear fields
+      Get.snackbar("Success", "Profile data updated successfully.");
+
     } catch (e) {
       // Handle any other exceptions
       isLoading(false);

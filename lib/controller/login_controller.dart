@@ -15,13 +15,12 @@ class LoginController extends GetxController {
 
   @override
   void onInit() {
-    getSchoolName();
+    CurrentUserData.getSchoolName();
     super.onInit();
   }
 
   final standardsList = ['4th', '5th', '6th', '7th', '8th', '9th', '10th'];
   final divisionsList = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-  List<String> schoolNameList = [];
   final genderList = ['Male', 'Female'];
   var selectedStandard = ''.obs;
   var selectedGender = ''.obs;
@@ -45,23 +44,13 @@ class LoginController extends GetxController {
     pushToken = token!;
   }
 
-  Future<void> getSchoolName ()async{
-    schoolNameList.clear();
-    QuerySnapshot schoolSnapshot = await FirebaseFirestore.instance.collection("schools_name").get();
-    if (schoolSnapshot.docs.isNotEmpty) {
-      for(var doc in schoolSnapshot.docs){
-        schoolNameList.add(doc['schoolName']);
-      }
-    }
-  }
-
   Future<void> storeSchoolName () async{
     QuerySnapshot schoolSnapshot = await FirebaseFirestore.instance.collection("schools_name").where("schoolName",isEqualTo: schoolNameController.text).get();
     if(schoolSnapshot.docs.isNotEmpty){
       return;
     }else{
       await FirebaseFirestore.instance.collection("schools_name").add({"schoolName":schoolNameController.text}).then((value) {
-        getSchoolName ();
+        CurrentUserData.getSchoolName ();
       });
     }
   }
@@ -374,6 +363,15 @@ class LoginController extends GetxController {
           gender: selectedGender.value,
           pushToken: pushToken,
       );
+      QuerySnapshot studentSnapshot = await FirebaseFirestore.instance
+          .collection(studentAttendanceTableName)
+          .doc(selectedSchoolName.value)
+          .collection("students")
+          .where("schoolName", isEqualTo: selectedSchoolName.value).where(
+          "division", isEqualTo: selectedDivision.value).where(
+          "standard", isEqualTo: selectedStandard.value)
+          .get();
+      
       await addStudentAttendance(uid);
       // Store the student data in Firestore using the toMap method
       await FirebaseFirestore.instance.collection(studentTableName).doc(uid).set(newStudent.toMap()).then((_) {

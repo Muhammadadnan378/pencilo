@@ -1,4 +1,5 @@
 import 'package:pencilo/data/consts/images.dart';
+import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import '../../../data/consts/const_import.dart';
 import '../../controller/login_controller.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
@@ -36,12 +37,20 @@ class LoginView extends StatelessWidget {
               return TypeAheadField<String>(
                 autoFlipDirection: true,
                 suggestionsCallback: (pattern) {
-                  return controller.schoolNameList
+                  return CurrentUserData.schoolList
                       .where((item) => item.toLowerCase().contains(pattern.toLowerCase()))
                       .toList();
                 },
                 itemBuilder: (context, String suggestion) {
                   return ListTile(title: CustomText(text: suggestion,size: 16, color: blackColor));
+                },
+                decorationBuilder: (context, child) {
+                  return Material(
+                    color: Colors.white, // 💡 White background for suggestions
+                    elevation: 4,
+                    borderRadius: BorderRadius.circular(8),
+                    child: child,
+                  );
                 },
                 onSelected: (String suggestion) {
                   controller.schoolNameController.text = suggestion;

@@ -578,6 +578,47 @@ class SellBookController extends GetxController {
     }
   }
 
+  Future<void> markNotificationsAsWatched() async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+
+      // Fetch and update notice documents
+      final noticeQuery = await firestore
+          .collection(noticeTableName)
+          .where("division", isEqualTo: CurrentUserData.division)
+          .where("standard", isEqualTo: CurrentUserData.standard)
+          .get();
+
+      for (var doc in noticeQuery.docs) {
+        final watchedList = List<String>.from(doc['noticeIsWatched'] ?? []);
+        if (!watchedList.contains(CurrentUserData.uid)) {
+          await firestore.collection(noticeTableName).doc(doc.id).update({
+            'noticeIsWatched': FieldValue.arrayUnion([CurrentUserData.uid])
+          });
+        }
+      }
+
+      // Fetch and update homework documents
+      final homeworkQuery = await firestore
+          .collection(homeWorkTableName)
+          .where("division", isEqualTo: CurrentUserData.division)
+          .where("standard", isEqualTo: CurrentUserData.standard)
+          .get();
+
+      for (var doc in homeworkQuery.docs) {
+        final watchedList = List<String>.from(doc['noticeIsWatched'] ?? []);
+        if (!watchedList.contains(CurrentUserData.uid)) {
+          await firestore.collection(homeWorkTableName).doc(doc.id).update({
+            'noticeIsWatched': FieldValue.arrayUnion([CurrentUserData.uid])
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("Error updating watched status: $e");
+    }
+  }
+
+
 
 
 }

@@ -58,4 +58,15 @@ class AttendanceModel {
       'standard': standard,
     };
   }
+
+  Map<String, dynamic> updateAttendance() {
+    return {
+      'studentName': studentName,
+      'standard': standard,
+      'division': division,
+      'schoolName': schoolName,
+    };
+  }
+
+
 }

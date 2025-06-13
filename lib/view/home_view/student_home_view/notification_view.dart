@@ -19,6 +19,7 @@ class NotificationView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     controller.updateRequestCount();
+    controller.markNotificationsAsWatched();
     return Scaffold(
       backgroundColor: blackColor,
       appBar: AppBar(

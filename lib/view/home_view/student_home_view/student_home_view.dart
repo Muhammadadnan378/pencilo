@@ -4,6 +4,7 @@ import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 import 'package:pencilo/db_helper/model_name.dart';
 import 'package:pencilo/view/home_view/student_home_view/subject_parts_view.dart';
+import 'package:rxdart/rxdart.dart';
 import '../../../add_methods/add_methods_class.dart';
 import '../../../admin_views/add_short_video.dart';
 import '../../../controller/home_controller.dart';
@@ -116,72 +117,88 @@ class StudentHomeView extends StatelessWidget {
                         ],
                       ),
                       Spacer(),
-                      StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance.collection(sellBookTableName).where("uid",isEqualTo: CurrentUserData.uid).snapshots(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return IconButton(
-                              onPressed: () {
-                                // Get.to(NotificationView(sellBookId: "",));
-                              },
-                              icon: Icon(
-                                Icons.notifications_rounded,
-                                size: 25,
-                              ),
-                            );
-                          }
+                      StreamBuilder<List<QuerySnapshot>>(
+                        stream: CombineLatestStream.list([
+                          FirebaseFirestore.instance
+                              .collection(noticeTableName)
+                              .where("division", isEqualTo: CurrentUserData.division)
+                              .where("standard", isEqualTo: CurrentUserData.standard)
+                              .snapshots(),
+                          FirebaseFirestore.instance
+                              .collection(homeWorkTableName)
+                              .where("division", isEqualTo: CurrentUserData.division)
+                              .where("standard", isEqualTo: CurrentUserData.standard)
+                              .snapshots(),
+                          FirebaseFirestore.instance
+                              .collection(sellBookTableName)
+                              .where("uid",isEqualTo: CurrentUserData.uid)
+                              .snapshots(),
+                        ]),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return IconButton(
+                                onPressed: () {},
+                                icon: const Icon(Icons.notifications_rounded, size: 25),
+                              );
+                            }
 
-                          if (snapshot.hasError) {
-                            return IconButton(
-                              onPressed: () {
+                            if (!snapshot.hasData || snapshot.hasError) {
+                              return IconButton(
+                                onPressed: () {
+                                  Get.to(NotificationView());
+                                },
+                                icon: const Icon(Icons.notifications_rounded, size: 25),
+                              );
+                            }
+
+                            final noticeSnap = snapshot.data![0];
+                            final homeworkSnap = snapshot.data![1];
+                            final sellBookSnap = snapshot.data![2];
+
+                            // Calculate unwatched notice count
+                            final noticeUnwatchedCount = noticeSnap.docs.where((doc) {
+                              final watchedList = List<String>.from(doc['noticeIsWatched'] ?? []);
+                              return !watchedList.contains(CurrentUserData.uid);
+                            }).length;
+
+                            // Calculate unwatched homework count
+                            final homeworkUnwatchedCount = homeworkSnap.docs.where((doc) {
+                              final watchedList = List<String>.from(doc['noticeIsWatched'] ?? []);
+                              return !watchedList.contains(CurrentUserData.uid);
+                            }).length;
+
+                            // Get requestCount from sellBook table
+                            int requestCount = 0;
+                            for (var doc in sellBookSnap.docs) {
+                              requestCount += (doc['requestCount'] ?? 0) as int;
+                            }
+
+                            // Total notifications
+                            final totalRequest = requestCount + noticeUnwatchedCount + homeworkUnwatchedCount;
+
+                            return GestureDetector(
+                              onTap: () {
                                 Get.to(NotificationView());
                               },
-                              icon: Icon(
-                                Icons.notifications_rounded,
-                                size: 25,
+                              child: Stack(
+                                children: [
+                                  const Icon(Icons.notifications_rounded, size: 35),
+                                  if (totalRequest != 0)
+                                    Positioned(
+                                      right: 2,
+                                      child: CustomCard(
+                                        width: 13,
+                                        height: 13,
+                                        alignment: Alignment.center,
+                                        color: const Color(0xff9AC3FF),
+                                        borderRadius: 30,
+                                        child: CustomText(text: "$totalRequest", size: 8),
+                                      ),
+                                    ),
+                                ],
                               ),
                             );
                           }
-
-                          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                            return IconButton(
-                              onPressed: () {
-                                Get.to(NotificationView());
-                              },
-                              icon: Icon(
-                                Icons.notifications_rounded,
-                                size: 25,
-                              ),
-                            );
-                          }
-                          var data = snapshot.data!.docs;
-                          var totalRequest = data[0]["requestCount"];
-                          return GestureDetector(
-                            onTap: () {
-                              Get.to(NotificationView());
-                            },
-                            child: Stack(
-                              children: [
-                                Icon(
-                                  Icons.notifications_rounded,
-                                  size: 35,
-                                ),
-                                if(totalRequest != 0)
-                                Positioned(
-                                  right: 2,
-                                  child: CustomCard(
-                                    width: 13,
-                                    height: 13,
-                                    alignment: Alignment.center,
-                                    color: Color(0xff9AC3FF),
-                                    borderRadius: 30,
-                                    child: CustomText(text: "$totalRequest",size: 8,),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
                       ),
                     ],
                   ),
@@ -206,9 +223,11 @@ class StudentHomeView extends StatelessWidget {
                               SizedBox(width: 14),
                               // Dropdown button to select class
                               DropdownButton<String>(
+
                                 value: controller.selectedValue.value,
                                 icon: Icon(Icons.arrow_drop_down),
                                 underline: SizedBox(),
+                                dropdownColor: whiteColor,
                                 onChanged: (String? newValue) {
                                   if (newValue != null) {
                                     controller.changeValue(newValue);

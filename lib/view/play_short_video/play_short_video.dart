@@ -44,7 +44,6 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
   @override
   void dispose() {
     _ytController.dispose();
-    ctrl.pageController.dispose();
     super.dispose();
   }
 
@@ -92,6 +91,7 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
                 flags: const YoutubePlayerFlags(
                   autoPlay: true,
                   mute: false,
+                  hideControls: true,
                   loop: true,
                 ),
               );
@@ -111,12 +111,12 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
                       height: SizeConfig.screenHeight * 0.7,
                       child: YoutubePlayer(
                         controller: _ytController,
-                        bottomActions: const [
-                          CurrentPosition(),
-                          ProgressBar(isExpanded: true),
-                          RemainingDuration(),
-                          PlaybackSpeedButton(),
-                        ],
+                        // bottomActions: const [
+                        //   CurrentPosition(),
+                        //   ProgressBar(isExpanded: true),
+                        //   RemainingDuration(),
+                        //   PlaybackSpeedButton(),
+                        // ],
                       ),
                     ),
                   ),
@@ -130,7 +130,7 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
                       children: [
                         IconButton(
                           icon: const Icon(CupertinoIcons.up_arrow,
-                              color: Colors.white, size: 40),
+                              color: Colors.white, size: 30),
                           onPressed: () {
                             ctrl.pageController.nextPage(
                                 duration: const Duration(milliseconds: 200),
@@ -140,7 +140,7 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
                         SizedBox(height: SizeConfig.screenHeight * 0.2),
                         IconButton(
                           icon: const Icon(CupertinoIcons.down_arrow,
-                              color: Colors.white, size: 40),
+                              color: Colors.white, size: 30),
                           onPressed: () {
                             ctrl.pageController.previousPage(
                                 duration: const Duration(milliseconds: 200),
@@ -167,7 +167,7 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
                               color: ctrl.isLiked.value
                                   ? Colors.red
                                   : Colors.white,
-                              size: 31,
+                              size: 25,
                             ),
                             onPressed: () async {
                               final liked = ctrl.isLiked.value;
@@ -186,18 +186,14 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
                           )),
                           const SizedBox(height: 16),
                           IconButton(
-                            icon: const Icon(Icons.comment,
-                                size: 31, color: Colors.white),
+                            icon: const Icon(Icons.comment, size: 25, color: Colors.white),
                             onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text("Comment clicked!")));
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Comment clicked!")));
                             },
                           ),
                           const SizedBox(height: 16),
                           IconButton(
-                            icon: const Icon(Icons.share,
-                                size: 31, color: Colors.white),
+                            icon: const Icon(Icons.share, size: 25, color: Colors.white),
                             onPressed: () =>
                                 ctrl.shareOnWhatsApp(video.videoUrl),
                           ),

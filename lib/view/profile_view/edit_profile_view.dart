@@ -1,6 +1,9 @@
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:pencilo/data/consts/const_import.dart';
+import 'package:pencilo/data/custom_widget/custom_text_field.dart';
 import '../../controller/profile_controller.dart';
-import '../../data/current_user_data/current_user_Data.dart'; // For Firebase integration
+import '../../data/current_user_data/current_user_Data.dart';
+import '../login_view/login_view.dart'; // For Firebase integration
 
 final _formKey = GlobalKey<FormState>();
 
@@ -11,6 +14,7 @@ class EditProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("${CurrentUserData.schoolList}");
     return Scaffold(
       appBar: AppBar(title: Text('Edit Profile')),
       body: Padding(
@@ -55,8 +59,50 @@ class EditProfilePage extends StatelessWidget {
                 _buildTextField('Roll Number', controller.rollNumberController, keyboardType: TextInputType.number),
               if (!CurrentUserData.isTeacher)
                 _buildTextField('Admission Number', controller.admissionNumberController, keyboardType: TextInputType.number),
-              if (!CurrentUserData.isTeacher)
-                _buildTextField('School Name', controller.schoolNameController, keyboardType: TextInputType.text),
+              Obx(() {
+                controller.selectedSchoolName.value;
+                return TypeAheadField<String>(
+                  autoFlipDirection: true,
+                  suggestionsCallback: (pattern) {
+                    return CurrentUserData.schoolList
+                        .where((item) => item.toLowerCase().contains(pattern.toLowerCase()))
+                        .toList();
+                  },
+                  itemBuilder: (context, String suggestion) {
+                    return ListTile(
+                      title: CustomText(text: suggestion, size: 16, color: blackColor),
+                    );
+                  },
+                  decorationBuilder: (context, child) {
+                    return Material(
+                      color: Colors.white, // 💡 White background for suggestions
+                      elevation: 4,
+                      borderRadius: BorderRadius.circular(8),
+                      child: child,
+                    );
+                  },
+                  onSelected: (String suggestion) {
+                    controller.schoolNameController.text = suggestion;
+                    controller.selectedSchoolName.value = suggestion;
+                  },
+                  builder: (context, textEditingController, focusNode) {
+                    textEditingController.text = controller.schoolNameController.text;
+
+                    return CustomTextFormField(
+                      hintText: "School Name",
+                      controller: controller.schoolNameController,
+                      focusNode: focusNode,
+                      onChanged: (value) {
+                        controller.selectedSchoolName.value = value;
+                        controller.schoolNameController.text = value;
+                      },
+                    );
+                  },
+                );
+              }),
+              SizedBox(height: 10,),
+
+                // _buildTextField('School Name', controller.schoolNameController, keyboardType: TextInputType.text),
 
               _buildDatePickerField('Date of Birth (DD/MM/YYYY)', controller.dobController, context),
               Obx((){
