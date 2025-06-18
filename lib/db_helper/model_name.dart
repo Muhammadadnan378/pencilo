@@ -9,3 +9,5 @@ String studentAttendanceTableName = "studentAttendance";
 String attendanceRecordsTableName = "attendanceRecords";
 String noticeTableName = "student_notice";
 String homeWorkTableName = "student_homeWork";
+String schoolTableName = "schools";
+String resultSubjectsTableName = "resultSubjects";

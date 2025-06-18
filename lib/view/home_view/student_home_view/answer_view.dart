@@ -243,37 +243,39 @@ class AnswerView extends StatelessWidget {
                                 4: FlexColumnWidth(3),
                               },
                               children: [
+                                // Dynamically generate header row from first map
                                 TableRow(
                                   children: [
-                                    tableHeader('Column I'),
-                                    tableHeader('Column II'),
-                                    if (subQuestion.subAns != null && subQuestion.subAns!.any((item) => item.containsKey("Column III")))
-                                      tableHeader('Column III'),
-                                    if (subQuestion.subAns != null && subQuestion.subAns!.any((item) => item.containsKey("Column IV")))
-                                      tableHeader('Column IV'),
-                                    if (subQuestion.subAns != null && subQuestion.subAns!.any((item) => item.containsKey("Column V")))
-                                      tableHeader('Column V'),
+                                    tableHeader(subQuestion.subAns![0]["Column 1"] ?? ""),
+                                    tableHeader(subQuestion.subAns![0]["Column 2"] ?? ""),
+                                    if (subQuestion.subAns![0].containsKey("Column 3"))
+                                      tableHeader(subQuestion.subAns![0]["Column 3"] ?? ""),
+                                    if (subQuestion.subAns![0].containsKey("Column 4"))
+                                      tableHeader(subQuestion.subAns![0]["Column 4"] ?? ""),
+                                    if (subQuestion.subAns![0].containsKey("Column 5"))
+                                      tableHeader(subQuestion.subAns![0]["Column 5"] ?? ""),
                                   ],
                                 ),
-                                if (subQuestion.subAns != null)
-                                  for (var item in subQuestion.subAns!)
-                                    TableRow(
-                                      children: [
-                                        tableCell(item["Column I"] ?? ""),
-                                        tableCell(item["Column II"] ?? ""),
-                                        if (item.containsKey("Column III"))
-                                          tableCell(item["Column III"] ?? ""),
-                                        if (item.containsKey("Column IV"))
-                                          tableCell(item["Column IV"] ?? ""),
-                                        if (item.containsKey("Column V"))
-                                          tableCell(item["Column V"] ?? ""),
-                                      ],
-                                    ),
+                                // Render remaining items as rows
+                                for (var i = 1; i < subQuestion.subAns!.length; i++)
+                                  TableRow(
+                                    children: [
+                                      tableCell(subQuestion.subAns![i]["Column 1"] ?? ""),
+                                      tableCell(subQuestion.subAns![i]["Column 2"] ?? ""),
+                                      if (subQuestion.subAns![i].containsKey("Column 3"))
+                                        tableCell(subQuestion.subAns![i]["Column 3"] ?? ""),
+                                      if (subQuestion.subAns![i].containsKey("Column 4"))
+                                        tableCell(subQuestion.subAns![i]["Column 4"] ?? ""),
+                                      if (subQuestion.subAns![i].containsKey("Column 5"))
+                                        tableCell(subQuestion.subAns![i]["Column 5"] ?? ""),
+                                    ],
+                                  ),
                               ],
                             ),
                             SizedBox(height: 20),
                           ],
                         ),
+
 
                       if (subQuestion.youtubeVideoPath != null && subQuestion.youtubeVideoPath != "")
                       Column(

@@ -792,6 +792,55 @@ class ProfileController extends GetxController {
   }
 
 
+  ///Result view Methods
+  RxString selectedYear = DateTime.now().year.toString().obs;
+  RxString schoolLogoImage = "".obs;
+  RxString schoolClassTeacherSignatureImage = "".obs;
+  RxString schoolPrincipleSignatureImage = "".obs;
+  RxString schoolWebLink = "".obs;
+  RxString schoolContactNumber = "".obs;
+  RxString schoolAddress = "".obs;
+  RxString schoolName = "".obs;
+  RxString studentName = "".obs;
+  RxString studentRollNo = "".obs;
+  RxString studentDivStd = "".obs;
+  RxList midTermList = [].obs;
+  RxList finalTermList = [].obs;
+  // RxList<QuerySnapshot> resultDoc = [].obs;
+  Rx<QuerySnapshot?> resultDoc = Rx<QuerySnapshot?>(null);
+  List<String> get yearsList {
+    final year = DateTime.now().year;
+    return List.generate(10, (index) => (year - index).toString());
+  }
+
+  String getGradeFromMarks({required int obtained, required int max}) {
+    if (max == 0) return "-";
+    final percent = (obtained / max) * 100;
+
+    if (percent >= 90) return "A+";
+    if (percent >= 80) return "A";
+    if (percent >= 70) return "B";
+    if (percent >= 60) return "C";
+    if (percent >= 50) return "D";
+    return "F";
+  }
+
+
+
+  clearAllFields(){
+    schoolLogoImage.value = "";
+    schoolWebLink.value = "";
+    schoolContactNumber.value = "";
+    schoolAddress.value = "";
+    studentName.value = "";
+    studentRollNo.value = "";
+    studentDivStd.value = "";
+    resultDoc.value = null;
+    schoolPrincipleSignatureImage.value = "";
+    schoolClassTeacherSignatureImage.value = "";
+    selectedSchoolName.value = "";
+  }
+
 
 
 }

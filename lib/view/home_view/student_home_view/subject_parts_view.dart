@@ -145,6 +145,13 @@ class SubjectPartsView extends StatelessWidget {
                                 Obx(() {
                                   controller.currentIndex.value;
                                   return CustomCard(
+                                    onTap: () {
+                                      if (controller.currentIndex.value != partIndex) {
+                                        controller.currentIndex.value = partIndex;
+                                      } else {
+                                        controller.currentIndex.value = 0;
+                                      }
+                                    },
                                     alignment: Alignment.center,
                                     width: double.infinity,
                                     height: 100,
@@ -172,27 +179,17 @@ class SubjectPartsView extends StatelessWidget {
                                           fontFamily: GoogleFonts.spaceGrotesk().fontFamily,
                                         ),
                                         Obx(() {
-                                          controller.currentIndex.value;
-                                          return InkWell(
-                                            onTap: () {
-                                              if (controller.currentIndex.value != partIndex) {
-                                                controller.currentIndex.value = partIndex;
-                                              } else {
-                                                controller.currentIndex.value = 0;
-                                              }
-                                            },
-                                            child: controller.currentIndex.value == partIndex
-                                                ? Icon(Icons.remove_circle,
-                                                size: 50, color: whiteColor)
-                                                : CustomCard(
-                                              border: Border.all(color: blackColor),
-                                              borderRadius: 50,
-                                              child: Icon(
-                                                CupertinoIcons.add,
-                                                size: 50,
-                                                color: blackColor,
-                                                weight: 0.1,
-                                              ),
+                                          return controller.currentIndex.value == partIndex
+                                              ? Icon(Icons.remove_circle,
+                                              size: 50, color: whiteColor)
+                                              : CustomCard(
+                                            border: Border.all(color: blackColor),
+                                            borderRadius: 50,
+                                            child: Icon(
+                                              CupertinoIcons.add,
+                                              size: 50,
+                                              color: blackColor,
+                                              weight: 0.1,
                                             ),
                                           );
                                         })

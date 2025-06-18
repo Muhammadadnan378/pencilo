@@ -37,11 +37,12 @@ class StudentHomeView extends StatelessWidget {
       "Maths",
     ],
     '9th': [
-      "Geography",
+      "Geography_9th",
       "History_9th",
       "Science_9th",
       "Political_science_9th",
       "Mathematics_2_9th",
+      "English_9th",
     ],
     '10th': [
       "Marathi",
@@ -70,6 +71,7 @@ class StudentHomeView extends StatelessWidget {
       "Science",
       "Political Science",
       "Mathematics-2",
+      "English",
     ],
     '10th': [
       "Marathi",

@@ -9,8 +9,9 @@ class CustomDropdown extends StatelessWidget {
   final RxString selectedValue;
   final String dropdownTitle;
   final bool? isValidate;
+  final void Function(String)? onSelected;
 
-  const CustomDropdown({super.key, required this.subjects, required this.selectedValue, required this.dropdownTitle, this.isValidate,});
+  const CustomDropdown({super.key, required this.subjects, required this.selectedValue, required this.dropdownTitle, this.isValidate, this.onSelected,});
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +23,8 @@ class CustomDropdown extends StatelessWidget {
         border: Border.all(color: isValidate == true ? Colors.red : blackColor),
         child: PopupMenuButton<String>(
           color: whiteColor,
-          onSelected: (String value) {
-            FocusScope.of(Get.context!).unfocus();
-            selectedValue.value = value;
+          onSelected: onSelected ?? (String value) {
+            FocusScope.of(Get.context!).unfocus();selectedValue.value = value;
           },
           itemBuilder: (BuildContext context) {
             return subjects.map((item) {

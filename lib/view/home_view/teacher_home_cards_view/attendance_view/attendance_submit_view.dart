@@ -287,9 +287,7 @@ class AttendanceSubmitView extends StatelessWidget {
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
                           itemBuilder: (context, index) {
-                            var student = AttendanceModel.fromMap(
-                                studentData[index].data() as Map<String,
-                                    dynamic>);
+                            var student = AttendanceModel.fromMap(studentData[index].data() as Map<String, dynamic>);
                             debugPrint("Roll No: ${student.rollNo}");
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 10.0),

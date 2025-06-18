@@ -4,6 +4,8 @@ import '../../../data/consts/const_import.dart';
 import '../../controller/login_controller.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 
+import '../../data/custom_widget/app_custom_button.dart';
+
 class LoginView extends StatelessWidget {
   final bool isTeacher;
   final bool isStudent;
@@ -137,40 +139,22 @@ class LoginView extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 30.0,left: 25,right: 25),
         child: Obx(() =>
         controller.isLoginUser.value ? SizedBox(width: 50,height: 50,child: Center(child: CircularProgressIndicator()))
-            : CustomCard(
+            : AppCustomButton(
+          text: "Start",
           onTap: () async {
-            controller.isLoginUser(true);
-            bool isFormValid = await controller.validateForm(context);
+          controller.isLoginUser(true);
+          bool isFormValid = await controller.validateForm(context);
 
-            if (isFormValid) {
-              // Trigger Firebase phone verification
-              await controller.storeUserData().then((value) {
-                controller.isLoginUser(false);
-              });
-            } else {
-              // Show a message if form is invalid
+          if (isFormValid) {
+            // Trigger Firebase phone verification
+            await controller.storeUserData().then((value) {
               controller.isLoginUser(false);
-            }
-          },
-
-          alignment: Alignment.center,
-          borderRadius: 11,
-          width: double.infinity,
-          height: 57,
-          color: blackColor,
-          boxShadow: [
-            BoxShadow(
-                color: grayColor,
-                blurRadius: 5,
-                offset: const Offset(0, 3))
-          ],
-          child: CustomText(
-            text: "Start",
-            fontWeight: FontWeight.w500,
-            size: 15,
-            fontFamily: poppinsFontFamily,
-          ),
-        ),
+            });
+          } else {
+            // Show a message if form is invalid
+            controller.isLoginUser(false);
+          }
+        },),
         ),
       ),
 

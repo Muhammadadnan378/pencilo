@@ -8,52 +8,19 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../data/consts/const_import.dart';
 import '../../model/short_video_model.dart';
 
-class PlayShortVideo extends StatefulWidget {
-  @override
-  _PlayShortVideoState createState() => _PlayShortVideoState();
-}
-
-class _PlayShortVideoState extends State<PlayShortVideo> {
+class PlayShortVideo extends StatelessWidget {
   final ShortVideoController ctrl = Get.put(ShortVideoController());
-  late YoutubePlayerController _ytController;
 
-  @override
-  void initState() {
-    super.initState();
-
-    // Setup page listener to track watched videos and mark them in Firestore
-    ctrl.pageController.addListener(() {
-      final page = ctrl.pageController.page?.round() ?? 0;
-      if (page < ctrl.videoList.length) {
-        final vid = ctrl.videoList[page].videoId;
-        if (!ctrl.sessionWatchedVideos.contains(vid)) {
-          ctrl.sessionWatchedVideos.add(vid);
-          Future.delayed(const Duration(seconds: 3), () {
-            FirebaseFirestore.instance
-                .collection("youtube_short_videos")
-                .doc(vid)
-                .update({
-              "isVideoWatched": FieldValue.arrayUnion([CurrentUserData.uid])
-            });
-          });
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _ytController.dispose();
-    super.dispose();
-  }
+  PlayShortVideo({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: StreamBuilder<QuerySnapshot>(
-        stream:
-        FirebaseFirestore.instance.collection("youtube_short_videos").snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection("youtube_short_videos")
+            .snapshots(),
         builder: (ctx, snap) {
           if (snap.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -61,7 +28,9 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
           if (snap.hasError) {
             return Center(child: Text("Error: ${snap.error}"));
           }
+
           final docs = snap.data?.docs ?? [];
+
           final filtered = docs.where((doc) {
             final watched = List<String>.from(doc['isVideoWatched'] ?? []);
             final vid = doc.id;
@@ -70,38 +39,24 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
           }).toList();
 
           if (filtered.isEmpty) {
-            return const Center(child: CustomText(text: "No new videos. Come back later!",size: 18,));
+            return const Center(
+              child: CustomText(
+                  text: "No new videos. Come back later!", size: 18),
+            );
           }
 
-          // Build videoList once
-          ctrl.videoList.value = filtered
-              .map((d) => ShortVideoModel.fromJson(d.data() as Map<String, dynamic>))
-              .toList();
+          ctrl.setVideoList(filtered);
 
-          return PageView.builder(
+          return Obx(() => PageView.builder(
+            physics: NeverScrollableScrollPhysics(),
             scrollDirection: Axis.vertical,
             controller: ctrl.pageController,
             itemCount: ctrl.videoList.length,
             itemBuilder: (_, idx) {
               final video = ctrl.videoList[idx];
-              final initialVid = YoutubePlayer.convertUrlToId(video.videoUrl) ?? '';
+              final ytController = ctrl.controllers[idx];
 
-              _ytController = YoutubePlayerController(
-                initialVideoId: initialVid,
-                flags: const YoutubePlayerFlags(
-                  autoPlay: true,
-                  mute: false,
-                  hideControls: true,
-                  loop: true,
-                ),
-              );
-
-              // Handle likes
-              if (video.isLiked.contains(CurrentUserData.uid)) {
-                ctrl.isLiked(true);
-              } else {
-                ctrl.isLiked(false);
-              }
+              ctrl.checkLikedStatus(video);
 
               return Stack(
                 children: [
@@ -110,17 +65,11 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
                       width: SizeConfig.screenWidth,
                       height: SizeConfig.screenHeight * 0.7,
                       child: YoutubePlayer(
-                        controller: _ytController,
-                        // bottomActions: const [
-                        //   CurrentPosition(),
-                        //   ProgressBar(isExpanded: true),
-                        //   RemainingDuration(),
-                        //   PlaybackSpeedButton(),
-                        // ],
+                        controller: ytController,
                       ),
                     ),
                   ),
-                  // Up/Down navigation
+                  // Navigation Arrows
                   Positioned(
                     right: 20,
                     top: 10,
@@ -150,7 +99,7 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
                       ],
                     ),
                   ),
-                  // Like / Comment / Share buttons
+                  // Actions
                   Align(
                     alignment: Alignment.bottomRight,
                     child: Padding(
@@ -169,31 +118,23 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
                                   : Colors.white,
                               size: 25,
                             ),
-                            onPressed: () async {
-                              final liked = ctrl.isLiked.value;
-                              ctrl.isLiked(!liked);
-                              await FirebaseFirestore.instance
-                                  .collection("youtube_short_videos")
-                                  .doc(video.videoId)
-                                  .update({
-                                "isLiked": liked
-                                    ? FieldValue.arrayRemove(
-                                    [CurrentUserData.uid])
-                                    : FieldValue.arrayUnion(
-                                    [CurrentUserData.uid])
-                              });
-                            },
+                            onPressed: () =>
+                                ctrl.toggleLike(video.videoId),
                           )),
                           const SizedBox(height: 16),
                           IconButton(
-                            icon: const Icon(Icons.comment, size: 25, color: Colors.white),
+                            icon: const Icon(Icons.comment,
+                                size: 25, color: Colors.white),
                             onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Comment clicked!")));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text("Comment clicked!")));
                             },
                           ),
                           const SizedBox(height: 16),
                           IconButton(
-                            icon: const Icon(Icons.share, size: 25, color: Colors.white),
+                            icon: const Icon(Icons.share,
+                                size: 25, color: Colors.white),
                             onPressed: () =>
                                 ctrl.shareOnWhatsApp(video.videoUrl),
                           ),
@@ -204,51 +145,103 @@ class _PlayShortVideoState extends State<PlayShortVideo> {
                 ],
               );
             },
-          );
+          ));
         },
       ),
     );
   }
 }
 
-
-class ShortVideoController extends GetxController{
-  RxBool isPlay = false.obs;
+class ShortVideoController extends GetxController {
   RxBool isLiked = false.obs;
-  RxBool showPlayPause = false.obs;
   PageController pageController = PageController();
   RxList<ShortVideoModel> videoList = <ShortVideoModel>[].obs;
-  late List<YoutubePlayerController> controllers;
   RxList<String> sessionWatchedVideos = <String>[].obs;
-
+  List<YoutubePlayerController> controllers = [];
 
   @override
-  void dispose() {
-    pageController.dispose();
-    super.dispose();
+  void onInit() {
+    super.onInit();
+
+    pageController.addListener(() {
+      final page = pageController.page?.round() ?? 0;
+      if (page < videoList.length) {
+        final vid = videoList[page].videoId;
+        if (!sessionWatchedVideos.contains(vid)) {
+          sessionWatchedVideos.add(vid);
+          Future.delayed(const Duration(seconds: 3), () {
+            FirebaseFirestore.instance
+                .collection("youtube_short_videos")
+                .doc(vid)
+                .update({
+              "isVideoWatched": FieldValue.arrayUnion([CurrentUserData.uid])
+            });
+          });
+        }
+      }
+    });
   }
 
-  /// **Share video on WhatsApp**
+  void setVideoList(List<QueryDocumentSnapshot> docs) {
+    videoList.value = docs
+        .map((d) => ShortVideoModel.fromJson(d.data() as Map<String, dynamic>))
+        .toList();
+
+    // Initialize controllers
+    controllers.forEach((c) => c.dispose());
+    controllers = videoList.map((video) {
+      final videoId = YoutubePlayer.convertUrlToId(video.videoUrl) ?? '';
+      return YoutubePlayerController(
+        initialVideoId: videoId,
+        flags: const YoutubePlayerFlags(
+          autoPlay: true,
+          mute: false,
+          hideControls: true,
+          loop: true,
+        ),
+      );
+    }).toList();
+  }
+
+  void checkLikedStatus(ShortVideoModel video) {
+    isLiked.value = video.isLiked.contains(CurrentUserData.uid);
+  }
+
+  Future<void> toggleLike(String videoId) async {
+    final liked = isLiked.value;
+    isLiked(!liked);
+    await FirebaseFirestore.instance
+        .collection("youtube_short_videos")
+        .doc(videoId)
+        .update({
+      "isLiked": liked
+          ? FieldValue.arrayRemove([CurrentUserData.uid])
+          : FieldValue.arrayUnion([CurrentUserData.uid])
+    });
+  }
+
+  @override
+  void onClose() {
+    pageController.dispose();
+    controllers.forEach((c) => c.dispose());
+    super.onClose();
+  }
+
   Future<void> shareOnWhatsApp(String videoUrl) async {
     final videoId = YoutubePlayer.convertUrlToId(videoUrl);
-    final thumbnailUrl = "https://img.youtube.com/vi/$videoId/0.jpg";
-
     final message = Uri.encodeComponent(
-        "🎬 Check out this video!\n\n"
-            "🖼️ [Thumbnail Image]\n\n"
-            "🔗 $videoUrl"
-    );
-
+        "🎬 Check out this video!\n\n🖼️ [Thumbnail Image]\n\n🔗 $videoUrl");
     final whatsappUrl = "https://wa.me/?text=$message";
 
     if (await canLaunchUrl(Uri.parse(whatsappUrl))) {
-      await launchUrl(
-          Uri.parse(whatsappUrl), mode: LaunchMode.externalApplication);
+      await launchUrl(Uri.parse(whatsappUrl),
+          mode: LaunchMode.externalApplication);
     } else {
       print("Could not launch WhatsApp");
     }
   }
 }
+
 
 // class PlayShortVideo extends StatelessWidget {
 //   PlayShortVideo({super.key});

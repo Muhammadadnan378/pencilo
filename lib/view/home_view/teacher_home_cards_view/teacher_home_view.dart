@@ -1,6 +1,7 @@
 import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'package:pencilo/view/home_view/teacher_home_cards_view/notes_view/create_notes_view.dart';
 import 'package:pencilo/view/home_view/teacher_home_cards_view/events_create_view.dart';
+import 'package:pencilo/view/home_view/teacher_home_cards_view/results_view/result_view.dart';
 import '../../../controller/home_controller.dart';
 import '../../../data/consts/const_import.dart';
 import '../../../data/consts/images.dart';
@@ -48,7 +49,12 @@ class TeacherHomeView extends StatelessWidget {
 
           ),
           buildCustomCard(title: "Assignment",subtitle: "Give a assignments to students to check their understanding",image: homeAssignment),
-          buildCustomCard(title: "Results",subtitle: "upload student result so that their parents can see the results.",image: homeResult),
+          buildCustomCard(
+              onTap: () => Get.to(ResultView()),
+              title: "Results",
+              subtitle: "upload student result so that their parents can see the results.",
+              image: homeResult
+          ),
           buildCustomCard(title: "Notice",
               subtitle: "Send a notice to specific class ",
               image: homeResult,
