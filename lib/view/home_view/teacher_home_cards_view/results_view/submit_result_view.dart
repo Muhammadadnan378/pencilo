@@ -308,13 +308,14 @@ class SubmitResultView extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
+                              if (currentIndex > 0)
                                 CustomCard(
                                   onTap: () async {
-                                    if (currentIndex > 0) {
-                                      Navigator.pop(context);
-                                      final prev = AttendanceModel.fromMap(
-                                          studentData[currentIndex - 1].data() as Map<String, dynamic>);
-                                      _showAddClassDialog(
+                                    Navigator.pop(context);
+                                    final prev = AttendanceModel.fromMap(
+                                        studentData[currentIndex - 1]
+                                            .data() as Map<String, dynamic>);
+                                    _showAddClassDialog(
                                         context,
                                         controller,
                                         int.tryParse(prev.rollNo ?? '0') ?? 0,
@@ -322,24 +323,60 @@ class SubmitResultView extends StatelessWidget {
                                         resultSubjectId,
                                         prev.studentUid ?? '',
                                         studentData,
-                                        currentIndex - 1,
-                                      );
-                                    }
-                                    // else do nothing
+                                        currentIndex - 1);
                                   },
                                   color: Color(0xffFF6060),
                                   height: 35,
                                   borderRadius: 5,
                                   alignment: Alignment.center,
                                   padding: EdgeInsets.only(left: 10, right: 10),
-                                  child: CustomText(text: '< Previous', size: 15),
+                                  child: CustomText(
+                                      text: '< Previous', size: 15),
                                 ),
-
                               SizedBox(width: 10,),
+                              if (currentIndex == studentData.length - 1)
                               Obx(() {
+                                return controller.isSavedSubjectMarks.value
+                                    ? Center(child: CircularProgressIndicator())
+                                    : CustomCard(
+                                  onTap: () async {
+                                    if (controller.totalTheoryMarksController.text.isEmpty) {
+                                      Get.snackbar("Notice", "Theory marks cannot be empty", backgroundColor: Colors.red, colorText: Colors.white);
+                                      return;
+                                    }
+                                    int theory = int.tryParse(controller.totalTheoryMarksController.text) ?? 0;
+                                    int practical = int.tryParse(controller.totalPracticalMarksController.text) ?? 0;
+                                    if(theory > int.tryParse(controller.theoryMarks.value)! || practical > int.tryParse(controller.practicalMarks.value)!){
+                                      Get.snackbar("Error", "The Marks cannot be greater than out of Marks",backgroundColor: Colors.red, colorText: Colors.white);
+                                      controller.isSavedSubjectMarks(false);
+                                      return;
+                                    }
+                                    controller.isSavedSubjectMarks(true);
+                                    await controller.submitResult(
+                                      studentName: studentName,
+                                      subjectName: controller.selectedSubject.value,
+                                      studentUid: studentUid,
+                                      div: controller.selectedDivision.value,
+                                      std: controller.selectedStandard.value,
+                                      rollNo: rollNo.toString(),
+                                      totalSubjectMarks: int.tryParse(controller.theoryMarks.value)! + int.tryParse(controller.practicalMarks.value)!,
+                                    );
+                                    controller.isSavedSubjectMarks(false);
+                                  },
+                                  color: blackColor,
+                                  height: 35,
+                                  borderRadius: 5,
+                                  alignment: Alignment.center,
+                                  padding: EdgeInsets.only(left: 10, right: 10),
+                                  child: CustomText(text: 'Save', size: 15),
+                                );
+                              }),
+                              SizedBox(width: 10,),
+                              if (currentIndex < studentData.length - 1)
+                                Obx(() {
                                   return controller.isSavedSubjectMarks.value
                                       ? Center(child: CircularProgressIndicator())
-                                      : CustomCard(
+                                      :  CustomCard(
                                     onTap: () async {
                                       if (controller.totalTheoryMarksController.text.isEmpty) {
                                         Get.snackbar("Notice", "Theory marks cannot be empty", backgroundColor: Colors.red, colorText: Colors.white);
@@ -383,7 +420,8 @@ class SubmitResultView extends StatelessWidget {
                                     height: 35,
                                     borderRadius: 5,
                                     alignment: Alignment.center,
-                                    padding: EdgeInsets.only(left: 10, right: 10),
+                                    padding: EdgeInsets.only(
+                                        left: 10, right: 10),
                                     child: CustomText(text: 'Next >', size: 15),
                                   );
                                 }),
