@@ -6,6 +6,7 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../../controller/student_home_view_controller.dart';
 import '../../../data/consts/const_import.dart';
 import '../../../data/consts/images.dart';
+import '../../../data/custom_widget/app_logo_widget.dart';
 import '../../../data/custom_widget/custom_media_query.dart';
 
 class AnswerView extends StatelessWidget {
@@ -24,31 +25,7 @@ class AnswerView extends StatelessWidget {
         padding: const EdgeInsets.only(left: 16.0, right: 16),
         child: ListView(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CustomText(
-                  text: 'Aniket Ganesh',
-                  color: blackColor,
-                  fontFamily: interFontFamily,
-                  size: 8,
-                ),
-                SizedBox(height: 5),
-                CustomCard(
-                  alignment: Alignment.center,
-                  borderRadius: 100,
-                  color: Color(0xff57A8B8),
-                  width: 41,
-                  height: 41,
-                  child: CustomText(
-                    text: "AG",
-                    size: 20,
-                    color: blackColor,
-                    fontFamily: nixinOneFontFamily,
-                  ),
-                ),
-              ],
-            ),
+            Align(alignment: Alignment.centerLeft,child: AppLogoWidget(width: 110,height: 80,fit: BoxFit.cover,)),
             SizedBox(height: 20),
             CustomText(
               text: myData.chapterName ?? "",

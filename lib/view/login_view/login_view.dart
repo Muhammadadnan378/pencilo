@@ -131,33 +131,33 @@ class LoginView extends StatelessWidget {
                 keyboardType: TextInputType.phone,
                 onChanged: (value) => controller.phoneNumber.value = value,
               ),
+              SizedBox(height: 30,),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 30.0,left: 25,right: 25),
+                child: Obx(() =>
+                controller.isLoginUser.value ? SizedBox(width: 50,height: 50,child: Center(child: CircularProgressIndicator()))
+                    : AppCustomButton(
+                  text: "Start",
+                  onTap: () async {
+                    controller.isLoginUser(true);
+                    bool isFormValid = await controller.validateForm(context);
+
+                    if (isFormValid) {
+                      // Trigger Firebase phone verification
+                      await controller.storeUserData().then((value) {
+                        controller.isLoginUser(false);
+                      });
+                    } else {
+                      // Show a message if form is invalid
+                      controller.isLoginUser(false);
+                    }
+                  },),
+                ),
+              )
             ],
           ),
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 30.0,left: 25,right: 25),
-        child: Obx(() =>
-        controller.isLoginUser.value ? SizedBox(width: 50,height: 50,child: Center(child: CircularProgressIndicator()))
-            : AppCustomButton(
-          text: "Start",
-          onTap: () async {
-          controller.isLoginUser(true);
-          bool isFormValid = await controller.validateForm(context);
-
-          if (isFormValid) {
-            // Trigger Firebase phone verification
-            await controller.storeUserData().then((value) {
-              controller.isLoginUser(false);
-            });
-          } else {
-            // Show a message if form is invalid
-            controller.isLoginUser(false);
-          }
-        },),
-        ),
-      ),
-
     );
   }
 

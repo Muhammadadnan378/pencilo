@@ -28,22 +28,26 @@ class HomeController extends GetxController {
   }
 
   RxInt selectedIndex = 2.obs; // Default is HomeView at center
+  void validateSelectedIndex() {
+    if (selectedIndex.value >= screens.length) {
+      selectedIndex.value = 2; // or 2 (Home)
+    }
+  }
 
 
   List<Widget> get screens => [
     PlayShortVideo(),
     BuySellBookView(),
     CurrentUserData.isTeacher == true ? TeacherHomeView() : StudentHomeView(),
-    CurrentUserData.isTeacher == true ? FriendsView() : PopularGamesView(),
+    if (!CurrentUserData.isTeacher) PopularGamesView(), // Show only for students
     ProfileView(),
   ];
 
-
-  final List<IconData> icons = const [
+  List<IconData> get icons => [
     Icons.ondemand_video,
     Icons.menu_book,
     Icons.home,
-    Icons.people,
+    if (!CurrentUserData.isTeacher) Icons.people,
     Icons.person,
   ];
 

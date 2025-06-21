@@ -30,16 +30,6 @@ class ProfileView extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         children: [
           SizedBox(height: 25),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              GestureDetector(
-                child: Icon(Icons.picture_as_pdf),
-                onTap: () => controller.generatePDF(),
-              ),
-            ],
-          ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -247,30 +237,36 @@ class ProfileView extends StatelessWidget {
                   }),
                 ],
               ),
-              SizedBox(height: 20),
-
               // Attendance Section
-              CustomText(
-                text: 'This month’s attendance',
-                color: Colors.black,
-                size: 24,
-                fontWeight: FontWeight.bold,
-                fontFamily: poppinsFontFamily,
+              if(!CurrentUserData.isTeacher)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 20),
+
+                  CustomText(
+                    text: 'This month’s attendance',
+                    color: Colors.black,
+                    size: 24,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: poppinsFontFamily,
+                  ),
+                  SizedBox(height: 10),
+                  Obx(() {
+                    controller.presents.value;
+                    controller.absents.value;
+                    return Row(
+                      children: [
+                        _buildAttendanceCard(
+                            'Present', controller.presents.value, Colors.green),
+                        SizedBox(width: 10,),
+                        _buildAttendanceCard(
+                            'Absent', controller.absents.value, Colors.red),
+                      ],
+                    );
+                  }),
+                ],
               ),
-              SizedBox(height: 10),
-              Obx(() {
-                controller.presents.value;
-                controller.absents.value;
-                return Row(
-                  children: [
-                    _buildAttendanceCard(
-                        'Present', controller.presents.value, Colors.green),
-                    SizedBox(width: 10,),
-                    _buildAttendanceCard(
-                        'Absent', controller.absents.value, Colors.red),
-                  ],
-                );
-              }),
             ],
           ),
           SizedBox(height: 15,),

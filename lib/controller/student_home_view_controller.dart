@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:pencilo/model/subjects_model.dart';
 
@@ -82,6 +84,31 @@ class StudentHomeViewController extends GetxController {
 
   ///Home view methods
   var selectedValue = CurrentUserData.standard.obs; // Default value
+
+  RxMap<String, List<String>> classBooksMap = <String, List<String>>{}.obs;
+  RxMap<String, List<String>> classBooksMapName = <String, List<String>>{}.obs;
+
+  Future<void> loadBookData() async {
+    final response = await http.get(Uri.parse('https://raw.githubusercontent.com/Muhammadadnan378/my-json-data/main/class_books.json'));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      classBooksMap.value = Map<String, List<String>>.from(
+        data['classBooksMap'].map((k, v) => MapEntry(k, List<String>.from(v))),
+      );
+      classBooksMapName.value = Map<String, List<String>>.from(
+        data['classBooksMapName'].map((k, v) => MapEntry(k, List<String>.from(v))),
+      );
+    } else {
+      throw Exception('Failed to load books');
+    }
+  }
+
+  @override
+  void onInit() {
+    loadBookData();
+    super.onInit();
+  }
 
   // Method to change the selected value
   void changeValue(String newValue) {

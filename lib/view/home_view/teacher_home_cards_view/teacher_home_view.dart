@@ -34,7 +34,6 @@ class TeacherHomeView extends StatelessWidget {
               subtitle: "Take a attendance of your school students",
               image: homeAttendance
           ),
-          buildCustomCard(title: "Quiz",subtitle: "Quiz for your students to check their understanding",image: homeQuiz),
           buildCustomCard(
               title: "Events",
               subtitle: "Create global events for students to join in sports, skills, and training.",
@@ -43,12 +42,6 @@ class TeacherHomeView extends StatelessWidget {
                 Get.to(CreateEventView());
               }
           ),
-          buildCustomCard(title: "Upload",
-              subtitle: "Upload educational video like reels and monetized your self ",
-              image: homeUpload,
-
-          ),
-          buildCustomCard(title: "Assignment",subtitle: "Give a assignments to students to check their understanding",image: homeAssignment),
           buildCustomCard(
               onTap: () => Get.to(ResultView()),
               title: "Results",

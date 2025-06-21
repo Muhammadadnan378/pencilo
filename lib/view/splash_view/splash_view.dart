@@ -24,11 +24,11 @@ class _SplashViewState extends State<SplashView> {
       if (CurrentUserData.isAdmin) {
         Get.offAll(AdminHomeView());
       } else if (CurrentUserData.isTeacher || CurrentUserData.isStudent) {
+        CurrentUserData.getSchoolName();
         Get.offAll(Home());
       } else {
         Get.offAll(LetsStartView());
       }
-      CurrentUserData.getSchoolName();
     });
 
 
@@ -41,21 +41,7 @@ class _SplashViewState extends State<SplashView> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CustomText(text: 'Aniket Ganesh', color: blackColor, fontFamily: interFontFamily, size: 14),
-            SizedBox(height: 5),
-            CustomCard(
-              alignment: Alignment.center,
-              borderRadius: 100,
-              color: Color(0xff57A8B8),
-              width: 146,
-              height: 146,
-              child: CustomText(text: "AG", size: 45, color: blackColor, fontFamily: nixinOneFontFamily),
-            ),
-          ],
-        ),
+        child: Image.asset(appLogo),
       ),
     );
   }

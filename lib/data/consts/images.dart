@@ -23,6 +23,7 @@ const homeQuiz = "assets/images/home_quizes_image.png";
 const homeResult = "assets/images/home_result_image.png";
 const homeUpload = "assets/images/home_upload_image.png";
 const editResultImage = "assets/images/edit_result_image.png";
+const appLogo = "assets/images/AppLogo.png";
 
 
 const englishCurvedImage = "assets/images/english_card_curved.png";

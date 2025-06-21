@@ -17,8 +17,7 @@ class Home extends StatelessWidget {
   final HomeController controller = Get.put(HomeController());
   @override
   Widget build(BuildContext context) {
-    debugPrint("is teacher ${CurrentUserData.isTeacher}");
-    debugPrint(" is student ${CurrentUserData.isStudent}");
+    controller.validateSelectedIndex();
     return Obx(() {
       return Scaffold(
         body: controller.screens[controller.selectedIndex.value],

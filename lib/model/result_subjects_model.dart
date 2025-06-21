@@ -4,17 +4,17 @@ class ResultModel {
   final String? resultInfoId;
   final String? schoolName;
   final List<String>? subjectNameList;
-  final List<String>? totalMarksList;
+  final List<String>? theoryMarksList;
   final List<String>? practicalMarksList;
   final String? studentUid;
   final String? studentName;
   final String? resultSubjectId;
   final String? subjectName;
-  final String? subjectTotalMarks;
+  final String? subjectTheoryMarks;
   final String? subjectPracticalMarks;
   final String? term;
   final String? rollNo;
-  final String? totalMarks;
+  final int? totalSubjectMarks;
 
   ResultModel({
     required this.standard,
@@ -22,17 +22,17 @@ class ResultModel {
     this.resultInfoId,
     this.schoolName,
     this.subjectNameList,
-    this.totalMarksList,
+    this.theoryMarksList,
     this.practicalMarksList,
     this.studentUid,
     this.studentName,
     this.resultSubjectId,
     this.subjectName,
-    this.subjectTotalMarks,
+    this.subjectTheoryMarks,
     this.subjectPracticalMarks,
     this.term,
     this.rollNo,
-    this.totalMarks,
+    this.totalSubjectMarks,
   });
 
   Map<String, dynamic> resultInfoToMap() {
@@ -42,8 +42,8 @@ class ResultModel {
       'resultInfoId': resultInfoId,
       'schoolName': schoolName,
       'subjectNameList': subjectNameList,
-      'totalMarks': totalMarksList,
-      'practicalMarks': practicalMarksList,
+      'theoryMarksList': theoryMarksList,
+      'practicalMarksList': practicalMarksList,
     };
   }
 
@@ -56,34 +56,34 @@ class ResultModel {
       'studentName': studentName,
       'subjectName': subjectName,
       'studentUid': studentUid,
-      'subjectTotalMarks': subjectTotalMarks,
+      'subjectTheoryMarks': subjectTheoryMarks,
       'subjectPracticalMarks': subjectPracticalMarks,
       'term': term,
       'rollNo': rollNo,
-      'totalMarks': totalMarks,
+      'totalSubjectMarks': totalSubjectMarks,
     };
   }
 
 
 
-  factory ResultModel.fromMap(Map<String, dynamic> map) {
+  factory ResultModel.fromMap(Map<dynamic, dynamic> map) {
     return ResultModel(
       standard: map['standard'] ?? '',
       division: map['division'] ?? '',
       resultInfoId: map['resultInfoId'] ?? '',
       schoolName: map['schoolName'] ?? '',
       subjectNameList: List<String>.from(map['subjectNameList'] ?? []),
-      totalMarksList: List<String>.from(map['totalMarksList'] ?? []),
+      theoryMarksList: List<String>.from(map['theoryMarksList'] ?? []),
       practicalMarksList: List<String>.from(map['practicalMarksList'] ?? []),
       studentUid: map['studentUid'] ?? '',
       resultSubjectId: map['resultSubjectId'] ?? '',
       studentName: map['studentName'] ?? '',
       subjectName: map['subjectName'] ?? '',
-      subjectTotalMarks: map['subjectTotalMarks'] ?? '',
+      subjectTheoryMarks: map['subjectTheoryMarks'] ?? '',
       subjectPracticalMarks: map['subjectPracticalMarks'] ?? '',
       term: map['term'] ?? '',
       rollNo: map['rollNo'] ?? '',
-      totalMarks: map['totalMarks'] ?? '',
+      totalSubjectMarks: map['totalSubjectMarks'] ?? 0,
     );
   }
 }

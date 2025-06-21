@@ -321,13 +321,13 @@ class AttendanceSubmitView extends StatelessWidget {
                                                     )
                                                 ),
                                                 Obx(() {
-                                                  controller.beforeIsPresentList;
+                                                  (controller.beforeIsPresentList.length > index && controller.beforeIsPresentList[index] == false);
                                                   return CustomCard(
                                                     alignment: Alignment.center,
                                                     width: SizeConfig.screenWidth * 0.3,
                                                     child: CustomCard(
                                                       borderRadius: 5,
-                                                      color: controller.beforeIsPresentList.isNotEmpty && controller.beforeIsPresentList[index] == false
+                                                      color: (index < controller.beforeIsPresentList.length && controller.beforeIsPresentList[index] == false)
                                                           ? Color(0xffFF9500)
                                                           : Color(0xffD9D9D9),
                                                       child: Padding(

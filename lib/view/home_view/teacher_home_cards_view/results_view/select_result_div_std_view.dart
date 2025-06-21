@@ -4,6 +4,7 @@ import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 import 'package:pencilo/data/custom_widget/custom_text_field.dart';
 import 'package:pencilo/view/home_view/teacher_home_cards_view/results_view/result_view.dart';
 import 'package:pencilo/view/home_view/teacher_home_cards_view/results_view/submit_result_view.dart';
+import '../../../../controller/teacher_home_result_controller.dart';
 import '../../../../data/consts/const_import.dart';
 import '../../../../data/consts/images.dart';
 
@@ -13,7 +14,7 @@ class SelectResultDivStdView extends StatelessWidget {
     required this.controller,
   });
 
-  final SchoolController controller;
+  final ResultController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -223,7 +224,7 @@ class SelectResultDivStdView extends StatelessWidget {
                                     children: [
                                       if(index == 0)
                                         CustomText(
-                                          text: 'Subj Names',
+                                          text: 'Enter Subject Names',
                                           color: blackColor,
                                           fontWeight: FontWeight.w700,
                                           size: 15,
@@ -235,16 +236,54 @@ class SelectResultDivStdView extends StatelessWidget {
                                         color: Colors.grey[300],
                                         child: TextFormField(
                                           decoration: InputDecoration(
-                                              contentPadding: EdgeInsets.only(
-                                                  left: 10),
+                                              hintText: "Subject Name",
+                                              hintStyle: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                              contentPadding: EdgeInsets.only(left: 10),
                                               border: InputBorder.none
                                           ),
-                                          controller: controller
-                                              .subjectListControllers[index],
+                                          controller: controller.subjectListControllers[index],
                                           validator: (value) =>
-                                          value!.isEmpty
-                                              ? 'Required'
-                                              : null,
+                                          value!.isEmpty ? 'Required' : null,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      if(index == 0)
+                                        CustomText(
+                                          text: 'Total Theory Marks',
+                                          color: blackColor,
+                                          fontWeight: FontWeight.w700,
+                                          size: 15,
+                                        ),
+                                      SizedBox(height: 7,),
+                                      CustomCard(
+                                        borderRadius: 5,
+                                        color: Colors.grey[300],
+                                        child: TextFormField(
+                                          decoration: InputDecoration(
+                                              hintText: "Theory Marks",
+                                              hintStyle: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                              contentPadding: EdgeInsets.only(left: 10),
+                                              border: InputBorder.none
+                                          ),
+                                          controller: controller.marksListControllers[index],
+                                          keyboardType: TextInputType.number,
+                                          validator: (value) =>
+                                          value!.isEmpty ? 'Required' : null,
                                         ),
                                       ),
                                     ],
@@ -258,7 +297,7 @@ class SelectResultDivStdView extends StatelessWidget {
                                     children: [
                                       if(index == 0)
                                         CustomText(
-                                          text: 'P Marks',
+                                          text: 'Total Practical Marks',
                                           color: blackColor,
                                           fontWeight: FontWeight.w700,
                                           size: 15,
@@ -269,52 +308,19 @@ class SelectResultDivStdView extends StatelessWidget {
                                         color: Colors.grey[300],
                                         child: TextFormField(
                                           decoration: InputDecoration(
-                                              contentPadding: EdgeInsets.only(
-                                                  left: 10),
+                                              hintText: "Practical Marks",
+                                              hintStyle: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                              contentPadding: EdgeInsets.only(left: 10),
                                               border: InputBorder.none
                                           ),
-                                          controller: controller
-                                              .practicalMarksListControllers[index],
+                                          controller: controller.practicalMarksListControllers[index],
                                           keyboardType: TextInputType.number,
                                           validator: (value) =>
-                                          value!.isEmpty
-                                              ? 'Required'
-                                              : null,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment
-                                        .start,
-                                    children: [
-                                      if(index == 0)
-                                        CustomText(
-                                          text: 'T Marks',
-                                          color: blackColor,
-                                          fontWeight: FontWeight.w700,
-                                          size: 15,
-                                        ),
-                                      SizedBox(height: 7,),
-                                      CustomCard(
-                                        borderRadius: 5,
-                                        color: Colors.grey[300],
-                                        child: TextFormField(
-                                          decoration: InputDecoration(
-                                              contentPadding: EdgeInsets.only(
-                                                  left: 10),
-                                              border: InputBorder.none
-                                          ),
-                                          controller: controller
-                                              .marksListControllers[index],
-                                          keyboardType: TextInputType.number,
-                                          validator: (value) =>
-                                          value!.isEmpty
-                                              ? 'Required'
-                                              : null,
+                                          value!.isEmpty ? 'Required' : null,
                                         ),
                                       ),
                                     ],
@@ -327,17 +333,14 @@ class SelectResultDivStdView extends StatelessWidget {
                                 right: 0,
                                 top: 0,
                                 child: GestureDetector(
-                                  onTap: () =>
-                                      controller.removeSubjectField(index),
+                                  onTap: () => controller.removeSubjectField(index),
                                   child: Container(
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: Colors.redAccent,
                                     ),
                                     padding: EdgeInsets.all(6),
-                                    child: Icon(
-                                        Icons.close, color: Colors.white,
-                                        size: 10),
+                                    child: Icon(Icons.close, color: Colors.white, size: 10),
                                   ),
                                 ),
                               )
@@ -349,7 +352,7 @@ class SelectResultDivStdView extends StatelessWidget {
                 )),
             SizedBox(height: 10,),
             CustomCard(
-              color: Colors.grey[300],
+              color: Color(0xff7A7A7A),
               width: SizeConfig.screenWidth,
               height: 50,
               borderRadius: 5,
@@ -358,7 +361,7 @@ class SelectResultDivStdView extends StatelessWidget {
                 controller.addNewSubjectField();
               },
               child: CustomText(
-                text: "Add new subject", color: grayColor, size: 17,),
+                text: "Add new subject", color: whiteColor, size: 17,),
             ),
             SizedBox(height: 60,),
             Obx(() =>

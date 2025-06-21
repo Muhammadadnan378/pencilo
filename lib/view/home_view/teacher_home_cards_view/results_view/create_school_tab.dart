@@ -1,8 +1,5 @@
 import 'dart:io';
-
-import 'package:pencilo/model/school_model.dart';
-import 'package:pencilo/view/home_view/teacher_home_cards_view/results_view/result_view.dart';
-
+import '../../../../controller/teacher_home_result_controller.dart';
 import '../../../../data/consts/const_import.dart';
 import '../../../../data/custom_widget/app_custom_button.dart';
 import '../../../../data/custom_widget/custom_text_field.dart';
@@ -13,7 +10,7 @@ class CreateResultFormView extends StatelessWidget {
     required this.controller,
   });
 
-  final SchoolController controller;
+  final ResultController controller;
 
   @override
   Widget build(BuildContext context) {

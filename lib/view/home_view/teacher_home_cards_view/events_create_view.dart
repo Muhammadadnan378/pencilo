@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/consts/images.dart';
+import 'package:pencilo/data/custom_widget/app_logo_widget.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 import 'package:pencilo/model/create_event_model.dart';
 import '../../../controller/teacher_home_view_controller.dart';
@@ -27,31 +28,11 @@ class CreateEventView extends StatelessWidget {
             return ListView(
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Column(
-                      children: [
-                        CustomText(
-                          text: 'Aniket Ganesh',
-                          color: blackColor,
-                          fontFamily: interFontFamily,
-                          size: 8,
-                        ),
-                        SizedBox(height: 5),
-                        CustomCard(
-                          alignment: Alignment.center,
-                          borderRadius: 100,
-                          color: Color(0xff57A8B8),
-                          width: 41,
-                          height: 41,
-                          child: CustomText(
-                            text: "AG",
-                            size: 20,
-                            color: blackColor,
-                            fontFamily: nixinOneFontFamily,
-                          ),
-                        ),
-                      ],
+                    AppLogoWidget(
+                      width: 70,
+                      height: 50,
+                      fit: BoxFit.cover,
                     ),
                     SizedBox(width: 20,),
                     Obx(() {
