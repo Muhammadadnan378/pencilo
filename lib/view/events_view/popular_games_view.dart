@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:pencilo/controller/events_controller.dart';
 import 'package:pencilo/data/consts/const_import.dart';
+import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
 import 'package:pencilo/data/consts/images.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -118,7 +119,13 @@ class PopularGamesView extends StatelessWidget {
                     return Padding(
                       padding: EdgeInsets.only(bottom: isLastIndex ? 0 : 10),
                       child: CustomCard(
-                        onTap: () => buildShowModalBottomSheet(context, eventData,controller.eventImages[eventData.selectedEventType] ?? basketBallImage),
+                        onTap: (){
+                          if(CurrentUserData.gender == eventData.eventFor || eventData.eventFor == "Both"){
+                            buildShowModalBottomSheet(context, eventData,controller.eventImages[eventData.selectedEventType] ?? basketBallImage);
+                          }else{
+                            Get.snackbar("Error", "This event just for ${eventData.eventFor}", backgroundColor: Colors.red, colorText: Colors.white);
+                          }
+                        },
                         padding: EdgeInsets.only(left: 3, right: 3, top: 3, bottom: 10),
                         width: SizeConfig.screenWidth,
                         color: Color(0xffF2F2F2),
@@ -171,6 +178,10 @@ class PopularGamesView extends StatelessWidget {
                                         buildTitleValue(
                                             title: "Winning Price",
                                             value: eventData.winnerAmount),
+                                        SizedBox(height: 5,),
+                                        buildTitleValue(
+                                            title: "Event for:",
+                                            value: eventData.eventFor),
                                         SizedBox(height: 10),
                                         Align(
                                           alignment: Alignment.centerRight,

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 import '../../../../../controller/sell_book_controller.dart';
 import '../../../../../data/consts/const_import.dart';
@@ -20,6 +21,8 @@ class ImSellingView extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection(sellBookTableName)
+          .doc(CurrentUserData.schoolName)
+          .collection("books")
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -141,31 +144,44 @@ class ImSellingView extends StatelessWidget {
                               Spacer(),
                               Row(
                                 children: [
-                                  CustomCard(
-                                    onTap: () async{
-                                      try {
-                                        // Delete the SellBook from Firestore by its document ID
-                                        await FirebaseFirestore.instance
-                                            .collection(sellBookTableName)
-                                            .doc(sellBook.bookUid) // Use the specific document ID for the SellBook
-                                            .delete();
+                                  Obx(() {
+                                    return controller.isBookDeleting.value ? CircularProgressIndicator() : CustomCard(
+                                      onTap: () async {
+                                        try {
+                                          controller.isBookDeleting(true);
+                                          for (var fireBaseStorgeImages in sellBook.storageImagePath!) {
+                                            await FirebaseStorage.instance.ref(fireBaseStorgeImages).delete();
+                                          }
+                                          // // Delete the SellBook from Firestore by its document ID
+                                          await FirebaseFirestore.instance
+                                              .collection(sellBookTableName)
+                                              .doc(CurrentUserData.schoolName)
+                                              .collection("books")
+                                              .doc(sellBook
+                                              .bookUid) // Use the specific document ID for the SellBook
+                                              .delete();
 
-                                        Get.snackbar("Success", "Sell book deleted successfully!");
-                                      } catch (e) {
-                                        Get.snackbar("Error", "Failed to delete sell book: $e");
-                                      }
-                                    },
-                                    width: 73,
-                                    height: 33,
-                                    color: Color(0xffFF8585),
-                                    borderRadius: 10,
-                                    alignment: Alignment.center,
-                                    child: CustomText(
-                                      text: "Delete",
-                                      size: 12,
-                                      color: Colors.white,
-                                    ),
-                                  ),
+                                          controller.firestoreStorageImagePath.clear();
+                                          controller.firestoreImageUrls.clear();
+                                          Get.snackbar("Success", "Sell book deleted successfully!");
+                                          controller.isBookDeleting(false);
+                                        } catch (e) {
+                                          controller.isBookDeleting(false);
+                                          Get.snackbar("Error", "Failed to delete sell book: $e");
+                                        }
+                                      },
+                                      width: 73,
+                                      height: 33,
+                                      color: Color(0xffFF8585),
+                                      borderRadius: 10,
+                                      alignment: Alignment.center,
+                                      child: CustomText(
+                                        text: "Delete",
+                                        size: 12,
+                                        color: Colors.white,
+                                      ),
+                                    );
+                                  }),
                                   SizedBox(width: 5),
                                   CustomCard(
                                     onTap: () {

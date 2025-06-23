@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'package:printing/printing.dart';
 
 import '../data/consts/colors.dart';
@@ -19,17 +20,58 @@ class AdminSellBookDataView extends StatefulWidget {
 }
 
 class _AdminSellBookDataViewState extends State<AdminSellBookDataView> {
-
-  List<QueryDocumentSnapshot>? _docs;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
-  List<QueryDocumentSnapshot>? _filteredDocs;
 
+  Future<Map<String, List<QueryDocumentSnapshot>>> fetchAllSchoolSellingRequests() async {
+    Map<String, List<QueryDocumentSnapshot>> result = {};
+    for (String school in CurrentUserData.schoolList) {
+      final snapshot = await FirebaseFirestore.instance
+          .collection(sellingRequestTableName)
+          .doc(school)
+          .collection("books")
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        // Sort each school's data by dateTime
+        snapshot.docs.sort((a, b) {
+          final modelA = BuyingSellingModel.fromMap(a.data());
+          final modelB = BuyingSellingModel.fromMap(b.data());
+          final dateA = DateTime.tryParse(modelA.dateTime) ?? DateTime(1970);
+          final dateB = DateTime.tryParse(modelB.dateTime) ?? DateTime(1970);
+          return dateB.compareTo(dateA);
+        });
+
+        result[school] = snapshot.docs;
+      }
+    }
+    return result;
+  }
+
+  bool _passesFilters(QueryDocumentSnapshot doc) {
+    final model = BuyingSellingModel.fromMap(doc.data() as Map<String, dynamic>);
+    final date = DateTime.tryParse(model.dateTime);
+    if (date == null) return false;
+
+    if (_selectedDate != null &&
+        (date.year != _selectedDate!.year ||
+            date.month != _selectedDate!.month ||
+            date.day != _selectedDate!.day)) {
+      return false;
+    }
+
+    if (_selectedTime != null &&
+        (date.hour != _selectedTime!.hour ||
+            date.minute != _selectedTime!.minute)) {
+      return false;
+    }
+
+    return true;
+  }
 
   Future<pw.Document> generatePdf(List<QueryDocumentSnapshot> docs) async {
     final pdf = pw.Document();
 
-    // Table headers
     final headers = [
       'Buyer Name',
       'Buyer Contact',
@@ -44,7 +86,6 @@ class _AdminSellBookDataViewState extends State<AdminSellBookDataView> {
       'Time',
     ];
 
-    // Table rows
     final dataRows = docs.map((doc) {
       final model = BuyingSellingModel.fromMap(doc.data() as Map<String, dynamic>);
       return [
@@ -65,7 +106,7 @@ class _AdminSellBookDataViewState extends State<AdminSellBookDataView> {
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4.landscape,
-        margin: const pw.EdgeInsets.all(10), // tighter margins
+        margin: const pw.EdgeInsets.all(10),
         build: (context) => [
           pw.Text("Buy/Sell Report", style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 10),
@@ -94,7 +135,6 @@ class _AdminSellBookDataViewState extends State<AdminSellBookDataView> {
       ),
     );
 
-
     return pdf;
   }
 
@@ -104,199 +144,198 @@ class _AdminSellBookDataViewState extends State<AdminSellBookDataView> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
-        title: CustomText(text: "Sell Book Data",color: blackColor,),
+        title: CustomText(text: "Sell Book Data", color: blackColor),
         actions: [
-          IconButton(
-            icon: Icon(Icons.picture_as_pdf),
-            onPressed: () async {
-              if (_filteredDocs != null) {
-                final pdfDoc = await generatePdf(_filteredDocs!);
-                await Printing.layoutPdf(onLayout: (format) => pdfDoc.save());
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("No data to export")),
-                );
-              }
-            },
-          ),
-          if(_selectedDate != null || _selectedTime != null)
+          // IconButton(
+          //   icon: const Icon(Icons.picture_as_pdf),
+          //   onPressed: () async {
+          //     final dataMap = await fetchAllSchoolSellingRequests();
+          //     final allDocs = dataMap.values.expand((docs) => docs).toList();
+          //     final filtered = allDocs.where(_passesFilters).toList();
+          //     if (filtered.isNotEmpty) {
+          //       final pdfDoc = await generatePdf(filtered);
+          //       await Printing.layoutPdf(onLayout: (format) => pdfDoc.save());
+          //     } else {
+          //       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No data to export")));
+          //     }
+          //   },
+          // ),
+          if (_selectedDate != null || _selectedTime != null)
             IconButton(
-              icon: Icon(Icons.cancel_presentation),
-              onPressed: () async {
-                _selectedDate = null;
-                _selectedTime = null;
-                _filteredDocs = _docs;
+              icon: const Icon(Icons.cancel_presentation),
+              onPressed: () {
                 setState(() {
-
+                  _selectedDate = null;
+                  _selectedTime = null;
                 });
               },
             ),
-        ]
+        ],
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection(sellingRequestTableName).snapshots(),
+      body: FutureBuilder<Map<String, List<QueryDocumentSnapshot>>>(
+        future: fetchAllSchoolSellingRequests(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(child: Text('No data available.'));
-          }
+          final schoolDataMap = snapshot.data ?? {};
 
-          _docs = snapshot.data!.docs;
-
-          // Sort the list by parsed DateTime
-          _docs!.sort((a, b) {
-            final modelA = BuyingSellingModel.fromMap(a.data() as Map<String, dynamic>);
-            final modelB = BuyingSellingModel.fromMap(b.data() as Map<String, dynamic>);
-
-            final dateA = DateTime.tryParse(modelA.dateTime) ?? DateTime(1970);
-            final dateB = DateTime.tryParse(modelB.dateTime) ?? DateTime(1970);
-
-            return dateB.compareTo(dateA); // For newest first. Use dateA.compareTo(dateB) for oldest first
-          });
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    CustomCard(
-                      onTap: () async {
-                        DateTime? picked = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100),
-                        );
-
-                        if (picked != null) {
-                          setState(() {
-                            _selectedDate = picked;
-                            _filteredDocs = _docs?.where((doc) {
-                              final model = BuyingSellingModel.fromMap(doc.data() as Map<String, dynamic>);
-                              final date = DateTime.tryParse(model.dateTime);
-                              return date != null &&
-                                  date.year == picked.year &&
-                                  date.month == picked.month &&
-                                  date.day == picked.day;
-                            }).toList();
-                          });
-                        }
-                      },
-
-                      height: 25,
-                      color: blackColor,
-                      borderRadius: 5,
-                      alignment: Alignment.center,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 5.0,right: 5),
-                        child: CustomText(text: "Sort by Date",size: 16,),
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 20.0,top: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// Filters
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      CustomCard(
+                        onTap: () async {
+                          DateTime? picked = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2100),
+                          );
+                          if (picked != null) {
+                            setState(() => _selectedDate = picked);
+                          }
+                        },
+                        height: 25,
+                        color: blackColor,
+                        borderRadius: 5,
+                        alignment: Alignment.center,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          child: CustomText(text: "Sort by Date", size: 16),
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 10,),
-                    SizedBox(width: 10,),
-                    CustomCard(
-                      onTap: () async {
-                        TimeOfDay? picked = await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay.now(),
-                        );
-
-                        if (picked != null) {
-                          setState(() {
-                            _selectedTime = picked;
-                            _filteredDocs = _docs?.where((doc) {
-                              final model = BuyingSellingModel.fromMap(doc.data() as Map<String, dynamic>);
-                              final date = DateTime.tryParse(model.dateTime);
-                              return date != null &&
-                                  date.hour == picked.hour &&
-                                  date.minute == picked.minute;
-                            }).toList();
-                          });
-                        }
-                      },
-
-                      height: 25,
-                      color: blackColor,
-                      borderRadius: 5,
-                      alignment: Alignment.center,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 5.0,right: 5),
-                        child: CustomText(text: "Sort by Time",size: 16,),
+                      const SizedBox(width: 10),
+                      CustomCard(
+                        onTap: () async {
+                          TimeOfDay? picked = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.now(),
+                          );
+                          if (picked != null) {
+                            setState(() => _selectedTime = picked);
+                          }
+                        },
+                        height: 25,
+                        color: blackColor,
+                        borderRadius: 5,
+                        alignment: Alignment.center,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          child: CustomText(text: "Sort by Time", size: 16),
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 10,),
-                  ],
-                ),
-                SizedBox(height: 10,),
-                Table(
-                  border: TableBorder.all(color: Colors.black, width: 1.0),
-                  columnWidths: const {
-                    0: FlexColumnWidth(2),
-                    1: FlexColumnWidth(2),
-                    2: FlexColumnWidth(2),
-                    3: FlexColumnWidth(2),
-                    4: FlexColumnWidth(2),
-                    5: FlexColumnWidth(2),
-                    6: FlexColumnWidth(3),
-                  },
-                  children: [
-                    // Header Row
-                    TableRow(
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  /// Tables per school
+                  for (var entry in schoolDataMap.entries)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        tableHeader('Buyer Name'),
-                        tableHeader('Buyer Contact'),
-                        tableHeader('Buyer Address'),
-                        tableHeader('Book Name'),
-                        tableHeader('Amount'),
-                        tableHeader('Seller Name'),
-                        tableHeader('Seller Contact'),
-                        tableHeader('Seller Address'),
-                        tableHeader('Book Name'),
-                        tableHeader('Amount'),
-                        tableHeader('Date'),
-                        tableHeader('Time'),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            const SizedBox(width: 10),
+                            CustomText(
+                              text: entry.key,
+                              fontWeight: FontWeight.bold,
+                              size: 18,
+                              color: Colors.blueAccent,
+                            ),
+                            Spacer(),
+                            GestureDetector(
+                                onTap: () async {
+                                  final filteredDocs = entry.value.where(_passesFilters).toList();
+                                  if (filteredDocs.isNotEmpty) {
+                                    final pdfDoc = await generatePdf(filteredDocs);
+                                    await Printing.layoutPdf(onLayout: (format) => pdfDoc.save());
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text("No data to export for ${entry.key}")),
+                                    );
+                                  }
+                                },
+                                child: Icon(
+                                    Icons.picture_as_pdf
+                                )
+                            ),
+                            const SizedBox(width: 20),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Table(
+                          border: TableBorder.all(color: Colors.black, width: 1.0),
+                          columnWidths: const {
+                            0: FlexColumnWidth(2),
+                            1: FlexColumnWidth(2),
+                            2: FlexColumnWidth(2),
+                            3: FlexColumnWidth(2),
+                            4: FlexColumnWidth(2),
+                            5: FlexColumnWidth(2),
+                            6: FlexColumnWidth(2),
+                            7: FlexColumnWidth(2),
+                            8: FlexColumnWidth(2),
+                            9: FlexColumnWidth(2),
+                            10: FlexColumnWidth(2),
+                            11: FlexColumnWidth(2),
+                          },
+                          children: [
+                            TableRow(
+                              children: [
+                                tableHeader('Buyer Name'),
+                                tableHeader('Buyer Contact'),
+                                tableHeader('Buyer Address'),
+                                tableHeader('Book Name'),
+                                tableHeader('Amount'),
+                                tableHeader('Seller Name'),
+                                tableHeader('Seller Contact'),
+                                tableHeader('Seller Address'),
+                                tableHeader('Book Name'),
+                                tableHeader('Amount'),
+                                tableHeader('Date'),
+                                tableHeader('Time'),
+                              ],
+                            ),
+                            for (var doc in entry.value)
+                              if (_passesFilters(doc))
+                                    () {
+                                  final model = BuyingSellingModel.fromMap(doc.data() as Map<String, dynamic>);
+                                  return TableRow(
+                                    children: [
+                                      tableCell(model.buyerUserName),
+                                      tableCell(model.buyerUserContact),
+                                      tableCell(model.buyerCurrentLocation),
+                                      tableCell(model.bookName),
+                                      tableCell(model.buyerUserAmount),
+                                      tableCell(model.sellerUserName),
+                                      tableCell(model.sellerUserContact),
+                                      tableCell(model.sellerCurrentLocation),
+                                      tableCell(model.bookName),
+                                      tableCell(model.sellerUserAmount),
+                                      tableCell(formatOnlyDate(model.dateTime)),
+                                      tableCell(formatOnlyTime(model.dateTime)),
+                                    ],
+                                  );
+                                }(),
+                          ],
+                        ),
                       ],
                     ),
-
-                    // Data Rows
-                    for (var doc in (_filteredDocs ?? _docs)!)
-                          () {
-                        final model = BuyingSellingModel.fromMap(doc.data() as Map<String, dynamic>);
-                        return TableRow(
-                          children: [
-                            tableCell(model.buyerUserName),
-                            tableCell(model.buyerUserContact),
-                            tableCell(model.buyerCurrentLocation),
-                            tableCell(model.bookName),
-                            tableCell(model.buyerUserAmount),
-                            tableCell(model.sellerUserName),
-                            tableCell(model.sellerUserContact),
-                            tableCell(model.sellerCurrentLocation),
-                            tableCell(model.bookName),
-                            tableCell(model.sellerUserAmount),
-                            tableCell(formatOnlyDate(model.dateTime)),
-                            tableCell(formatOnlyTime(model.dateTime)),
-                          ],
-                        );
-                      }(),
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-
-                // You can add another table or section here to show additional data like amount, payment method, dateTime etc.
-              ],
+                ],
+              ),
             ),
           );
         },
@@ -306,7 +345,7 @@ class _AdminSellBookDataViewState extends State<AdminSellBookDataView> {
 
   Widget tableHeader(String text) {
     return Padding(
-      padding: const EdgeInsets.only(top: 4.0,bottom: 4,left: 3,right: 3),
+      padding: const EdgeInsets.all(4.0),
       child: CustomText(
         text: text,
         fontWeight: FontWeight.bold,

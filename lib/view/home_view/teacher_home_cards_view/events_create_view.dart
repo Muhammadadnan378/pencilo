@@ -121,17 +121,14 @@ class EventTab extends StatelessWidget {
       controller.schoolNameController.text = controller.eventsModel!.schoolName;
       controller.entryFeeController.text = controller.eventsModel!.entryFee;
       controller.time.value = controller.eventsModel!.time;
-      controller.winnerAmountController.text =
-          controller.eventsModel!.winnerAmount;
-      controller.contactNumberController.text =
-          controller.eventsModel!.contactNumber;
+      controller.winnerAmountController.text = controller.eventsModel!.winnerAmount;
+      controller.contactNumberController.text = controller.eventsModel!.contactNumber;
       controller.rulesController.text = controller.eventsModel!.rules;
-      controller.selectedDateTime.value =
-          controller.eventsModel!.selectedDateTime;
-      controller.selectedEventType.value =
-          controller.eventsModel!.selectedEventType;
+      controller.selectedDateTime.value = controller.eventsModel!.selectedDateTime;
+      controller.selectedEventType.value = controller.eventsModel!.selectedEventType;
       controller.selectedCity.value = controller.eventsModel!.selectedCity;
       controller.selectedState.value = controller.eventsModel!.selectedState;
+      controller.selectedEventFor.value = controller.eventsModel!.eventFor;
     }
 
     return Column(
@@ -166,11 +163,26 @@ class EventTab extends StatelessWidget {
           padding: const EdgeInsets.only(left: 34.0),
           child: Obx(() {
             controller.isSelectEventEmpty.value;
-            return CustomDropdown(
-              isValidate: controller.isSelectEventEmpty.value,
-              subjects: controller.eventTypes,
-              selectedValue: controller.selectedEventType,
-              dropdownTitle: "Select Event Type",
+            return Row(
+              children: [
+                Expanded(
+                  child: CustomDropdown(
+                    isValidate: controller.isSelectEventEmpty.value,
+                    subjects: controller.eventTypes,
+                    selectedValue: controller.selectedEventType,
+                    dropdownTitle: "Select Event Type",
+                  ),
+                ),
+                SizedBox(width: 10,),
+                Expanded(
+                  child: CustomDropdown(
+                    isValidate: controller.isSelectEventForEmpty.value,
+                    subjects: controller.eventForList,
+                    selectedValue: controller.selectedEventFor,
+                    dropdownTitle: "Event for",
+                  ),
+                ),
+              ],
             );
           }),
         ),
@@ -706,6 +718,10 @@ class ApplicationTab extends StatelessWidget {
                                       buildTitleValue(
                                           title: "Winning Price",
                                           value: eventData.winnerAmount),
+                                      SizedBox(height: 5),
+                                      buildTitleValue(
+                                          title: "Event for:",
+                                          value: eventData.eventFor),
                                       SizedBox(height: 10),
                                       Row(
                                         children: [

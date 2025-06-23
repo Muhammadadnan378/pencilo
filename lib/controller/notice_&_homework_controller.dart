@@ -42,7 +42,7 @@ class NotesNHomeWorkController extends GetxController {
     // // Upload image to Firebase Storage if selected
     if (selectedImage.value != null) {
       final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final storageRef = FirebaseStorage.instance.ref().child('${isHomeWork.value == true ? "homeWork_images" : "notes_images"}/$fileName');
+      final storageRef = FirebaseStorage.instance.ref().child('${CurrentUserData.schoolName}/${isHomeWork.value == true ? "homeWork_images" : "notes_images"}/$fileName');
       await storageRef.putFile(selectedImage.value!);
       imageUrl = await storageRef.getDownloadURL();
     }
@@ -68,7 +68,7 @@ class NotesNHomeWorkController extends GetxController {
 
         try {
           await FirebaseFirestore.instance
-              .collection(isHomeWork.value == true ? homeWorkTableName : noticeTableName)
+              .collection(isHomeWork.value == true ? homeWorkTableName : noticeTableName).doc(CurrentUserData.schoolName).collection("students")
               .doc(noticeId)
               .set(isHomeWork.value == true ? notice.toHomeWork() : notice.toNotice());
         }on FirebaseFirestore catch (e) {

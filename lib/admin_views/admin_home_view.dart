@@ -1,12 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
 import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/current_user_data/current_user_Data.dart';
-import 'package:printing/printing.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:pdf/pdf.dart';
-import '../db_helper/model_name.dart';
-import '../model/buying_selling_model.dart';
 import 'add_short_video.dart';
 import 'admin_sell_book_data_view.dart';
 

@@ -202,7 +202,7 @@ class ResultController extends GetxController {
   List<String> getPracticalMarksList = [];
   List<String> getSubjectNameList = [];
   List<String> getMarksList = [];
-  List<String> getTermList = ["Unit Term","Midterm","Final Term"];
+  List<String> getTermList = ["Unit Term I","Unit Term II","Midterm I","Midterm II","Final Term"];
   final selectedStandard = ''.obs;
   final selectedDivision = ''.obs;
   final selectedTerm = ''.obs;

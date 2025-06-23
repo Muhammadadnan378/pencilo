@@ -61,6 +61,7 @@ class EditProfilePage extends StatelessWidget {
                 _buildTextField('Admission Number', controller.admissionNumberController, keyboardType: TextInputType.number),
               Obx(() {
                 controller.selectedSchoolName.value;
+                controller.selectedSchoolName.value = controller.schoolNameController.text;
                 return TypeAheadField<String>(
                   autoFlipDirection: true,
                   suggestionsCallback: (pattern) {

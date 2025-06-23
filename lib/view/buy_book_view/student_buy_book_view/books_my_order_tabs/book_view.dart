@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../../controller/sell_book_controller.dart';
 import '../../../../data/consts/const_import.dart';
 import '../../../../data/consts/images.dart';
+import '../../../../data/current_user_data/current_user_Data.dart';
 import '../../../../db_helper/model_name.dart';
 import '../../../../model/sell_book_model.dart';
 import '../book_detail_view.dart';
@@ -212,7 +213,7 @@ class StudentBooksView extends StatelessWidget {
                 controller.searchQuery.value;
                 return StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance.collection(
-                      sellBookTableName).snapshots(),
+                      sellBookTableName).doc(CurrentUserData.schoolName).collection("books").snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState ==
                         ConnectionState.waiting) {

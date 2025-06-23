@@ -36,6 +36,7 @@ class SellBookController extends GetxController {
   var images = <File>[].obs;  // List to store selected images
   var updateImageList = [].obs;  // List to store selected images
   var uploading = false.obs;
+  var isBookDeleting = false.obs;
   var isSelectCashDelivery = true.obs;
   RxString currentLocation = ''.obs; // Observable to store the full address
   var books = <SellBookModel>[].obs;
@@ -111,7 +112,7 @@ class SellBookController extends GetxController {
   Future<void> deleteImageFromFirestoreAndStorage(String bookUid)async{
     // Remove image from Firestore
     for (var item in firestoreImageUrls) {
-      await FirebaseFirestore.instance.collection(sellBookTableName).doc(bookUid).update({
+      await FirebaseFirestore.instance.collection(sellBookTableName).doc(CurrentUserData.schoolName).collection("books").doc(bookUid).update({
         'images': FieldValue.arrayRemove([item]),
       });
     }
@@ -162,7 +163,7 @@ class SellBookController extends GetxController {
       }
       // Upload images to Firebase Storage and get the download URLs
       for (var imageFile in images) {
-        String fileName = '$sellBookTableName/${CurrentUserData.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+        String fileName = '${CurrentUserData.schoolName}/$sellBookTableName/${CurrentUserData.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg';
         TaskSnapshot uploadTaskSnapshot = await _firebaseStorage.ref(fileName).putFile(imageFile);
         storageImagePath.add(fileName);
         String downloadUrl = await uploadTaskSnapshot.ref.getDownloadURL();
@@ -171,7 +172,7 @@ class SellBookController extends GetxController {
 
 
       // Store the updated book data in Firestore
-      await _firestore.collection(sellBookTableName).doc(book.bookUid).update({
+      await _firestore.collection(sellBookTableName).doc(CurrentUserData.schoolName).collection("books").doc(book.bookUid).update({
         'bookUid': book.bookUid,
         'uid': book.uid,
         'title': title,  // Use updated title
@@ -240,7 +241,7 @@ class SellBookController extends GetxController {
       List<String> storageImagePath = [];
 
       for (var imageFile in book.images) {
-        String fileName = '$sellBookTableName/${CurrentUserData.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+        String fileName = '${CurrentUserData.schoolName}/$sellBookTableName/${CurrentUserData.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg';
         TaskSnapshot uploadTaskSnapshot = await _firebaseStorage.ref(fileName).putFile(File(imageFile));
         storageImagePath.add(fileName);
         String downloadUrl = await uploadTaskSnapshot.ref.getDownloadURL();
@@ -265,7 +266,7 @@ class SellBookController extends GetxController {
       );
 
       // Store the book data along with image URLs in Firestore
-      await _firestore.collection(sellBookTableName).doc(book.bookUid).set(newBook.toFirestore()).then((_) {
+      await _firestore.collection(sellBookTableName).doc(CurrentUserData.schoolName).collection("books").doc(book.bookUid).set(newBook.toFirestore()).then((_) {
         // delete the book from hive
         var box = Hive.box<SellBookModel>(sellBookTableName);
         box.delete(book.bookUid);
@@ -352,7 +353,7 @@ class SellBookController extends GetxController {
     bool userExists = false;
 
     final querySnapshot = await FirebaseFirestore.instance
-        .collection(buyingRequestTableName)
+        .collection(buyingRequestTableName).doc(CurrentUserData.schoolName).collection("books")
         .where("uid", isEqualTo: CurrentUserData.uid)
         .get();
 
@@ -363,7 +364,7 @@ class SellBookController extends GetxController {
     if (!userExists) {
       try {
         // Update the book data in Firestore by adding the new user data to buyBookUsersList
-        await FirebaseFirestore.instance.collection(buyingRequestTableName).doc(sellId).set(
+        await FirebaseFirestore.instance.collection(buyingRequestTableName).doc(CurrentUserData.schoolName).collection("books").doc(sellId).set(
             userData.toMap())
             .then((value) {
           amountController.clear();
@@ -387,7 +388,7 @@ class SellBookController extends GetxController {
       }
 
       await FirebaseFirestore.instance
-          .collection(sellBookTableName)
+          .collection(sellBookTableName).doc(CurrentUserData.schoolName).collection("books")
           .doc(book.bookUid)
           .update({
         'requestCount': FieldValue.increment(1),
@@ -400,7 +401,7 @@ class SellBookController extends GetxController {
       try {
         // Query the Firestore collection based on the uid
         QuerySnapshot snapshot = await FirebaseFirestore.instance
-            .collection(studentTableName)
+            .collection(studentTableName).doc(CurrentUserData.schoolName).collection("books")
             .where("uid", isEqualTo: book.uid)
             .get();
 
@@ -475,9 +476,9 @@ class SellBookController extends GetxController {
       );
 
 
-      await FirebaseFirestore.instance.collection(sellingRequestTableName).doc(sellId).set(buyBookData.toMap());
+      await FirebaseFirestore.instance.collection(sellingRequestTableName).doc(CurrentUserData.schoolName).collection("books").doc(sellId).set(buyBookData.toMap());
 
-      await FirebaseFirestore.instance.collection(buyingRequestTableName).doc(sellBook.buyId).update({
+      await FirebaseFirestore.instance.collection(buyingRequestTableName).doc(CurrentUserData.schoolName).collection("books").doc(sellBook.buyId).update({
         'sellingRequest' : true,
         'sellId' : sellId,
         'sellerUid' : CurrentUserData.uid,
@@ -488,7 +489,7 @@ class SellBookController extends GetxController {
       try {
         // Query the Firestore collection based on the uid
         QuerySnapshot snapshot = await FirebaseFirestore.instance
-            .collection(studentTableName)
+            .collection(studentTableName).doc(CurrentUserData.schoolName).collection("books")
             .where("uid", isEqualTo: sellBook.buyerUid)
             .get();
 
@@ -545,11 +546,11 @@ class SellBookController extends GetxController {
     if(sellBook.sellingRequest == true){
 
       try {
-        await FirebaseFirestore.instance.collection(buyingRequestTableName).doc(sellBook.buyId).update({
+        await FirebaseFirestore.instance.collection(buyingRequestTableName).doc(CurrentUserData.schoolName).collection("books").doc(sellBook.buyId).update({
           'sellingRequest' : false
         });
 
-        await FirebaseFirestore.instance.collection(sellingRequestTableName).doc(sellBook.sellId).delete();
+        await FirebaseFirestore.instance.collection(sellingRequestTableName).doc(CurrentUserData.schoolName).collection("books").doc(sellBook.sellId).delete();
         isLoadingMap[sellBook.buyId] = false;
         Get.snackbar("Success", "Request canceled successfully!",backgroundColor: whiteColor,colorText: blackColor);
       } on FirebaseFirestore catch (e) {
@@ -561,15 +562,14 @@ class SellBookController extends GetxController {
 
   Future<void> updateRequestCount() async {
     try {
-      debugPrint("object");
       final querySnapshot = await FirebaseFirestore.instance
-          .collection(sellBookTableName)
+          .collection(sellBookTableName).doc(CurrentUserData.schoolName).collection("books")
           .where('uid', isEqualTo: CurrentUserData.uid) // Filter by current user UID
           .get();
 
       for (var doc in querySnapshot.docs) {
         await FirebaseFirestore.instance
-            .collection(sellBookTableName)
+            .collection(sellBookTableName).doc(CurrentUserData.schoolName).collection("books")
             .doc(doc.id)
             .update({'requestCount': 0}); // or set to 0 if resetting
       }
@@ -584,7 +584,7 @@ class SellBookController extends GetxController {
 
       // Fetch and update notice documents
       final noticeQuery = await firestore
-          .collection(noticeTableName)
+          .collection(noticeTableName).doc(CurrentUserData.schoolName).collection("students")
           .where("division", isEqualTo: CurrentUserData.division)
           .where("standard", isEqualTo: CurrentUserData.standard)
           .get();
@@ -592,7 +592,7 @@ class SellBookController extends GetxController {
       for (var doc in noticeQuery.docs) {
         final watchedList = List<String>.from(doc['noticeIsWatched'] ?? []);
         if (!watchedList.contains(CurrentUserData.uid)) {
-          await firestore.collection(noticeTableName).doc(doc.id).update({
+          await firestore.collection(noticeTableName).doc(CurrentUserData.schoolName).collection("students").doc(doc.id).update({
             'noticeIsWatched': FieldValue.arrayUnion([CurrentUserData.uid])
           });
         }
@@ -600,7 +600,7 @@ class SellBookController extends GetxController {
 
       // Fetch and update homework documents
       final homeworkQuery = await firestore
-          .collection(homeWorkTableName)
+          .collection(homeWorkTableName).doc(CurrentUserData.schoolName).collection("students")
           .where("division", isEqualTo: CurrentUserData.division)
           .where("standard", isEqualTo: CurrentUserData.standard)
           .get();
@@ -608,7 +608,7 @@ class SellBookController extends GetxController {
       for (var doc in homeworkQuery.docs) {
         final watchedList = List<String>.from(doc['noticeIsWatched'] ?? []);
         if (!watchedList.contains(CurrentUserData.uid)) {
-          await firestore.collection(homeWorkTableName).doc(doc.id).update({
+          await firestore.collection(homeWorkTableName).doc(CurrentUserData.schoolName).collection("students").doc(doc.id).update({
             'noticeIsWatched': FieldValue.arrayUnion([CurrentUserData.uid])
           });
         }
@@ -617,10 +617,6 @@ class SellBookController extends GetxController {
       debugPrint("Error updating watched status: $e");
     }
   }
-
-
-
-
 }
 
 

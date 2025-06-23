@@ -45,11 +45,11 @@ class LoginController extends GetxController {
   }
 
   Future<void> storeSchoolName () async{
-    QuerySnapshot schoolSnapshot = await FirebaseFirestore.instance.collection("schools_name").where("schoolName",isEqualTo: schoolNameController.text).get();
+    QuerySnapshot schoolSnapshot = await FirebaseFirestore.instance.collection("schools_name").where("schoolName",isEqualTo: selectedSchoolName.value).get();
     if(schoolSnapshot.docs.isNotEmpty){
       return;
     }else{
-      await FirebaseFirestore.instance.collection("schools_name").add({"schoolName":schoolNameController.text}).then((value) {
+      await FirebaseFirestore.instance.collection("schools_name").add({"schoolName": selectedSchoolName.value}).then((value) {
         CurrentUserData.getSchoolName ();
       });
     }
@@ -93,12 +93,12 @@ class LoginController extends GetxController {
 
       if (isTeacher) {
         snapshot = await FirebaseFirestore.instance
-            .collection(teacherTableName)
+            .collection(teacherTableName).doc(selectedSchoolName.value).collection("teachers")
             .where('phoneNumber', isEqualTo: phoneNumber.value)
             .get();
       } else if (isStudent) {
         snapshot = await FirebaseFirestore.instance
-            .collection(studentTableName)
+            .collection(studentTableName).doc(selectedSchoolName.value).collection("students")
             .where('phoneNumber', isEqualTo: phoneNumber.value)
             .get();
       } else {
@@ -122,10 +122,12 @@ class LoginController extends GetxController {
       debugPrint("$isTeacher");
       debugPrint("pushToken $pushToken");
       // Update push token
-      await FirebaseFirestore.instance
-          .collection(isTeacher ? teacherTableName : isStudent ? studentTableName : 'admin')
-          .doc(data['uid'])
-          .update({'pushToken': pushToken});
+      if (isTeacher || isStudent) {
+        await FirebaseFirestore.instance
+            .collection(isTeacher ? teacherTableName : isStudent ? studentTableName : 'admin').doc(selectedSchoolName.value).collection(isTeacher ? "teachers" : isStudent ? "students" : "admin")
+            .doc(data['uid'])
+            .update({'pushToken': pushToken});
+      }
 
       // Load into CurrentUserData
       CurrentUserData.uid = data['uid'] ?? '';
@@ -202,13 +204,13 @@ class LoginController extends GetxController {
 
       if (isTeacher) {
         userDoc = await FirebaseFirestore.instance
-            .collection(teacherTableName)
+            .collection(teacherTableName).doc(selectedSchoolName.value).collection("teachers")
             .where('phoneNumber', isEqualTo: phoneNumber.value)
             .get();
       } else if (isStudent) {
         debugPrint("Student");
         userDoc = await FirebaseFirestore.instance
-            .collection(studentTableName)
+            .collection(studentTableName).doc(selectedSchoolName.value).collection("students")
             .where('phoneNumber', isEqualTo: phoneNumber.value)
             .get();
       }else{
@@ -317,7 +319,7 @@ class LoginController extends GetxController {
       );
 
       // Store the teacher data in Firestore using the toMap method
-      await FirebaseFirestore.instance.collection(teacherTableName).doc(uid).set(newTeacher.toMap()).then((_) {
+      await FirebaseFirestore.instance.collection(teacherTableName).doc(selectedSchoolName.value).collection("teachers").doc(uid).set(newTeacher.toMap()).then((_) {
 
 
         // Update static data in CurrentUserData class
@@ -363,18 +365,10 @@ class LoginController extends GetxController {
           gender: selectedGender.value,
           pushToken: pushToken,
       );
-      QuerySnapshot studentSnapshot = await FirebaseFirestore.instance
-          .collection(studentAttendanceTableName)
-          .doc(selectedSchoolName.value)
-          .collection("students")
-          .where("schoolName", isEqualTo: selectedSchoolName.value).where(
-          "division", isEqualTo: selectedDivision.value).where(
-          "standard", isEqualTo: selectedStandard.value)
-          .get();
       
       await addStudentAttendance(uid);
       // Store the student data in Firestore using the toMap method
-      await FirebaseFirestore.instance.collection(studentTableName).doc(uid).set(newStudent.toMap()).then((_) {
+      await FirebaseFirestore.instance.collection(studentTableName).doc(selectedSchoolName.value).collection("students").doc(uid).set(newStudent.toMap()).then((_) {
 
         // Update static data in CurrentUserData class
         CurrentUserData.uid = uid;

@@ -40,7 +40,7 @@ class ProfileController extends GetxController {
         isProfileLoading.value = true;
         // Reference the Firebase Storage location using CurrentUser.uid as the folder name
         Reference storageReference =
-        FirebaseStorage.instance.ref().child('profileUrl/${CurrentUserData.uid}');
+        FirebaseStorage.instance.ref().child('${CurrentUserData.schoolName}/profileUrl/${CurrentUserData.uid}');
         UploadTask uploadTask = storageReference.putFile(imageFile);
 
         // Get download URL after upload
@@ -59,11 +59,11 @@ class ProfileController extends GetxController {
     try {
       // Update in Firestore
       if (CurrentUserData.isTeacher) {
-        await FirebaseFirestore.instance.collection(teacherTableName).doc(CurrentUserData.uid).update({
+        await FirebaseFirestore.instance.collection(teacherTableName).doc(selectedSchoolName.value).collection("teachers").doc(CurrentUserData.uid).update({
           'profileUrl': newImageUrl,
         });
       } else if (CurrentUserData.isStudent) {
-        await FirebaseFirestore.instance.collection(studentTableName).doc(CurrentUserData.uid).update({
+        await FirebaseFirestore.instance.collection(studentTableName).doc(selectedSchoolName.value).collection("students").doc(CurrentUserData.uid).update({
           'profileUrl': newImageUrl,
         });
       }
@@ -303,7 +303,7 @@ class ProfileController extends GetxController {
         try {
           // Update teacher data in Firestore
           await FirebaseFirestore.instance
-              .collection(teacherTableName)
+              .collection(teacherTableName).doc(selectedSchoolName.value).collection("teachers")
               .doc(CurrentUserData.uid)
               .update(teacherModel.toMap());
 
@@ -328,7 +328,7 @@ class ProfileController extends GetxController {
         try {
           // Update student data in Firestore
           await FirebaseFirestore.instance
-              .collection(studentTableName)
+              .collection(studentTableName).doc(selectedSchoolName.value).collection("students")
               .doc(CurrentUserData.uid)
               .update(studentModel.toMap());
           
@@ -419,7 +419,7 @@ class ProfileController extends GetxController {
 
   Future<void> getNotice() async {
     QuerySnapshot noticeSnapshot = await FirebaseFirestore.instance
-        .collection(noticeTableName)
+        .collection(noticeTableName).doc(selectedSchoolName.value).collection("students")
         .where("division", isEqualTo: CurrentUserData.division)
         .where("standard", isEqualTo: CurrentUserData.standard)
         .get();
@@ -439,7 +439,7 @@ class ProfileController extends GetxController {
 
   Future<void> markNoticeAsWatched() async {
     QuerySnapshot noticeSnapshot = await FirebaseFirestore.instance
-        .collection(noticeTableName)
+        .collection(noticeTableName).doc(selectedSchoolName.value).collection("students")
         .where("division", isEqualTo: CurrentUserData.division)
         .where("standard", isEqualTo: CurrentUserData.standard)
         .get();
@@ -451,7 +451,7 @@ class ProfileController extends GetxController {
       // If UID is not already in the list, add it
       if (!noticeModel.noticeIsWatched.contains(CurrentUserData.uid)) {
         await FirebaseFirestore.instance
-            .collection(noticeTableName)
+            .collection(noticeTableName).doc(selectedSchoolName.value).collection("students")
             .doc(noticeDoc.id)
             .update({
           "noticeIsWatched": FieldValue.arrayUnion([CurrentUserData.uid])
@@ -464,6 +464,8 @@ class ProfileController extends GetxController {
 
   ///Result view Methods
   RxString selectedYear = DateTime.now().year.toString().obs;
+  RxString selectedTerm = "".obs;
+  List<String> getTermList = ["Unit Term I","Unit Term II","Midterm I","Midterm II","Final Term"];
   RxString schoolLogoImage = "".obs;
   RxString schoolClassTeacherSignatureImage = "".obs;
   RxString schoolPrincipleSignatureImage = "".obs;
@@ -474,9 +476,7 @@ class ProfileController extends GetxController {
   RxString studentName = "".obs;
   RxString studentRollNo = "".obs;
   RxString studentDivStd = "".obs;
-  RxBool isFinalShow = false.obs;
-  RxBool isUnitTermShow = false.obs;
-  RxBool isMidShow = false.obs;
+  RxBool isTermResultPDFShow = false.obs;
   // RxList<QuerySnapshot> resultDoc = [].obs;
   Rx<QuerySnapshot?> resultDoc = Rx<QuerySnapshot?>(null);
   List<String> get yearsList {

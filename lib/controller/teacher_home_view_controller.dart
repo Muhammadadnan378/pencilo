@@ -13,6 +13,7 @@ class TeacherHomeViewController extends GetxController{
   RxBool isSelectCityEmpty = false.obs;
   RxBool isSelectStateEmpty = false.obs;
   RxBool isSelectEventEmpty = false.obs;
+  RxBool isSelectEventForEmpty = false.obs;
   EventModel? eventsModel;
   RxInt selectedHours = 0.obs; // to store selected hours
   RxInt selectedMinutes = 0.obs; // to store selected minutes
@@ -22,6 +23,8 @@ class TeacherHomeViewController extends GetxController{
   RxString selectedEventType = ''.obs;
   RxString selectedCity = ''.obs;
   RxString selectedState = ''.obs;
+  RxString selectedEventFor = ''.obs;
+  List<String> eventForList = ["Male","Female","Both"];
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -95,7 +98,7 @@ class TeacherHomeViewController extends GetxController{
 
   checkValidatFields(BuildContext context) {
     // Check if any of the required fields are empty
-    if (selectedEventType.value.isEmpty || selectedCity.value.isEmpty || selectedState.value.isEmpty) {
+    if (selectedEventType.value.isEmpty || selectedCity.value.isEmpty || selectedState.value.isEmpty || selectedEventFor.value.isEmpty) {
       if (selectedEventType.value.isEmpty) {
         isSelectEventEmpty.value = true;
       }
@@ -104,6 +107,9 @@ class TeacherHomeViewController extends GetxController{
       }
       if (selectedState.value.isEmpty) {
         isSelectStateEmpty.value = true;
+      }
+      if (selectedEventFor.value.isEmpty) {
+        isSelectEventForEmpty.value = true;
       }
     }
   }
@@ -129,7 +135,8 @@ class TeacherHomeViewController extends GetxController{
         contactNumber: contactNumberController.text,
         rules: rulesController.text,
         selectedDateTime: selectedDateTime.value,
-        participants: []
+        participants: [],
+        eventFor: selectedEventFor.value,
       );
 
       // Convert the event object to a map
@@ -166,7 +173,8 @@ class TeacherHomeViewController extends GetxController{
         contactNumber: contactNumberController.text,
         rules: rulesController.text,
         selectedDateTime: selectedDateTime.value,
-        participants: eventsModel!.participants
+        participants: eventsModel!.participants,
+        eventFor: selectedEventFor.value,
       );
 
       // Convert the event object to a map
@@ -214,6 +222,7 @@ class TeacherHomeViewController extends GetxController{
     isSelectCityEmpty.value = false;
     isSelectStateEmpty.value = false;
     isSelectEventEmpty.value = false;
+    isSelectEventForEmpty.value = false;
     // Reset all reactive variables
     selectedEventType.value = '';
     selectedCity.value = '';

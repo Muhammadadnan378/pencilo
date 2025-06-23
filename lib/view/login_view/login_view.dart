@@ -16,6 +16,7 @@ class LoginView extends StatelessWidget {
   Widget build(BuildContext context) {
     controller.isTeacher = isTeacher;
     controller.isStudent = isStudent;
+    debugPrint("school name: ${controller.schoolNameController.text}");
     return Scaffold(
       body: Center(
         child: Padding(

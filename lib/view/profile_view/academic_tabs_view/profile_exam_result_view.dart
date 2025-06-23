@@ -106,9 +106,7 @@ class _ProfileExamResultViewState extends State<ProfileExamResultView> {
         .toList();
 
     if (termDocs.isEmpty) {
-      controller.isFinalShow(false);
-      controller.isMidShow(false);
-      controller.isUnitTermShow(false);
+      controller.isTermResultPDFShow(false);
       Get.snackbar("Notice", "No data for $term");
       return;
     }
@@ -272,9 +270,7 @@ class _ProfileExamResultViewState extends State<ProfileExamResultView> {
       onLayout: (PdfPageFormat format) async => pdf.save(),
       name: "$term-report.pdf",
     ).then((value) {
-      controller.isFinalShow(false);
-      controller.isMidShow(false);
-      controller.isUnitTermShow(false);
+      controller.isTermResultPDFShow(false);
     },);
   }
 
@@ -292,98 +288,87 @@ class _ProfileExamResultViewState extends State<ProfileExamResultView> {
           children: [
             Padding(
               padding: const EdgeInsets.only(left: 10.0, right: 10),
-              child: Row(
+              child: Column(
                 children: [
-                  Obx(() {
-                    controller.selectedYear.value;
-                    return Expanded(
-                      child: CustomDropdown(
-                        subjects: controller.yearsList, // <- fixed here
-                        selectedValue: controller.selectedYear,
-                        dropdownTitle: "Select Year",
-                        onSelected: (value) async {
-                          controller.selectedYear.value = value;
-                          await fetchSchoolData();
-                        },
-                      ),
-                    );
-                  }),
-                  SizedBox(width: 5,),
-                  Obx(() {
-                    controller.selectedStandard.value;
-                    return Expanded(
-                      child: CustomDropdown(
-                        subjects: controller.standards,
-                        selectedValue: controller.selectedStandard,
-                        dropdownTitle: "Select Standard",
-                        onSelected: (value) async {
-                          controller.selectedStandard.value = value;
-                          await fetchSchoolData();
-                        },
-                      ),
-                    );
-                  }),
-                  SizedBox(width: 5,),
-                  Obx(() {
-                    controller.selectedDivision.value;
-                    return Expanded(
-                      child: CustomDropdown(
-                        subjects: controller.divisions,
-                        selectedValue: controller.selectedDivision,
-                        dropdownTitle: "Select Division",
-                        onSelected: (value) async {
-                          controller.selectedDivision.value = value;
-                          await fetchSchoolData();
-                        },
-                      ),
-                    );
-                  }),
+                  Row(
+                    children: [
+                      Obx(() {
+                        controller.selectedYear.value;
+                        return Expanded(
+                          child: CustomDropdown(
+                            subjects: controller.yearsList, // <- fixed here
+                            selectedValue: controller.selectedYear,
+                            dropdownTitle: "Select Year",
+                            onSelected: (value) async {
+                              controller.selectedYear.value = value;
+                              await fetchSchoolData();
+                            },
+                          ),
+                        );
+                      }),
+                      SizedBox(width: 5,),
+                      Obx(() {
+                        controller.selectedTerm.value;
+                        return Expanded(
+                          child: CustomDropdown(
+                            subjects: controller.getTermList, // <- fixed here
+                            selectedValue: controller.selectedTerm,
+                            dropdownTitle: "Select Term",
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Obx(() {
+                        controller.selectedStandard.value;
+                        return Expanded(
+                          child: CustomDropdown(
+                            subjects: controller.standards,
+                            selectedValue: controller.selectedStandard,
+                            dropdownTitle: "Select Standard",
+                            onSelected: (value) async {
+                              controller.selectedStandard.value = value;
+                              await fetchSchoolData();
+                            },
+                          ),
+                        );
+                      }),
+                      SizedBox(width: 5,),
+                      Obx(() {
+                        controller.selectedDivision.value;
+                        return Expanded(
+                          child: CustomDropdown(
+                            subjects: controller.divisions,
+                            selectedValue: controller.selectedDivision,
+                            dropdownTitle: "Select Division",
+                            onSelected: (value) async {
+                              controller.selectedDivision.value = value;
+                              await fetchSchoolData();
+                            },
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
                 ],
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Column(
-                  children: [
-                    Obx(() => !controller.isMidShow.value ? IconButton(
-                      onPressed: (){
-                        controller.isMidShow(true);
-                        _printReport(term: "Midterm");
-                      },
-                      icon: Icon(Icons.picture_as_pdf),
-                    ) : Center(child: CircularProgressIndicator()),),
-                    SizedBox(height: 5),
-                    CustomText(text: "Midterm", size: 16, fontWeight: FontWeight.w600,color: blackColor,),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Obx(() => !controller.isUnitTermShow.value ? IconButton(
-                      onPressed: (){
-                        controller.isUnitTermShow(true);
-                        _printReport(term: "Unit Term");
-                      },
-                      icon: Icon(Icons.picture_as_pdf),
-                    ) : Center(child: CircularProgressIndicator()),),
-                    SizedBox(height: 5),
-                    CustomText(text: "Unit Term", size: 16, fontWeight: FontWeight.w600,color: blackColor,),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Obx(() => !controller.isFinalShow.value ? IconButton(
-                      onPressed: (){
-                        controller.isFinalShow(true);
-                        _printReport(term: "Final Term");
-                      },
-                      icon: Icon(Icons.picture_as_pdf),
-                    ) : Center(child: CircularProgressIndicator()),),
-                    SizedBox(height: 5),
-                    CustomText(text: "Final Term", size: 16, fontWeight: FontWeight.w600,color: blackColor,),
-                  ],
-                ),
-              ],
+
+            SizedBox(height: 10,),
+            Center(
+              child: Obx(() => controller.isTermResultPDFShow.value ? CircularProgressIndicator() : CustomCard(
+                  onTap: () {
+                    controller.isTermResultPDFShow(true);
+                    _printReport(term: controller.selectedTerm.value);
+                  },
+                  height: 50,
+                  width: SizeConfig.screenWidth * 0.7,
+                  color: blackColor,
+                  borderRadius: 10,
+                  child: Icon(Icons.picture_as_pdf, color: whiteColor,size: 30,)
+              ),),
             ),
           ],
         ),

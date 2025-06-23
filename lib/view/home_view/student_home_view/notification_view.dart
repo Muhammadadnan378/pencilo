@@ -42,7 +42,7 @@ class NotificationView extends StatelessWidget {
         children: [
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
-                .collection(buyingRequestTableName)
+                .collection(buyingRequestTableName).doc(CurrentUserData.schoolName).collection("books")
                 .where("sellerUid", isEqualTo: CurrentUserData.uid)
                 .snapshots(),
             builder: (context, snapshot) {
@@ -258,12 +258,12 @@ class NotificationView extends StatelessWidget {
           StreamBuilder<List<QuerySnapshot>>(
             stream: CombineLatestStream.list([
               FirebaseFirestore.instance
-                  .collection(noticeTableName)
+                  .collection(noticeTableName).doc(CurrentUserData.schoolName).collection("students")
                   .where("division", isEqualTo: CurrentUserData.division)
                   .where("standard", isEqualTo: CurrentUserData.standard)
                   .snapshots(),
               FirebaseFirestore.instance
-                  .collection(homeWorkTableName)
+                  .collection(homeWorkTableName).doc(CurrentUserData.schoolName).collection("students")
                   .where("division", isEqualTo: CurrentUserData.division)
                   .where("standard", isEqualTo: CurrentUserData.standard)
                   .snapshots(),

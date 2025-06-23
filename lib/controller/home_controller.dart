@@ -93,7 +93,7 @@ Future<void> startLocationStream() async {
   // ✅ Store initial location
   if (CurrentUserData.isTeacher == true) {
     await FirebaseFirestore.instance
-        .collection(teacherTableName)
+        .collection(teacherTableName).doc(CurrentUserData.schoolName).collection("teachers")
         .doc(CurrentUserData.uid)
         .update({'currentLocation': location});
 
@@ -112,7 +112,7 @@ Future<void> startLocationStream() async {
 
   } else if (CurrentUserData.isStudent == true) {
     await FirebaseFirestore.instance
-        .collection(studentTableName)
+        .collection(studentTableName).doc(CurrentUserData.schoolName).collection("students")
         .doc(CurrentUserData.uid)
         .update({'currentLocation': location});
 
@@ -144,7 +144,7 @@ Future<void> startLocationStream() async {
 
       if (CurrentUserData.isTeacher == true) {
         await FirebaseFirestore.instance
-            .collection(teacherTableName)
+            .collection(teacherTableName).doc(CurrentUserData.schoolName).collection("teachers")
             .doc(CurrentUserData.uid)
             .update({'currentLocation': updatedLocation});
 
@@ -163,7 +163,7 @@ Future<void> startLocationStream() async {
 
       } else if (CurrentUserData.isStudent == true) {
         await FirebaseFirestore.instance
-            .collection(studentTableName)
+            .collection(studentTableName).doc(CurrentUserData.schoolName).collection("students")
             .doc(CurrentUserData.uid)
             .update({'currentLocation': updatedLocation});
 

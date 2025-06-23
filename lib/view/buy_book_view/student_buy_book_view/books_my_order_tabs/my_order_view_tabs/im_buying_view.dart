@@ -12,7 +12,7 @@ class ImBuyingView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection(buyingRequestTableName).where("buyerUid", isEqualTo: CurrentUserData.uid).snapshots(), // Fetch books data from Firestore
+      stream: FirebaseFirestore.instance.collection(buyingRequestTableName).doc(CurrentUserData.schoolName).collection("books").where("buyerUid", isEqualTo: CurrentUserData.uid).snapshots(), // Fetch books data from Firestore
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());

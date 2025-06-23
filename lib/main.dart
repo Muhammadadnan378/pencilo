@@ -8,6 +8,7 @@ import 'package:pencilo/model/student_model.dart';
 import 'package:pencilo/model/teacher_model.dart';
 import 'package:pencilo/view/home_view/student_home_view/notification_view.dart';
 import 'package:pencilo/view/splash_view/splash_view.dart';
+import 'package:pencilo/web_views/web_home_views.dart';
 import 'data/custom_widget/custom_media_query.dart';
 import 'local_notification_practice/notifiaction_practice_view.dart';
 import 'model/admin_model.dart';
@@ -34,12 +35,12 @@ void main() async {
 
   });
   // 🔗 Handle tap from system notification (Firebase default notification tap)
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    final screen = message.data['screen'];
-    if (screen == 'NotificationView') {
-      Get.to(() => NotificationView());
-    }
-  });
+  // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+  //   final screen = message.data['screen'];
+  //   if (screen == 'NotificationView') {
+  //     Get.to(() => NotificationView());
+  //   }
+  // });
 
   // Hive initialization
   await Hive.initFlutter();
@@ -68,6 +69,10 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
+      getPages: [
+        GetPage(name: "/WebHomeViews", page: () => const WebHomeViews()),
+        GetPage(name: "/SplashView", page: () => const SplashView()),
+      ],
       theme: ThemeData(
         scaffoldBackgroundColor: Colors.white,
         appBarTheme: const AppBarTheme(

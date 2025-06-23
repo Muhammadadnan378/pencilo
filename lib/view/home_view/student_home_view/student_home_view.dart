@@ -3,6 +3,7 @@ import 'package:pencilo/data/consts/const_import.dart';
 import 'package:pencilo/data/current_user_data/current_user_Data.dart';
 import 'package:pencilo/data/custom_widget/app_logo_widget.dart';
 import 'package:pencilo/data/custom_widget/custom_media_query.dart';
+import 'package:pencilo/db_helper/model_name.dart';
 import 'package:pencilo/view/home_view/student_home_view/subject_parts_view.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../../controller/home_controller.dart';
@@ -45,25 +46,25 @@ class StudentHomeView extends StatelessWidget {
                         StreamBuilder<List<QuerySnapshot>>(
                           stream: CombineLatestStream.list([
                             FirebaseFirestore.instance
-                                .collection('noticeTable')
+                                .collection('noticeTable').doc(CurrentUserData.schoolName).collection("students")
                                 .where("division", isEqualTo: CurrentUserData.division)
                                 .where("standard", isEqualTo: CurrentUserData.standard)
                                 .snapshots(),
                             FirebaseFirestore.instance
-                                .collection('homeWorkTable')
+                                .collection('homeWorkTable').doc(CurrentUserData.schoolName).collection("students")
                                 .where("division", isEqualTo: CurrentUserData.division)
                                 .where("standard", isEqualTo: CurrentUserData.standard)
                                 .snapshots(),
                             FirebaseFirestore.instance
-                                .collection('sellBookTable')
+                                .collection(sellBookTableName).doc(CurrentUserData.schoolName).collection("books")
                                 .where("uid", isEqualTo: CurrentUserData.uid)
                                 .snapshots(),
                           ]),
                           builder: (context, snapshot) {
                             if (!snapshot.hasData) {
-                              return IconButton(
-                                onPressed: () {},
-                                icon: const Icon(Icons.notifications_rounded, size: 25),
+                              return CustomCard(
+                                onTap: () {},
+                                child: const Icon(Icons.notifications_rounded, size: 35),
                               );
                             }
 
@@ -177,15 +178,15 @@ class StudentHomeView extends StatelessWidget {
                                 onTap: () {
                                   Get.to(SubjectPartsView(
                                     subject: currentClassBooks[index],
-                                    colors: controller.curvedCardColors[index],
-                                    bgColor: controller.bGCardColors[index],
+                                    colors: controller.curvedCardColors[index % controller.curvedCardColors.length],
+                                    bgColor: controller.bGCardColors[index % controller.bGCardColors.length],
                                     subjectName: booksName[index],
                                   ));
                                 },
                                 width: double.infinity,
                                 height: 147,
                                 borderRadius: 12,
-                                color: controller.curvedCardColors[index], // example color
+                                color: controller.curvedCardColors[index % controller.curvedCardColors.length],
                                 child: Stack(
                                   children: [
                                     Align(
@@ -196,7 +197,7 @@ class StudentHomeView extends StatelessWidget {
                                           bottomRight: Radius.circular(10),
                                         ),
                                         child: Image.asset(
-                                          controller.curvedImages[index], // placeholder
+                                          controller.curvedImages[index % controller.curvedImages.length],
                                           width: double.infinity,
                                           height: 80,
                                           fit: BoxFit.cover,

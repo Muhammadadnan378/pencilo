@@ -28,7 +28,7 @@ class ProfileNoticeView extends StatelessWidget {
         )
       ),
       body: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance.collection(noticeTableName).where(
+          stream: FirebaseFirestore.instance.collection(noticeTableName).doc(CurrentUserData.schoolName).collection("students").where(
               "division", isEqualTo: CurrentUserData.division).where(
               "standard", isEqualTo: CurrentUserData.standard).snapshots(),
           builder: (context, noticeSnapshot) {

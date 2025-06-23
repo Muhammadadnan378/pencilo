@@ -14,6 +14,7 @@ class EventModel {
   String rules;
   String selectedDateTime;
   List<Map<String, dynamic>> participants = [];  // Changed from List<String> to List<Map<String, dynamic>>
+  String eventFor;
 
   // Constructor for initializing the EventModel
   EventModel({
@@ -31,6 +32,7 @@ class EventModel {
     required this.userId,
     required this.eventId,
     required this.participants,  // Now expects a list of maps
+    required this.eventFor,  // Now expects a list of maps
   });
 
   // Method to convert EventModel object to a map (to be used in storage, API calls, etc.)
@@ -50,6 +52,7 @@ class EventModel {
       'userId': userId,
       'eventId': eventId,
       'participants': participants,  // Store as a list of maps
+      'eventFor': eventFor,  // Store as a list of maps
     };
   }
 
@@ -69,6 +72,7 @@ class EventModel {
       contactNumber: map['contactNumber'] ?? '',
       rules: map['rules'] ?? '',
       selectedDateTime: map['selectedDateTime'] ?? '',
+      eventFor: map['eventFor'] ?? '',
       participants: List<Map<String, dynamic>>.from(map['participants'] ?? []),  // Handle participants as a list of maps
     );
   }

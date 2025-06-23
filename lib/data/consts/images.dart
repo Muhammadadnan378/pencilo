@@ -24,6 +24,7 @@ const homeResult = "assets/images/home_result_image.png";
 const homeUpload = "assets/images/home_upload_image.png";
 const editResultImage = "assets/images/edit_result_image.png";
 const appLogo = "assets/images/AppLogo.png";
+const simpleAppLogo = "assets/images/SimpleAppLogo.png";
 
 
 const englishCurvedImage = "assets/images/english_card_curved.png";
@@ -51,6 +52,13 @@ const Singing = "assets/images/Singing.jpg";
 const Hockey = "assets/images/Hockey.jpg";
 const Badminton = "assets/images/Badminton.jpg";
 const TableTennis = "assets/images/TableTennis.jpg";
+
+
+//web images
+const kabaddiWebImage = "assets/images/kabadiWebImage.png";
+const pubgWebImage = "assets/images/pubgWebImage.png";
+const cricketWebImage = "assets/images/cricketWebImage.png";
+
 
 
 
